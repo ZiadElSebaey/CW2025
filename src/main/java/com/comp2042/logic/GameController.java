@@ -1,4 +1,8 @@
-package com.comp2042;
+package com.comp2042.logic;
+
+import com.comp2042.InputEventListener;
+import com.comp2042.ui.GuiController;
+import com.comp2042.ui.ViewData;
 
 public class GameController implements InputEventListener {
 
