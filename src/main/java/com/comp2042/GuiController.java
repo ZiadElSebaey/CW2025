@@ -129,37 +129,17 @@ public class GuiController implements Initializable {
     }
 
     private Paint getFillColor(int i) {
-        Paint returnPaint;
-        switch (i) {
-            case 0:
-                returnPaint = Color.TRANSPARENT;
-                break;
-            case 1:
-                returnPaint = Color.AQUA;
-                break;
-            case 2:
-                returnPaint = Color.BLUEVIOLET;
-                break;
-            case 3:
-                returnPaint = Color.DARKGREEN;
-                break;
-            case 4:
-                returnPaint = Color.YELLOW;
-                break;
-            case 5:
-                returnPaint = Color.RED;
-                break;
-            case 6:
-                returnPaint = Color.BEIGE;
-                break;
-            case 7:
-                returnPaint = Color.BURLYWOOD;
-                break;
-            default:
-                returnPaint = Color.WHITE;
-                break;
-        }
-        return returnPaint;
+        return switch (i) {
+            case 0 -> Color.TRANSPARENT;
+            case 1 -> Color.AQUA;
+            case 2 -> Color.BLUEVIOLET;
+            case 3 -> Color.DARKGREEN;
+            case 4 -> Color.YELLOW;
+            case 5 -> Color.RED;
+            case 6 -> Color.BEIGE;
+            case 7 -> Color.BURLYWOOD;
+            default -> Color.WHITE;
+        };
     }
 
 
@@ -219,14 +199,17 @@ public class GuiController implements Initializable {
         if (actionEvent != null) {
             actionEvent.consume();
         }
-        timeLine.stop();
-        gameOverPanel.setVisible(false);
-        eventListener.createNewGame();
-        gamePanel.requestFocus();
-        timeLine.play();
-        isPause.setValue(Boolean.FALSE);
-        isGameOver.setValue(Boolean.FALSE);
+        startNewGame();
     }
+    private void startNewGame() {
+            timeLine.stop();
+            gameOverPanel.setVisible(false);
+            eventListener.createNewGame();
+            gamePanel.requestFocus();
+            timeLine.play();
+            isPause.setValue(Boolean.FALSE);
+            isGameOver.setValue(Boolean.FALSE);
+        }
     public void pauseGame(ActionEvent actionEvent) {
         if (actionEvent != null) {
             actionEvent.consume();
