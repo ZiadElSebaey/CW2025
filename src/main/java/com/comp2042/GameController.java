@@ -2,12 +2,15 @@ package com.comp2042;
 
 public class GameController implements InputEventListener {
 
-    private Board board = new SimpleBoard(25, 10);
+    private final Board board = new SimpleBoard();
 
     private final GuiController viewGuiController;
 
     public GameController(GuiController c) {
-        viewGuiController = c;
+        this.viewGuiController = c;
+        initializeGame();
+    }
+    private void initializeGame() {
         board.createNewBrick();
         viewGuiController.setEventListener(this);
         viewGuiController.initGameView(board.getBoardMatrix(), board.getViewData());
@@ -18,25 +21,33 @@ public class GameController implements InputEventListener {
     public DownData onDownEvent(MoveEvent event) {
         boolean canMove = board.moveBrickDown();
         ClearRow clearRow = null;
+
         if (!canMove) {
-            board.mergeBrickToBackground();
-            clearRow = board.clearRows();
-            if (clearRow.getLinesRemoved() > 0) {
-                board.getScore().add(clearRow.getScoreBonus());
-            }
-            if (board.createNewBrick()) {
-                viewGuiController.gameOver();
-            }
-
-            viewGuiController.refreshGameBackground(board.getBoardMatrix());
-
-        } else {
-            if (event.getEventSource() == EventSource.USER) {
-                board.getScore().add(1);
-            }
+            clearRow = handleBrickLanded();
+        } else if (event.getEventSource() == EventSource.USER) {
+            board.getScore().add(1);
         }
+
         return new DownData(clearRow, board.getViewData());
     }
+    private ClearRow handleBrickLanded() {
+        board.mergeBrickToBackground();
+        ClearRow clearRow = board.clearRows();
+        applyRowScore(clearRow);
+        if (board.createNewBrick()) {
+            viewGuiController.gameOver();
+        }
+
+        viewGuiController.refreshGameBackground(board.getBoardMatrix());
+
+        return clearRow;
+    }
+    private void applyRowScore(ClearRow clearRow) {
+        if (clearRow != null && clearRow.getLinesRemoved() > 0) {
+            board.getScore().add(clearRow.getScoreBonus());
+        }
+    }
+
 
     @Override
     public ViewData onLeftEvent(MoveEvent event) {

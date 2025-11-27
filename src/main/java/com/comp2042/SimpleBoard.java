@@ -7,6 +7,11 @@ import com.comp2042.logic.bricks.RandomBrickGenerator;
 import java.awt.*;
 
 public class SimpleBoard implements Board {
+    public static final int BOARD_ROWS = 25;
+    public static final int BOARD_COLUMNS = 10;
+
+    private static final int SPAWN_X = 4;
+    private static final int SPAWN_Y = 0;
 
     private final int width;
     private final int height;
@@ -15,6 +20,10 @@ public class SimpleBoard implements Board {
     private int[][] currentGameMatrix;
     private Point currentOffset;
     private final Score score;
+    public SimpleBoard() {
+        this(BOARD_ROWS, BOARD_COLUMNS);
+    }
+
 
     public SimpleBoard(int width, int height) {
         this.width = width;
@@ -24,68 +33,68 @@ public class SimpleBoard implements Board {
         brickRotator = new BrickRotator();
         score = new Score();
     }
+    /**
+     */
+    private boolean tryMove(int deltaX, int deltaY) {
+        Point newOffset = new Point(currentOffset);
+        newOffset.translate(deltaX, deltaY);
+
+        boolean conflict = MatrixOperations.intersect(
+                currentGameMatrix,
+                brickRotator.getCurrentShape(),
+                (int) newOffset.getX(),
+                (int) newOffset.getY()
+        );
+
+        if (conflict) {
+            return false;
+        }
+
+        currentOffset = newOffset;
+        return true;
+    }
 
     @Override
     public boolean moveBrickDown() {
-        int[][] currentMatrix = MatrixOperations.copy(currentGameMatrix);
-        Point p = new Point(currentOffset);
-        p.translate(0, 1);
-        boolean conflict = MatrixOperations.intersect(currentMatrix, brickRotator.getCurrentShape(), (int) p.getX(), (int) p.getY());
-        if (conflict) {
-            return false;
-        } else {
-            currentOffset = p;
-            return true;
-        }
+        return tryMove(0, 1);
     }
-
-
     @Override
     public boolean moveBrickLeft() {
-        int[][] currentMatrix = MatrixOperations.copy(currentGameMatrix);
-        Point p = new Point(currentOffset);
-        p.translate(-1, 0);
-        boolean conflict = MatrixOperations.intersect(currentMatrix, brickRotator.getCurrentShape(), (int) p.getX(), (int) p.getY());
-        if (conflict) {
-            return false;
-        } else {
-            currentOffset = p;
-            return true;
-        }
+        return tryMove(-1, 0);
     }
+
 
     @Override
     public boolean moveBrickRight() {
-        int[][] currentMatrix = MatrixOperations.copy(currentGameMatrix);
-        Point p = new Point(currentOffset);
-        p.translate(1, 0);
-        boolean conflict = MatrixOperations.intersect(currentMatrix, brickRotator.getCurrentShape(), (int) p.getX(), (int) p.getY());
-        if (conflict) {
-            return false;
-        } else {
-            currentOffset = p;
-            return true;
-        }
+        return tryMove(1, 0);
     }
+
 
     @Override
     public boolean rotateLeftBrick() {
-        int[][] currentMatrix = MatrixOperations.copy(currentGameMatrix);
         NextShapeInfo nextShape = brickRotator.getNextShape();
-        boolean conflict = MatrixOperations.intersect(currentMatrix, nextShape.getShape(), (int) currentOffset.getX(), (int) currentOffset.getY());
+
+        boolean conflict = MatrixOperations.intersect(
+                currentGameMatrix,
+                nextShape.getShape(),
+                (int) currentOffset.getX(),
+                (int) currentOffset.getY()
+        );
+
         if (conflict) {
             return false;
-        } else {
-            brickRotator.setCurrentShape(nextShape.getPosition());
-            return true;
         }
+
+        brickRotator.setCurrentShape(nextShape.getPosition());
+        return true;
     }
+
 
     @Override
     public boolean createNewBrick() {
         Brick currentBrick = brickGenerator.getBrick();
         brickRotator.setBrick(currentBrick);
-        currentOffset = new Point(4, 0);
+        currentOffset = new Point(SPAWN_X, SPAWN_Y);
         return MatrixOperations.intersect(currentGameMatrix, brickRotator.getCurrentShape(), (int) currentOffset.getX(), (int) currentOffset.getY());
     }
 
