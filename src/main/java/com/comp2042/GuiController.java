@@ -216,6 +216,9 @@ public class GuiController implements Initializable {
     }
 
     public void newGame(ActionEvent actionEvent) {
+        if (actionEvent != null) {
+            actionEvent.consume();
+        }
         timeLine.stop();
         gameOverPanel.setVisible(false);
         eventListener.createNewGame();
@@ -224,8 +227,10 @@ public class GuiController implements Initializable {
         isPause.setValue(Boolean.FALSE);
         isGameOver.setValue(Boolean.FALSE);
     }
-
     public void pauseGame(ActionEvent actionEvent) {
+        if (actionEvent != null) {
+            actionEvent.consume();
+        }
         if (isGameOver.get()) {
             return;
         }
@@ -238,9 +243,8 @@ public class GuiController implements Initializable {
             isPause.set(true);
             if (timeLine != null) {
                 timeLine.stop();
-            }
+        }
         }
 
-        gamePanel.requestFocus();
-    }
-}
+    gamePanel.requestFocus();
+    }}
