@@ -1,0 +1,80 @@
+package com.comp2042.logic;
+
+import com.comp2042.ui.GuiController;
+import com.comp2042.ui.ViewData;
+
+public class GameController implements InputEventListener {
+
+    private final Board board = new SimpleBoard();
+
+    private final GuiController viewGuiController;
+
+    public GameController(GuiController c) {
+        this.viewGuiController = c;
+        initializeGame();
+    }
+    private void initializeGame() {
+        board.spawnNewBrick();
+        viewGuiController.setEventListener(this);
+        viewGuiController.initGameView(board.getBoardMatrix(), board.getViewData());
+        viewGuiController.bindScore(board.getScore().scoreProperty());
+    }
+
+    @Override
+    public DownData onDownEvent(MoveEvent event) {
+        boolean canMove = board.moveBrickDown();
+        ClearRow clearRow = null;
+
+        if (!canMove) {
+            clearRow = handleBrickLanded();
+        } else if (event.getEventSource() == EventSource.USER) {
+            board.getScore().add(1);
+        }
+
+        return new DownData(clearRow, board.getViewData());
+    }
+    private ClearRow handleBrickLanded() {
+        board.mergeBrickToBackground();
+        ClearRow clearRow = board.clearRows();
+        applyRowScore(clearRow);
+        if (board.spawnNewBrick()) {
+            viewGuiController.gameOver();
+        }
+
+        viewGuiController.refreshGameBackground(board.getBoardMatrix());
+
+        return clearRow;
+    }
+    private void applyRowScore(ClearRow clearRow) {
+        if (clearRow != null && clearRow.getLinesRemoved() > 0) {
+            board.getScore().add(clearRow.getScoreBonus());
+        }
+    }
+    private ViewData performMove(Runnable moveAction) {
+        moveAction.run();
+        return board.getViewData();
+    }
+
+
+    @Override
+    public ViewData onLeftEvent(MoveEvent event) {
+        return performMove(board::moveBrickLeft);
+    }
+
+    @Override
+    public ViewData onRightEvent(MoveEvent event) {
+        return performMove(board::moveBrickRight);
+    }
+
+    @Override
+    public ViewData onRotateEvent(MoveEvent event) {
+        return performMove(board::rotateBrick);
+    }
+
+
+    @Override
+    public void createNewGame() {
+        board.newGame();
+        viewGuiController.refreshGameBackground(board.getBoardMatrix());
+    }
+}

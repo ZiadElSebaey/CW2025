@@ -1,4 +1,6 @@
-package com.comp2042;
+package com.comp2042.logic;
+
+import com.comp2042.ui.ViewData;
 
 public interface Board {
 
@@ -8,10 +10,11 @@ public interface Board {
 
     boolean moveBrickRight();
 
-    boolean rotateLeftBrick();
-
-    boolean createNewBrick();
-
+    boolean rotateBrick();
+    /*
+     * @return
+     */
+    boolean spawnNewBrick();
     int[][] getBoardMatrix();
 
     ViewData getViewData();
