@@ -1,6 +1,5 @@
 package com.comp2042.logic;
 
-import com.comp2042.InputEventListener;
 import com.comp2042.ui.GuiController;
 import com.comp2042.ui.ViewData;
 
@@ -15,7 +14,7 @@ public class GameController implements InputEventListener {
         initializeGame();
     }
     private void initializeGame() {
-        board.createNewBrick();
+        board.spawnNewBrick();
         viewGuiController.setEventListener(this);
         viewGuiController.initGameView(board.getBoardMatrix(), board.getViewData());
         viewGuiController.bindScore(board.getScore().scoreProperty());
@@ -38,7 +37,7 @@ public class GameController implements InputEventListener {
         board.mergeBrickToBackground();
         ClearRow clearRow = board.clearRows();
         applyRowScore(clearRow);
-        if (board.createNewBrick()) {
+        if (board.spawnNewBrick()) {
             viewGuiController.gameOver();
         }
 
@@ -51,24 +50,25 @@ public class GameController implements InputEventListener {
             board.getScore().add(clearRow.getScoreBonus());
         }
     }
+    private ViewData performMove(Runnable moveAction) {
+        moveAction.run();
+        return board.getViewData();
+    }
 
 
     @Override
     public ViewData onLeftEvent(MoveEvent event) {
-        board.moveBrickLeft();
-        return board.getViewData();
+        return performMove(board::moveBrickLeft);
     }
 
     @Override
     public ViewData onRightEvent(MoveEvent event) {
-        board.moveBrickRight();
-        return board.getViewData();
+        return performMove(board::moveBrickRight);
     }
 
     @Override
     public ViewData onRotateEvent(MoveEvent event) {
-        board.rotateLeftBrick();
-        return board.getViewData();
+        return performMove(board::rotateBrick);
     }
 
 

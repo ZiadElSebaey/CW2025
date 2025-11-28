@@ -37,18 +37,19 @@ public class SimpleBoard implements Board {
     }
     /**
      */
+    private boolean hasCollision(int[][] shape, Point offset) {
+        return MatrixOperations.intersect(
+                currentGameMatrix,
+                shape,
+                (int) offset.getX(),
+                (int) offset.getY()
+        );
+    }
     private boolean tryMove(int deltaX, int deltaY) {
         Point newOffset = new Point(currentOffset);
         newOffset.translate(deltaX, deltaY);
 
-        boolean conflict = MatrixOperations.intersect(
-                currentGameMatrix,
-                brickRotator.getCurrentShape(),
-                (int) newOffset.getX(),
-                (int) newOffset.getY()
-        );
-
-        if (conflict) {
+        if (hasCollision(brickRotator.getCurrentShape(), newOffset)) {
             return false;
         }
 
@@ -71,19 +72,11 @@ public class SimpleBoard implements Board {
         return tryMove(1, 0);
     }
 
-
     @Override
-    public boolean rotateLeftBrick() {
+    public boolean rotateBrick() {
         NextShapeInfo nextShape = brickRotator.getNextShape();
 
-        boolean conflict = MatrixOperations.intersect(
-                currentGameMatrix,
-                nextShape.getShape(),
-                (int) currentOffset.getX(),
-                (int) currentOffset.getY()
-        );
-
-        if (conflict) {
+        if (hasCollision(nextShape.getShape(), currentOffset)) {
             return false;
         }
 
@@ -93,11 +86,12 @@ public class SimpleBoard implements Board {
 
 
     @Override
-    public boolean createNewBrick() {
+    public boolean spawnNewBrick() {
         Brick currentBrick = brickGenerator.getBrick();
         brickRotator.setBrick(currentBrick);
         currentOffset = new Point(SPAWN_X, SPAWN_Y);
-        return MatrixOperations.intersect(currentGameMatrix, brickRotator.getCurrentShape(), (int) currentOffset.getX(), (int) currentOffset.getY());
+
+        return hasCollision(brickRotator.getCurrentShape(), currentOffset);
     }
 
     @Override
@@ -133,6 +127,6 @@ public class SimpleBoard implements Board {
     public void newGame() {
         currentGameMatrix = new int[width][height];
         score.reset();
-        createNewBrick();
+        spawnNewBrick();
     }
 }

@@ -10,10 +10,11 @@ public interface Board {
 
     boolean moveBrickRight();
 
-    boolean rotateLeftBrick();
-
-    boolean createNewBrick();
-
+    boolean rotateBrick();
+    /*
+     * @return
+     */
+    boolean spawnNewBrick();
     int[][] getBoardMatrix();
 
     ViewData getViewData();
