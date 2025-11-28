@@ -13,7 +13,7 @@ public class SimpleBoard implements Board {
     public static final int BOARD_COLUMNS = 10;
 
     private static final int SPAWN_X = 4;
-    private static final int SPAWN_Y = 0;
+    private static final int SPAWN_Y = 2;
 
     private final int width;
     private final int height;

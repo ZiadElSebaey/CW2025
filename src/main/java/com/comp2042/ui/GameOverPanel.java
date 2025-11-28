@@ -10,6 +10,8 @@ public class GameOverPanel extends BorderPane {
         final Label gameOverLabel = new Label("GAME OVER");
         gameOverLabel.getStyleClass().add("gameOverStyle");
         setCenter(gameOverLabel);
+        setMaxWidth(200);
+        setPrefWidth(200);
     }
 
 }
