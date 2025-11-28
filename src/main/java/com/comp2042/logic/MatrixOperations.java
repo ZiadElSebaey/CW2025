@@ -8,10 +8,7 @@ import java.util.stream.Collectors;
 
 public class MatrixOperations {
 
-
-    //We don't want to instantiate this utility class
-    private MatrixOperations(){
-
+    private MatrixOperations() {
     }
 
     public static boolean intersect(final int[][] matrix, final int[][] brick, int x, int y) {

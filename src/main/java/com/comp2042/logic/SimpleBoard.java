@@ -35,8 +35,7 @@ public class SimpleBoard implements Board {
         brickRotator = new BrickRotator();
         score = new Score();
     }
-    /**
-     */
+
     private boolean hasCollision(int[][] shape, Point offset) {
         return MatrixOperations.intersect(
                 currentGameMatrix,

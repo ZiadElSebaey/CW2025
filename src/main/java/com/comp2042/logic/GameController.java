@@ -37,11 +37,11 @@ public class GameController implements InputEventListener {
         board.mergeBrickToBackground();
         ClearRow clearRow = board.clearRows();
         applyRowScore(clearRow);
+        viewGuiController.refreshGameBackground(board.getBoardMatrix());
+        
         if (board.spawnNewBrick()) {
             viewGuiController.gameOver();
         }
-
-        viewGuiController.refreshGameBackground(board.getBoardMatrix());
 
         return clearRow;
     }
