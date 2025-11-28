@@ -1,13 +1,6 @@
 package com.comp2042.logic;
 
-public final class MoveEvent {
-    private final EventType eventType;
-    private final EventSource eventSource;
-
-    public MoveEvent(EventType eventType, EventSource eventSource) {
-        this.eventType = eventType;
-        this.eventSource = eventSource;
-    }
+public record MoveEvent(EventType eventType, EventSource eventSource) {
 
     public EventType getEventType() {
         return eventType;

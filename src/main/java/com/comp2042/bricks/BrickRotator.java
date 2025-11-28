@@ -4,27 +4,26 @@ import com.comp2042.logic.NextShapeInfo;
 
 public class BrickRotator {
 
+    private static final int INITIAL_ROTATION = 0;
+
     private Brick brick;
-    private int currentShape = 0;
+    private int currentRotation = INITIAL_ROTATION;
 
     public NextShapeInfo getNextShape() {
-        int nextShape = currentShape;
-        nextShape = (++nextShape) % brick.getShapeMatrix().size();
-        return new NextShapeInfo(brick.getShapeMatrix().get(nextShape), nextShape);
+        int nextRotation = (currentRotation + 1) % brick.getShapeMatrix().size();
+        return new NextShapeInfo(brick.getShapeMatrix().get(nextRotation), nextRotation);
     }
 
     public int[][] getCurrentShape() {
-        return brick.getShapeMatrix().get(currentShape);
+        return brick.getShapeMatrix().get(currentRotation);
     }
 
-    public void setCurrentShape(int currentShape) {
-        this.currentShape = currentShape;
+    public void setCurrentShape(int rotation) {
+        this.currentRotation = rotation;
     }
 
     public void setBrick(Brick brick) {
         this.brick = brick;
-        currentShape = 0;
+        this.currentRotation = INITIAL_ROTATION;
     }
-
-
 }

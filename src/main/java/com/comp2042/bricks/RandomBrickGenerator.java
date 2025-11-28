@@ -1,40 +1,47 @@
 package com.comp2042.bricks;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class RandomBrickGenerator implements BrickGenerator {
 
-    private final List<Brick> brickList;
+    private static final int INITIAL_QUEUE_SIZE = 2;
 
-    private final Deque<Brick> nextBricks = new ArrayDeque<>();
+    private final List<Brick> brickTypes = List.of(
+            new IBrick(),
+            new JBrick(),
+            new LBrick(),
+            new OBrick(),
+            new SBrick(),
+            new TBrick(),
+            new ZBrick()
+    );
+
+    private final Deque<Brick> brickQueue = new ArrayDeque<>();
 
     public RandomBrickGenerator() {
-        brickList = new ArrayList<>();
-        brickList.add(new IBrick());
-        brickList.add(new JBrick());
-        brickList.add(new LBrick());
-        brickList.add(new OBrick());
-        brickList.add(new SBrick());
-        brickList.add(new TBrick());
-        brickList.add(new ZBrick());
-        nextBricks.add(brickList.get(ThreadLocalRandom.current().nextInt(brickList.size())));
-        nextBricks.add(brickList.get(ThreadLocalRandom.current().nextInt(brickList.size())));
+        for (int i = 0; i < INITIAL_QUEUE_SIZE; i++) {
+            brickQueue.add(getRandomBrick());
+        }
+    }
+
+    private Brick getRandomBrick() {
+        int randomIndex = ThreadLocalRandom.current().nextInt(brickTypes.size());
+        return brickTypes.get(randomIndex);
     }
 
     @Override
     public Brick getBrick() {
-        if (nextBricks.size() <= 1) {
-            nextBricks.add(brickList.get(ThreadLocalRandom.current().nextInt(brickList.size())));
+        if (brickQueue.size() <= 1) {
+            brickQueue.add(getRandomBrick());
         }
-        return nextBricks.poll();
+        return brickQueue.poll();
     }
 
     @Override
     public Brick getNextBrick() {
-        return nextBricks.peek();
+        return brickQueue.peek();
     }
 }

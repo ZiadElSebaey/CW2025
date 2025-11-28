@@ -37,11 +37,11 @@ public class GameController implements InputEventListener {
         board.mergeBrickToBackground();
         ClearRow clearRow = board.clearRows();
         applyRowScore(clearRow);
+        viewGuiController.refreshGameBackground(board.getBoardMatrix());
+        
         if (board.spawnNewBrick()) {
             viewGuiController.gameOver();
         }
-
-        viewGuiController.refreshGameBackground(board.getBoardMatrix());
 
         return clearRow;
     }
@@ -73,8 +73,9 @@ public class GameController implements InputEventListener {
 
 
     @Override
-    public void createNewGame() {
+    public ViewData createNewGame() {
         board.newGame();
         viewGuiController.refreshGameBackground(board.getBoardMatrix());
+        return board.getViewData();
     }
 }

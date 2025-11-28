@@ -13,7 +13,7 @@ public class SimpleBoard implements Board {
     public static final int BOARD_COLUMNS = 10;
 
     private static final int SPAWN_X = 4;
-    private static final int SPAWN_Y = 0;
+    private static final int SPAWN_Y = 2;
 
     private final int width;
     private final int height;
@@ -35,8 +35,7 @@ public class SimpleBoard implements Board {
         brickRotator = new BrickRotator();
         score = new Score();
     }
-    /**
-     */
+
     private boolean hasCollision(int[][] shape, Point offset) {
         return MatrixOperations.intersect(
                 currentGameMatrix,

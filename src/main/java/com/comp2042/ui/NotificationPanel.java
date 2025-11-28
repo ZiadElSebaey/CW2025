@@ -4,11 +4,8 @@ import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.TranslateTransition;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
-import javafx.scene.effect.Effect;
 import javafx.scene.effect.Glow;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
@@ -16,31 +13,33 @@ import javafx.util.Duration;
 
 public class NotificationPanel extends BorderPane {
 
-    public NotificationPanel(String text) {
-        setMinHeight(200);
-        setMinWidth(220);
-        final Label score = new Label(text);
-        score.getStyleClass().add("bonusStyle");
-        final Effect glow = new Glow(0.6);
-        score.setEffect(glow);
-        score.setTextFill(Color.WHITE);
-        setCenter(score);
+    private static final int MIN_HEIGHT = 200;
+    private static final int MIN_WIDTH = 220;
+    private static final double GLOW_LEVEL = 0.6;
+    private static final int FADE_DURATION_MS = 2000;
+    private static final int TRANSLATE_DURATION_MS = 2500;
+    private static final int TRANSLATE_OFFSET = -40;
 
+    public NotificationPanel(String text) {
+        setMinHeight(MIN_HEIGHT);
+        setMinWidth(MIN_WIDTH);
+        Label scoreLabel = new Label(text);
+        scoreLabel.getStyleClass().add("bonusStyle");
+        scoreLabel.setEffect(new Glow(GLOW_LEVEL));
+        scoreLabel.setTextFill(Color.WHITE);
+        setCenter(scoreLabel);
     }
 
     public void showScore(ObservableList<Node> list) {
-        FadeTransition ft = new FadeTransition(Duration.millis(2000), this);
-        TranslateTransition tt = new TranslateTransition(Duration.millis(2500), this);
-        tt.setToY(this.getLayoutY() - 40);
-        ft.setFromValue(1);
-        ft.setToValue(0);
-        ParallelTransition transition = new ParallelTransition(tt, ft);
-        transition.setOnFinished(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                list.remove(NotificationPanel.this);
-            }
-        });
+        FadeTransition fadeTransition = new FadeTransition(Duration.millis(FADE_DURATION_MS), this);
+        fadeTransition.setFromValue(1);
+        fadeTransition.setToValue(0);
+
+        TranslateTransition translateTransition = new TranslateTransition(Duration.millis(TRANSLATE_DURATION_MS), this);
+        translateTransition.setToY(getLayoutY() + TRANSLATE_OFFSET);
+
+        ParallelTransition transition = new ParallelTransition(translateTransition, fadeTransition);
+        transition.setOnFinished(event -> list.remove(this));
         transition.play();
     }
 }

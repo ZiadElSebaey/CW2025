@@ -5,17 +5,23 @@ import javafx.beans.property.SimpleIntegerProperty;
 
 public final class Score {
 
-    private final IntegerProperty score = new SimpleIntegerProperty(0);
+    private static final int INITIAL_SCORE = 0;
+
+    private final IntegerProperty score = new SimpleIntegerProperty(INITIAL_SCORE);
 
     public IntegerProperty scoreProperty() {
         return score;
     }
 
-    public void add(int i){
-        score.setValue(score.getValue() + i);
+    public int getValue() {
+        return score.get();
+    }
+
+    public void add(int points) {
+        score.set(score.get() + points);
     }
 
     public void reset() {
-        score.setValue(0);
+        score.set(INITIAL_SCORE);
     }
 }
