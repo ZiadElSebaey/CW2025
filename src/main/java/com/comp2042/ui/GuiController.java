@@ -8,8 +8,11 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Group;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
@@ -18,8 +21,10 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
+import javafx.stage.Stage;
 import javafx.util.Duration;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -61,6 +66,12 @@ public class GuiController implements Initializable {
 
     private final BooleanProperty isGameOver = new SimpleBooleanProperty();
 
+    private Stage stage;
+
+    public void setStage(Stage stage) {
+        this.stage = stage;
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         URL digitalFontUrl = getClass().getClassLoader().getResource("digital.ttf");
@@ -71,6 +82,26 @@ public class GuiController implements Initializable {
         gamePanel.requestFocus();
         gamePanel.setOnKeyPressed(this::handleKeyPressed);
         gameOverPanel.setVisible(false);
+
+        gameOverPanel.getRestartButton().setOnAction(e -> newGame(null));
+        gameOverPanel.getMainMenuButton().setOnAction(e -> returnToMainMenu());
+    }
+
+    private void returnToMainMenu() {
+        if (timeLine != null) {
+            timeLine.stop();
+        }
+        try {
+            URL location = getClass().getClassLoader().getResource("mainMenu.fxml");
+            FXMLLoader fxmlLoader = new FXMLLoader(location);
+            Parent root = fxmlLoader.load();
+            MainMenuController menuController = fxmlLoader.getController();
+            menuController.setStage(stage);
+            Scene scene = new Scene(root, 720, 680);
+            stage.setScene(scene);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
     private void handleKeyPressed(KeyEvent keyEvent) {
         if (!isPause.get() && !isGameOver.get() && eventListener != null) {
@@ -275,4 +306,17 @@ public class GuiController implements Initializable {
 
         setPaused(!isPause.get());
         gamePanel.requestFocus();
-    }}
+    }
+
+    public boolean isPaused() {
+        return isPause.get();
+    }
+
+    public boolean isGameOver() {
+        return isGameOver.get();
+    }
+
+    public void requestFocus() {
+        gamePanel.requestFocus();
+    }
+}

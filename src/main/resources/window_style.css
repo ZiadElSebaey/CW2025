@@ -71,3 +71,68 @@
     -fx-fill: yellow;
     -fx-text-fill: yellow;
 }
+
+.menu-title {
+    -fx-font-size: 72px;
+    -fx-font-weight: bold;
+    -fx-text-fill: linear-gradient(#61a2b1, #2A5058);
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 10, 0, 3, 3);
+}
+
+.menu-button {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-background-color: linear-gradient(#2A5058, #61a2b1);
+    -fx-text-fill: white;
+    -fx-padding: 15 40 15 40;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+}
+
+.menu-button:hover {
+    -fx-background-color: linear-gradient(#61a2b1, #2A5058);
+}
+
+.gameover-button {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-color: linear-gradient(#2A5058, #61a2b1);
+    -fx-text-fill: white;
+    -fx-padding: 8 20 8 20;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+}
+
+.gameover-button:hover {
+    -fx-background-color: linear-gradient(#61a2b1, #2A5058);
+}
+
+.control-label {
+    -fx-font-size: 18px;
+    -fx-text-fill: white;
+}
+
+.control-key {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #61a2b1;
+}
+
+.settings-label {
+    -fx-font-size: 18px;
+    -fx-text-fill: white;
+}
+
+.toggle-button {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-color: linear-gradient(#2A5058, #61a2b1);
+    -fx-text-fill: white;
+    -fx-padding: 8 15 8 15;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+}
+
+.toggle-button:hover {
+    -fx-background-color: linear-gradient(#61a2b1, #2A5058);
+}

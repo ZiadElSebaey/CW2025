@@ -1,7 +1,6 @@
 package com.comp2042;
 
-import com.comp2042.logic.GameController;
-import com.comp2042.ui.GuiController;
+import com.comp2042.ui.MainMenuController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -14,18 +13,17 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        URL location = getClass().getClassLoader().getResource("gameLayout.fxml");
+        URL location = getClass().getClassLoader().getResource("mainMenu.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(location);
         Parent root = fxmlLoader.load();
-        GuiController c = fxmlLoader.getController();
+        MainMenuController menuController = fxmlLoader.getController();
+        menuController.setStage(primaryStage);
 
         primaryStage.setTitle("TetrisJFX");
         Scene scene = new Scene(root, 720, 680);
         primaryStage.setScene(scene);
         primaryStage.show();
-        new GameController(c);
     }
-
 
     public static void main(String[] args) {
         launch(args);
