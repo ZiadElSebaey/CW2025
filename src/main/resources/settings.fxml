@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import java.net.URL?>
+
+<StackPane fx:id="rootPane" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.comp2042.ui.SettingsController">
+<VBox alignment="CENTER" spacing="30">
+
+    <Label text="Settings" styleClass="section-title"/>
+
+    <VBox alignment="CENTER" spacing="15" styleClass="settings-box">
+        <HBox spacing="20" alignment="CENTER">
+            <Label text="Music:" styleClass="settings-label" prefWidth="150"/>
+            <Button fx:id="musicButton" text="ON" styleClass="toggle-button" prefWidth="80"/>
+        </HBox>
+        <HBox spacing="20" alignment="CENTER">
+            <Label text="Sound Effects:" styleClass="settings-label" prefWidth="150"/>
+            <Button fx:id="soundButton" text="ON" styleClass="toggle-button" prefWidth="80"/>
+        </HBox>
+        <HBox spacing="20" alignment="CENTER">
+            <Label text="Color Theme:" styleClass="settings-label" prefWidth="150"/>
+            <Button fx:id="themeButton" text="Default" styleClass="toggle-button" prefWidth="80"/>
+        </HBox>
+    </VBox>
+
+    <Button text="Back" styleClass="menu-button" onAction="#onBackClicked" prefWidth="200"/>
+    </VBox>
+    <stylesheets>
+        <URL value="@window_style.css"/>
+    </stylesheets>
+</StackPane>
+

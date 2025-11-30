@@ -12,20 +12,21 @@ public class GameOverPanel extends VBox {
 
     public GameOverPanel() {
         setAlignment(Pos.CENTER);
-        setSpacing(15);
-        setMaxWidth(200);
-        setPrefWidth(200);
+        setSpacing(30);
+        setMinWidth(450);
+        setPrefWidth(450);
+        setMaxWidth(500);
+        getStyleClass().add("gameover-panel");
 
         Label gameOverLabel = new Label("GAME OVER");
-        gameOverLabel.getStyleClass().add("gameOverStyle");
+        gameOverLabel.getStyleClass().add("gameover-title");
+        gameOverLabel.setAlignment(Pos.CENTER);
 
         restartButton = new Button("Restart");
         restartButton.getStyleClass().add("gameover-button");
-        restartButton.setPrefWidth(150);
 
         mainMenuButton = new Button("Main Menu");
         mainMenuButton.getStyleClass().add("gameover-button");
-        mainMenuButton.setPrefWidth(150);
 
         getChildren().addAll(gameOverLabel, restartButton, mainMenuButton);
     }

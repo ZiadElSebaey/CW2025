@@ -1,22 +1,27 @@
 <?import com.comp2042.ui.GameOverPanel?>
+<?import com.comp2042.ui.PausePanel?>
 <?import javafx.scene.Group?>
 <?import javafx.scene.layout.*?>
+<?import javafx.geometry.Pos?>
 <?import java.net.URL?>
-<Pane fx:controller="com.comp2042.ui.GuiController"
+<StackPane fx:id="rootPane" fx:controller="com.comp2042.ui.GuiController"
       xmlns:fx="http://javafx.com/fxml">
-    <GridPane fx:id="brickPanel" vgap="1" hgap="1"/>
-    <BorderPane styleClass="gameBoard" fx:id="gameBoard" layoutX="244" layoutY="87">
-        <center>
-            <GridPane fx:id="gamePanel" hgap="1" vgap="1"/>
-        </center>
-    </BorderPane>
-
-    <Group fx:id="groupNotification" layoutX="256" layoutY="340">
-        <VBox alignment="CENTER" prefWidth="209">
-            <GameOverPanel fx:id="gameOverPanel" maxWidth="209"/>
-        </VBox>
-    </Group>
+    <Pane fx:id="gamePane">
+        <BorderPane styleClass="gameBoard" fx:id="gameBoard" layoutX="244" layoutY="87">
+            <center>
+                <GridPane fx:id="gamePanel" hgap="1" vgap="1"/>
+            </center>
+        </BorderPane>
+        <GridPane fx:id="brickPanel" vgap="1" hgap="1"/>
+        <Group fx:id="groupNotification" layoutX="256" layoutY="340"/>
+    </Pane>
+    <VBox fx:id="pauseContainer" alignment="CENTER">
+        <PausePanel fx:id="pausePanel"/>
+    </VBox>
+    <VBox fx:id="gameOverContainer" alignment="CENTER">
+        <GameOverPanel fx:id="gameOverPanel"/>
+    </VBox>
     <stylesheets>
         <URL value="@window_style.css"/>
     </stylesheets>
-</Pane>
+</StackPane>
