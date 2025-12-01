@@ -7,13 +7,13 @@
 <StackPane fx:id="rootPane" fx:controller="com.comp2042.ui.GuiController"
       xmlns:fx="http://javafx.com/fxml">
     <Pane fx:id="gamePane">
-        <BorderPane styleClass="gameBoard" fx:id="gameBoard" layoutX="244" layoutY="87">
+        <BorderPane styleClass="gameBoard" fx:id="gameBoard" layoutX="212" layoutY="66">
             <center>
                 <GridPane fx:id="gamePanel" hgap="1" vgap="1"/>
             </center>
         </BorderPane>
         <GridPane fx:id="brickPanel" vgap="1" hgap="1"/>
-        <Group fx:id="groupNotification" layoutX="256" layoutY="340"/>
+        <Group fx:id="groupNotification" layoutX="240" layoutY="340"/>
     </Pane>
     <VBox fx:id="pauseContainer" alignment="CENTER">
         <PausePanel fx:id="pausePanel"/>
