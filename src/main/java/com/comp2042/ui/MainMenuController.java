@@ -1,6 +1,8 @@
 package com.comp2042.ui;
 
 import com.comp2042.logic.GameController;
+import javafx.animation.RotateTransition;
+import javafx.animation.Timeline;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -8,6 +10,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.io.IOException;
 import java.net.URL;
@@ -23,6 +26,9 @@ public class MainMenuController {
     private Button resumeButton;
 
     @FXML
+    private Button settingsButton;
+
+    @FXML
     private StackPane rootPane;
 
     public void setStage(Stage stage) {
@@ -34,6 +40,12 @@ public class MainMenuController {
         updateResumeButtonVisibility();
         AnimatedBackground animatedBackground = new AnimatedBackground(720, 680);
         rootPane.getChildren().addFirst(animatedBackground);
+        
+        // Animate settings gear - slow continuous rotation
+        RotateTransition rotate = new RotateTransition(Duration.seconds(4), settingsButton);
+        rotate.setByAngle(360);
+        rotate.setCycleCount(Timeline.INDEFINITE);
+        rotate.play();
     }
 
     private void updateResumeButtonVisibility() {
@@ -69,6 +81,16 @@ public class MainMenuController {
             stage.setScene(activeGameScene);
             activeGuiController.requestFocus();
         }
+    }
+
+    @FXML
+    private void onLevelsClicked() {
+        // TODO: Implement levels screen
+    }
+
+    @FXML
+    private void onGamemodesClicked() {
+        // TODO: Implement gamemodes screen
     }
 
     @FXML

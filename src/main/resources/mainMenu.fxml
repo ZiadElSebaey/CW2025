@@ -4,23 +4,28 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.geometry.Insets?>
 <?import java.net.URL?>
 
 <StackPane fx:id="rootPane" xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.comp2042.ui.MainMenuController">
-<VBox alignment="CENTER" spacing="40">
-
-    <Label text="TETRIS" styleClass="menu-title"/>
-
-    <VBox alignment="CENTER" spacing="15">
-        <Button text="Play" styleClass="menu-button" onAction="#onPlayClicked"/>
-        <Button fx:id="resumeButton" text="Resume Game" styleClass="menu-button" onAction="#onResumeClicked"/>
-        <Button text="How To Play" styleClass="menu-button" onAction="#onHowToPlayClicked"/>
-        <Button text="Settings" styleClass="menu-button" onAction="#onSettingsClicked"/>
-        <Button text="Quit" styleClass="menu-button" onAction="#onQuitClicked"/>
+    <VBox alignment="CENTER" spacing="40">
+        <Label text="TETRIS" styleClass="menu-title"/>
+        <VBox alignment="CENTER" spacing="15">
+            <Button text="Free Play" styleClass="menu-button" onAction="#onPlayClicked"/>
+            <Button text="Levels" styleClass="menu-button" onAction="#onLevelsClicked"/>
+            <Button text="Gamemodes" styleClass="menu-button" onAction="#onGamemodesClicked"/>
+            <Button fx:id="resumeButton" text="Resume Game" styleClass="menu-button" onAction="#onResumeClicked"/>
+            <Button text="How To Play" styleClass="menu-button" onAction="#onHowToPlayClicked"/>
+            <Button text="Quit" styleClass="menu-button" onAction="#onQuitClicked"/>
+        </VBox>
     </VBox>
-
-    </VBox>
+    <!-- Settings gear icon in bottom-left corner -->
+    <Button fx:id="settingsButton" text="⚙" styleClass="settings-icon" onAction="#onSettingsClicked" StackPane.alignment="BOTTOM_LEFT">
+        <StackPane.margin>
+            <Insets bottom="20" left="20"/>
+        </StackPane.margin>
+    </Button>
     <stylesheets>
         <URL value="@window_style.css"/>
     </stylesheets>
