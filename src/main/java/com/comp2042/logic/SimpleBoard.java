@@ -9,10 +9,10 @@ import com.comp2042.ui.ViewData;
 import java.awt.*;
 
 public class SimpleBoard implements Board {
-    public static final int BOARD_ROWS = 25;
-    public static final int BOARD_COLUMNS = 10;
+    public static final int BOARD_ROWS = 27;
+    public static final int BOARD_COLUMNS = 13;
 
-    private static final int SPAWN_X = 4;
+    private static final int SPAWN_X = 5;
     private static final int SPAWN_Y = 2;
 
     private final int width;

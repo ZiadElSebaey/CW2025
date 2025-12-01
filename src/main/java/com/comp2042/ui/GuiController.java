@@ -1,25 +1,36 @@
 package com.comp2042.ui;
 
-import com.comp2042.logic.*;
+import com.comp2042.logic.DownData;
+import com.comp2042.logic.EventSource;
+import com.comp2042.logic.EventType;
+import com.comp2042.logic.InputEventListener;
+import com.comp2042.logic.MoveEvent;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Group;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
+import javafx.stage.Stage;
 import javafx.util.Duration;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -46,7 +57,22 @@ public class GuiController implements Initializable {
     private GameOverPanel gameOverPanel;
 
     @FXML
+    private PausePanel pausePanel;
+
+    @FXML
     private BorderPane gameBoard;
+
+    @FXML
+    private StackPane rootPane;
+
+    @FXML
+    private VBox pauseContainer;
+
+    @FXML
+    private VBox gameOverContainer;
+
+    @FXML
+    private Pane gamePane;
 
     private Rectangle[][] displayMatrix;
 
@@ -61,6 +87,12 @@ public class GuiController implements Initializable {
 
     private final BooleanProperty isGameOver = new SimpleBooleanProperty();
 
+    private Stage stage;
+
+    public void setStage(Stage stage) {
+        this.stage = stage;
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         URL digitalFontUrl = getClass().getClassLoader().getResource("digital.ttf");
@@ -71,6 +103,58 @@ public class GuiController implements Initializable {
         gamePanel.requestFocus();
         gamePanel.setOnKeyPressed(this::handleKeyPressed);
         gameOverPanel.setVisible(false);
+        gameOverContainer.setVisible(false);
+        pausePanel.setVisible(false);
+        pauseContainer.setVisible(false);
+
+        gameOverPanel.getRestartButton().setOnAction(_ -> newGame(null));
+        gameOverPanel.getMainMenuButton().setOnAction(_ -> returnToMainMenu());
+
+        pausePanel.getResumeButton().setOnAction(_ -> resumeGame());
+        pausePanel.getRestartButton().setOnAction(_ -> newGame(null));
+        pausePanel.getSettingsButton().setOnAction(_ -> openSettingsFromPause());
+        pausePanel.getMainMenuButton().setOnAction(_ -> returnToMainMenu());
+
+        AnimatedBackground animatedBackground = new AnimatedBackground(720, 680);
+        rootPane.getChildren().addFirst(animatedBackground);
+    }
+
+    private void resumeGame() {
+        setPaused(false);
+        pausePanel.setVisible(false);
+        pauseContainer.setVisible(false);
+        gamePanel.requestFocus();
+    }
+
+    private void openSettingsFromPause() {
+        try {
+            URL location = getClass().getClassLoader().getResource("settings.fxml");
+            FXMLLoader fxmlLoader = new FXMLLoader(location);
+            Parent root = fxmlLoader.load();
+            SettingsController settingsController = fxmlLoader.getController();
+            settingsController.setStage(stage);
+            settingsController.setReturnToGame(stage.getScene(), this);
+            Scene scene = new Scene(root, 720, 680);
+            stage.setScene(scene);
+        } catch (IOException ignored) {
+        }
+    }
+
+    private void returnToMainMenu() {
+        if (timeLine != null) {
+            timeLine.stop();
+        }
+        MainMenuController.clearActiveGame();
+        try {
+            URL location = getClass().getClassLoader().getResource("mainMenu.fxml");
+            FXMLLoader fxmlLoader = new FXMLLoader(location);
+            Parent root = fxmlLoader.load();
+            MainMenuController menuController = fxmlLoader.getController();
+            menuController.setStage(stage);
+            Scene scene = new Scene(root, 720, 680);
+            stage.setScene(scene);
+        } catch (IOException ignored) {
+        }
     }
     private void handleKeyPressed(KeyEvent keyEvent) {
         if (!isPause.get() && !isGameOver.get() && eventListener != null) {
@@ -123,7 +207,7 @@ public class GuiController implements Initializable {
 
         timeLine = new Timeline(new KeyFrame(
                 Duration.millis(DROP_INTERVAL_MS),
-                ae -> moveDown(threadMove(EventType.DOWN))
+                _ -> moveDown(threadMove())
         ));
         timeLine.setCycleCount(Timeline.INDEFINITE);
         timeLine.play();
@@ -158,8 +242,8 @@ public class GuiController implements Initializable {
         return new MoveEvent(type, EventSource.USER);
     }
 
-    private MoveEvent threadMove(EventType type) {
-        return new MoveEvent(type, EventSource.THREAD);
+    private MoveEvent threadMove() {
+        return new MoveEvent(EventType.DOWN, EventSource.THREAD);
     }
     private Paint getFillColor(int i) {
         return switch (i) {
@@ -226,12 +310,15 @@ public class GuiController implements Initializable {
         this.eventListener = eventListener;
     }
 
-    public void bindScore(IntegerProperty integerProperty) {
+    @SuppressWarnings("unused")
+    public void bindScore(javafx.beans.property.IntegerProperty scoreProperty) {
     }
 
     public void gameOver() {
         setPaused(true);
+        gamePane.setVisible(false);
         gameOverPanel.setVisible(true);
+        gameOverContainer.setVisible(true);
         isGameOver.set(true);
     }
 
@@ -242,14 +329,17 @@ public class GuiController implements Initializable {
         startNewGame();
     }
     private void startNewGame() {
+        gamePane.setVisible(true);
         gameOverPanel.setVisible(false);
+        gameOverContainer.setVisible(false);
+        pausePanel.setVisible(false);
+        pauseContainer.setVisible(false);
         isGameOver.set(false);
+        setPaused(false);
 
         ViewData newBrickData = eventListener.createNewGame();
         refreshBrick(newBrickData);
         gamePanel.requestFocus();
-
-        setPaused(false);
     }
     private void setPaused(boolean paused) {
         isPause.set(paused);
@@ -273,6 +363,22 @@ public class GuiController implements Initializable {
             return;
         }
 
-        setPaused(!isPause.get());
+        boolean newPauseState = !isPause.get();
+        setPaused(newPauseState);
+        pausePanel.setVisible(newPauseState);
+        pauseContainer.setVisible(newPauseState);
         gamePanel.requestFocus();
-    }}
+    }
+
+    public boolean isPaused() {
+        return isPause.get();
+    }
+
+    public boolean isGameOver() {
+        return isGameOver.get();
+    }
+
+    public void requestFocus() {
+        gamePanel.requestFocus();
+    }
+}

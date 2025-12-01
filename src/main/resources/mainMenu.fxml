@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import java.net.URL?>
+
+<StackPane fx:id="rootPane" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.comp2042.ui.MainMenuController">
+<VBox alignment="CENTER" spacing="40">
+
+    <Label text="TETRIS" styleClass="menu-title"/>
+
+    <VBox alignment="CENTER" spacing="15">
+        <Button text="Play" styleClass="menu-button" onAction="#onPlayClicked"/>
+        <Button fx:id="resumeButton" text="Resume Game" styleClass="menu-button" onAction="#onResumeClicked"/>
+        <Button text="How To Play" styleClass="menu-button" onAction="#onHowToPlayClicked"/>
+        <Button text="Settings" styleClass="menu-button" onAction="#onSettingsClicked"/>
+        <Button text="Quit" styleClass="menu-button" onAction="#onQuitClicked"/>
+    </VBox>
+
+    </VBox>
+    <stylesheets>
+        <URL value="@window_style.css"/>
+    </stylesheets>
+</StackPane>
+
