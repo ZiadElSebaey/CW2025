@@ -1,17 +1,21 @@
 <?import com.comp2042.ui.GameOverPanel?>
 <?import com.comp2042.ui.PausePanel?>
 <?import javafx.scene.Group?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Pos?>
 <?import java.net.URL?>
 <StackPane fx:id="rootPane" fx:controller="com.comp2042.ui.GuiController"
       xmlns:fx="http://javafx.com/fxml">
     <Pane fx:id="gamePane">
+        <Label fx:id="scoreLabel" text="Score: 0" layoutX="20" layoutY="20" styleClass="score-label"/>
+        <Label fx:id="highScoreLabel" text="High Score: 0" layoutX="20" layoutY="55" styleClass="highscore-label"/>
         <BorderPane styleClass="gameBoard" fx:id="gameBoard" layoutX="212" layoutY="66">
             <center>
                 <GridPane fx:id="gamePanel" hgap="1" vgap="1"/>
             </center>
         </BorderPane>
+        <GridPane fx:id="ghostPanel" vgap="1" hgap="1"/>
         <GridPane fx:id="brickPanel" vgap="1" hgap="1"/>
         <Group fx:id="groupNotification" layoutX="240" layoutY="340"/>
     </Pane>

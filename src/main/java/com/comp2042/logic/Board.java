@@ -13,6 +13,7 @@ public interface Board {
     boolean rotateBrick();
 
     boolean spawnNewBrick();
+    
     int[][] getBoardMatrix();
 
     ViewData getViewData();
@@ -24,4 +25,6 @@ public interface Board {
     Score getScore();
 
     void newGame();
+    
+    int hardDrop();
 }

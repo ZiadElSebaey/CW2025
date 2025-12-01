@@ -7,12 +7,15 @@ import javafx.scene.layout.VBox;
 
 public class GameOverPanel extends VBox {
 
-    private Button restartButton;
-    private Button mainMenuButton;
+    private final Button restartButton;
+    private final Button mainMenuButton;
+    private final Label scoreLabel;
+    private final Label highScoreLabel;
+    private final Label newHighScoreLabel;
 
     public GameOverPanel() {
         setAlignment(Pos.CENTER);
-        setSpacing(30);
+        setSpacing(20);
         setMinWidth(450);
         setPrefWidth(450);
         setMaxWidth(500);
@@ -22,13 +25,29 @@ public class GameOverPanel extends VBox {
         gameOverLabel.getStyleClass().add("gameover-title");
         gameOverLabel.setAlignment(Pos.CENTER);
 
+        scoreLabel = new Label("Score: 0");
+        scoreLabel.getStyleClass().add("gameover-score");
+        
+        highScoreLabel = new Label("High Score: 0");
+        highScoreLabel.getStyleClass().add("gameover-highscore");
+        
+        newHighScoreLabel = new Label("NEW HIGH SCORE!");
+        newHighScoreLabel.getStyleClass().add("gameover-new-highscore");
+        newHighScoreLabel.setVisible(false);
+
         restartButton = new Button("Restart");
         restartButton.getStyleClass().add("gameover-button");
 
         mainMenuButton = new Button("Main Menu");
         mainMenuButton.getStyleClass().add("gameover-button");
 
-        getChildren().addAll(gameOverLabel, restartButton, mainMenuButton);
+        getChildren().addAll(gameOverLabel, scoreLabel, highScoreLabel, newHighScoreLabel, restartButton, mainMenuButton);
+    }
+
+    public void showFinalScore(int score, int highScore, boolean isNewHighScore) {
+        scoreLabel.setText("Score: " + score);
+        highScoreLabel.setText("High Score: " + highScore);
+        newHighScoreLabel.setVisible(isNewHighScore);
     }
 
     public Button getRestartButton() {

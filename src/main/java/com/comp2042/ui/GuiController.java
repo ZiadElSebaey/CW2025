@@ -8,6 +8,7 @@ import com.comp2042.logic.MoveEvent;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -16,6 +17,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
@@ -54,6 +56,9 @@ public class GuiController implements Initializable {
     private GridPane brickPanel;
 
     @FXML
+    private GridPane ghostPanel;
+
+    @FXML
     private GameOverPanel gameOverPanel;
 
     @FXML
@@ -74,12 +79,21 @@ public class GuiController implements Initializable {
     @FXML
     private Pane gamePane;
 
-    private Rectangle[][] displayMatrix;
+    @FXML
+    private Label scoreLabel;
 
+    @FXML
+    private Label highScoreLabel;
+
+    private Rectangle[][] displayMatrix;
+    
+    private IntegerProperty currentScoreProperty;
 
     private InputEventListener eventListener;
 
     private Rectangle[][] rectangles;
+    
+    private Rectangle[][] ghostRectangles;
 
     private Timeline timeLine;
 
@@ -99,6 +113,9 @@ public class GuiController implements Initializable {
         if (digitalFontUrl != null) {
             Font.loadFont(digitalFontUrl.toExternalForm(), 38);
         }
+        HighScoreManager.ensureDirectoryExists();
+        highScoreLabel.setText("High Score: " + HighScoreManager.getHighScore());
+        
         gamePanel.setFocusTraversable(true);
         gamePanel.requestFocus();
         gamePanel.setOnKeyPressed(this::handleKeyPressed);
@@ -170,6 +187,9 @@ public class GuiController implements Initializable {
             } else if (isDownKey(keyEvent)) {
                 moveDown(userMove(EventType.DOWN));
                 keyEvent.consume();
+            } else if (keyEvent.getCode() == KeyCode.SPACE) {
+                hardDrop();
+                keyEvent.consume();
             }
         }
 
@@ -193,15 +213,22 @@ public class GuiController implements Initializable {
         }
 
         rectangles = new Rectangle[brick.getBrickData().length][brick.getBrickData()[0].length];
+        ghostRectangles = new Rectangle[brick.getBrickData().length][brick.getBrickData()[0].length];
         for (int i = 0; i < brick.getBrickData().length; i++) {
             for (int j = 0; j < brick.getBrickData()[i].length; j++) {
                 Rectangle rectangle = new Rectangle(BRICK_SIZE, BRICK_SIZE);
                 rectangle.setFill(getFillColor(brick.getBrickData()[i][j]));
                 rectangles[i][j] = rectangle;
                 brickPanel.add(rectangle, j, i);
+                
+                Rectangle ghostRect = new Rectangle(BRICK_SIZE, BRICK_SIZE);
+                ghostRect.setFill(Color.TRANSPARENT);
+                ghostRectangles[i][j] = ghostRect;
+                ghostPanel.add(ghostRect, j, i);
             }
         }
         updateBrickPanelPosition(brick);
+        updateGhostPosition(brick);
 
 
 
@@ -220,6 +247,31 @@ public class GuiController implements Initializable {
 
         brickPanel.setLayoutX(x);
         brickPanel.setLayoutY(y);
+    }
+
+    private void updateGhostPosition(ViewData brick) {
+        double cellSize = ghostPanel.getVgap() + BRICK_SIZE;
+        double x = gameBoard.getLayoutX() + BORDER_WIDTH + brick.getxPosition() * cellSize;
+        double ghostY = gameBoard.getLayoutY() + BORDER_WIDTH
+                + (brick.getGhostY() - HIDDEN_ROWS) * cellSize;
+
+        ghostPanel.setLayoutX(x);
+        ghostPanel.setLayoutY(ghostY);
+
+        for (int i = 0; i < brick.getBrickData().length; i++) {
+            for (int j = 0; j < brick.getBrickData()[i].length; j++) {
+                if (brick.getBrickData()[i][j] != 0) {
+                    ghostRectangles[i][j].setFill(Color.rgb(255, 255, 255, 0.3));
+                    ghostRectangles[i][j].setArcHeight(RECTANGLE_ARC_SIZE);
+                    ghostRectangles[i][j].setArcWidth(RECTANGLE_ARC_SIZE);
+                    ghostRectangles[i][j].setStroke(Color.rgb(255, 255, 255, 0.5));
+                    ghostRectangles[i][j].setStrokeWidth(1);
+                } else {
+                    ghostRectangles[i][j].setFill(Color.TRANSPARENT);
+                    ghostRectangles[i][j].setStroke(Color.TRANSPARENT);
+                }
+            }
+        }
     }
 
     private boolean isLeftKey(KeyEvent event) {
@@ -263,6 +315,7 @@ public class GuiController implements Initializable {
     private void refreshBrick(ViewData brick) {
         if (!isPause.get()) {
             updateBrickPanelPosition(brick);
+            updateGhostPosition(brick);
             for (int i = 0; i < brick.getBrickData().length; i++) {
                 for (int j = 0; j < brick.getBrickData()[i].length; j++) {
                     setRectangleData(brick.getBrickData()[i][j], rectangles[i][j]);
@@ -296,6 +349,17 @@ public class GuiController implements Initializable {
         gamePanel.requestFocus();
     }
 
+    private void hardDrop() {
+        if (!isPause.get()) {
+            DownData downData = eventListener.onHardDropEvent();
+            if (shouldShowScoreNotification(downData)) {
+                showScoreNotification(downData.getClearRow().getScoreBonus());
+            }
+            refreshBrick(downData.getViewData());
+        }
+        gamePanel.requestFocus();
+    }
+
     private boolean shouldShowScoreNotification(DownData downData) {
         return downData.getClearRow() != null && downData.getClearRow().getLinesRemoved() > 0;
     }
@@ -310,13 +374,20 @@ public class GuiController implements Initializable {
         this.eventListener = eventListener;
     }
 
-    @SuppressWarnings("unused")
-    public void bindScore(javafx.beans.property.IntegerProperty scoreProperty) {
+    public void bindScore(IntegerProperty scoreProperty) {
+        this.currentScoreProperty = scoreProperty;
+        scoreLabel.textProperty().bind(scoreProperty.asString("Score: %d"));
     }
 
     public void gameOver() {
         setPaused(true);
         gamePane.setVisible(false);
+        
+        int finalScore = currentScoreProperty != null ? currentScoreProperty.get() : 0;
+        boolean isNewHighScore = HighScoreManager.updateHighScore(finalScore);
+        gameOverPanel.showFinalScore(finalScore, HighScoreManager.getHighScore(), isNewHighScore);
+        highScoreLabel.setText("High Score: " + HighScoreManager.getHighScore());
+        
         gameOverPanel.setVisible(true);
         gameOverContainer.setVisible(true);
         isGameOver.set(true);
