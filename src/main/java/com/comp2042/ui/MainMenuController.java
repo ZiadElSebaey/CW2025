@@ -93,12 +93,21 @@ public class MainMenuController {
 
     @FXML
     private void onPlayClicked() {
+        PlayerNameDialog nameDialog = new PlayerNameDialog(stage);
+        String playerName = nameDialog.getPlayerName();
+        boolean isGuest = nameDialog.isGuest();
+        
+        if (!isGuest && playerName == null) {
+            return;
+        }
+        
         try {
             URL location = getClass().getClassLoader().getResource("gameLayout.fxml");
             FXMLLoader fxmlLoader = new FXMLLoader(location);
             Parent root = fxmlLoader.load();
             GuiController guiController = fxmlLoader.getController();
             guiController.setStage(stage);
+            guiController.setPlayerName(playerName, isGuest);
 
             Scene gameScene = new Scene(root, 720, 680);
             activeGameScene = gameScene;

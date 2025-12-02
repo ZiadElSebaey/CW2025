@@ -12,8 +12,15 @@
       xmlns:fx="http://javafx.com/fxml">
     <Pane fx:id="gamePane">
         <Button fx:id="backButton" text="←" styleClass="back-icon" layoutX="15" layoutY="15"/>
-        <Button fx:id="leaderboardButton" text="🏆" styleClass="trophy-icon" layoutX="15" layoutY="615"/>
-        <VBox layoutX="520" layoutY="80" spacing="20" alignment="CENTER">
+        <VBox layoutX="15" layoutY="280" spacing="10" alignment="CENTER">
+            <VBox fx:id="holdBlockContainer" styleClass="hold-block-container" alignment="CENTER" spacing="10">
+                <Label text="HOLD" styleClass="hold-block-label"/>
+                <StackPane alignment="CENTER" minWidth="70" minHeight="70">
+                    <GridPane fx:id="holdBlockPanel" hgap="1" vgap="1" alignment="CENTER"/>
+                </StackPane>
+            </VBox>
+        </VBox>
+        <VBox layoutX="520" layoutY="30" spacing="20" alignment="CENTER">
             <VBox fx:id="nextBlockContainer" styleClass="next-block-container" alignment="CENTER" spacing="15">
                 <Label text="NEXT" styleClass="next-block-label"/>
                 <StackPane alignment="CENTER" minWidth="90" minHeight="90">
@@ -23,7 +30,10 @@
             <VBox alignment="CENTER" spacing="8" styleClass="stats-container">
                 <Label fx:id="scoreLabel" text="Score: 0" styleClass="score-label"/>
                 <Label fx:id="linesLabel" text="Lines: 0" styleClass="lines-label"/>
-                <Label fx:id="highScoreLabel" text="High Score: 0" styleClass="highscore-label"/>
+                <VBox alignment="CENTER" spacing="2">
+                    <Label fx:id="highScoreLabel" text="High Score: 0" styleClass="highscore-label"/>
+                    <Label fx:id="highScoreHolderLabel" text="" styleClass="highscore-holder-label" visible="false"/>
+                </VBox>
             </VBox>
         </VBox>
         <BorderPane styleClass="gameBoard" fx:id="gameBoard" layoutX="185" layoutY="50">

@@ -10,6 +10,7 @@ public class PausePanel extends VBox {
     private final Button resumeButton;
     private final Button restartButton;
     private final Button settingsButton;
+    private final Button leaderboardButton;
     private final Button mainMenuButton;
 
     public PausePanel() {
@@ -29,10 +30,13 @@ public class PausePanel extends VBox {
         settingsButton = new Button("Settings");
         settingsButton.getStyleClass().add("pause-button");
 
+        leaderboardButton = new Button("Leaderboard");
+        leaderboardButton.getStyleClass().add("pause-button");
+
         mainMenuButton = new Button("Main Menu");
         mainMenuButton.getStyleClass().add("pause-button");
 
-        getChildren().addAll(pauseLabel, resumeButton, restartButton, settingsButton, mainMenuButton);
+        getChildren().addAll(pauseLabel, resumeButton, restartButton, settingsButton, leaderboardButton, mainMenuButton);
     }
 
     public Button getResumeButton() {
@@ -45,6 +49,10 @@ public class PausePanel extends VBox {
 
     public Button getSettingsButton() {
         return settingsButton;
+    }
+
+    public Button getLeaderboardButton() {
+        return leaderboardButton;
     }
 
     public Button getMainMenuButton() {

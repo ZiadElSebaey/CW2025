@@ -88,4 +88,9 @@ public class GameController implements InputEventListener {
         ClearRow clearRow = handleBrickLanded();
         return new DownData(clearRow, board.getViewData());
     }
+    
+    @Override
+    public ViewData onHoldEvent() {
+        return board.holdBrick();
+    }
 }

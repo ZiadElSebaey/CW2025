@@ -26,4 +26,8 @@ public class BrickRotator {
         this.brick = brick;
         this.currentRotation = INITIAL_ROTATION;
     }
+    
+    public Brick getBrick() {
+        return brick;
+    }
 }

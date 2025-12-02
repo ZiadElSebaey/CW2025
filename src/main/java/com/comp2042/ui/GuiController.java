@@ -5,7 +5,9 @@ import com.comp2042.logic.EventSource;
 import com.comp2042.logic.EventType;
 import com.comp2042.logic.InputEventListener;
 import com.comp2042.logic.MoveEvent;
+import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
+import javafx.animation.RotateTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
@@ -85,24 +87,34 @@ public class GuiController implements Initializable {
 
     @FXML
     private Label highScoreLabel;
+    
+    @FXML
+    private Label highScoreHolderLabel;
 
     @FXML
     private Label linesLabel;
 
     @FXML
     private GridPane nextBlockPanel;
+    
+    @FXML
+    private GridPane holdBlockPanel;
+    
+    @FXML
+    private VBox holdBlockContainer;
 
     @FXML
     private javafx.scene.control.Button backButton;
-
-    @FXML
-    private javafx.scene.control.Button leaderboardButton;
 
     private Rectangle[][] displayMatrix;
     private VBox leaderboardContainer;
     private LeaderboardPanel leaderboardPanel;
     
     private Rectangle[][] nextBlockRectangles;
+    
+    private Rectangle[][] holdBlockRectangles;
+    
+    private int[][] previousHoldData;
     
     private IntegerProperty currentScoreProperty;
 
@@ -119,9 +131,17 @@ public class GuiController implements Initializable {
     private final BooleanProperty isGameOver = new SimpleBooleanProperty();
 
     private Stage stage;
+    
+    private String playerName;
+    private boolean isGuest;
 
     public void setStage(Stage stage) {
         this.stage = stage;
+    }
+    
+    public void setPlayerName(String name, boolean guest) {
+        this.playerName = name;
+        this.isGuest = guest;
     }
 
     @Override
@@ -131,7 +151,20 @@ public class GuiController implements Initializable {
             Font.loadFont(digitalFontUrl.toExternalForm(), 38);
         }
         HighScoreManager.ensureDirectoryExists();
-        highScoreLabel.setText("High Score: " + HighScoreManager.getHighScore());
+        LeaderboardManager.ensureDirectoryExists();
+        
+        int highScore = HighScoreManager.getHighScore();
+        String highScoreHolder = HighScoreManager.getHighScoreHolder();
+        highScoreLabel.setText("High Score: " + highScore);
+        if (highScoreHolder != null && !highScoreHolder.isEmpty()) {
+            String capitalizedName = highScoreHolder.substring(0, 1).toUpperCase() + 
+                                    (highScoreHolder.length() > 1 ? highScoreHolder.substring(1).toLowerCase() : "");
+            highScoreHolderLabel.setText(capitalizedName);
+            highScoreHolderLabel.setVisible(true);
+            animateHighScoreHolder();
+        } else {
+            highScoreHolderLabel.setVisible(false);
+        }
         
         gamePanel.setFocusTraversable(true);
         gamePanel.requestFocus();
@@ -147,23 +180,35 @@ public class GuiController implements Initializable {
         pausePanel.getResumeButton().setOnAction(_ -> resumeGame());
         pausePanel.getRestartButton().setOnAction(_ -> newGame(null));
         pausePanel.getSettingsButton().setOnAction(_ -> openSettingsFromPause());
+        pausePanel.getLeaderboardButton().setOnAction(_ -> showLeaderboard());
         pausePanel.getMainMenuButton().setOnAction(_ -> returnToMainMenu());
 
         AnimatedBackground animatedBackground = new AnimatedBackground(720, 680);
         rootPane.getChildren().addFirst(animatedBackground);
 
-        ScaleTransition pulse = new ScaleTransition(Duration.seconds(1), leaderboardButton);
-        pulse.setFromX(1.0);
-        pulse.setFromY(1.0);
-        pulse.setToX(1.15);
-        pulse.setToY(1.15);
-        pulse.setCycleCount(Timeline.INDEFINITE);
-        pulse.setAutoReverse(true);
-        pulse.play();
-
-        leaderboardButton.setOnAction(_ -> showLeaderboard());
         backButton.setOnAction(_ -> returnToMainMenu());
         setupLeaderboardPanel();
+        setupHoldBlockAnimation();
+    }
+    
+    private void setupHoldBlockAnimation() {
+        if (holdBlockContainer != null) {
+            ScaleTransition pulse = new ScaleTransition(Duration.seconds(1.5), holdBlockContainer);
+            pulse.setFromX(1.0);
+            pulse.setFromY(1.0);
+            pulse.setToX(1.05);
+            pulse.setToY(1.05);
+            pulse.setCycleCount(Timeline.INDEFINITE);
+            pulse.setAutoReverse(true);
+            pulse.play();
+            
+            FadeTransition glow = new FadeTransition(Duration.seconds(1.5), holdBlockContainer);
+            glow.setFromValue(0.9);
+            glow.setToValue(1.0);
+            glow.setCycleCount(Timeline.INDEFINITE);
+            glow.setAutoReverse(true);
+            glow.play();
+        }
     }
 
     private void setupLeaderboardPanel() {
@@ -221,7 +266,12 @@ public class GuiController implements Initializable {
         }
     }
     private void handleKeyPressed(KeyEvent keyEvent) {
-        if (!isPause.get() && !isGameOver.get() && eventListener != null) {
+        if (isGameOver.get()) {
+            keyEvent.consume();
+            return;
+        }
+        
+        if (!isPause.get() && eventListener != null) {
             if (isLeftKey(keyEvent)) {
                 refreshBrick(eventListener.onLeftEvent(userMove(EventType.LEFT)));
                 keyEvent.consume();
@@ -237,13 +287,18 @@ public class GuiController implements Initializable {
             } else if (keyEvent.getCode() == KeyCode.SPACE) {
                 hardDrop();
                 keyEvent.consume();
+            } else if (keyEvent.getCode() == KeyCode.H) {
+                holdBrick();
+                keyEvent.consume();
             }
         }
-
-        if (keyEvent.getCode() == KeyCode.N) {
-            newGame(null);
-        } else if (keyEvent.getCode() == KeyCode.ESCAPE) {
-            pauseGame(null);
+        
+        if (!isGameOver.get()) {
+            if (keyEvent.getCode() == KeyCode.N) {
+                newGame(null);
+            } else if (keyEvent.getCode() == KeyCode.ESCAPE) {
+                pauseGame(null);
+            }
         }
     }
 
@@ -277,6 +332,7 @@ public class GuiController implements Initializable {
         updateBrickPanelPosition(brick);
         updateGhostPosition(brick);
         initNextBlockPanel(brick);
+        initHoldBlockPanel(brick);
 
         timeLine = new Timeline(new KeyFrame(
                 Duration.millis(DROP_INTERVAL_MS),
@@ -306,15 +362,40 @@ public class GuiController implements Initializable {
 
         for (int i = 0; i < brick.getBrickData().length; i++) {
             for (int j = 0; j < brick.getBrickData()[i].length; j++) {
+                final int row = i;
+                final int col = j;
+                Rectangle ghostRect = ghostRectangles[i][j];
+                boolean wasTransparent = ghostRect.getFill().equals(Color.TRANSPARENT);
+                
                 if (brick.getBrickData()[i][j] != 0) {
-                    ghostRectangles[i][j].setFill(Color.rgb(255, 255, 255, 0.3));
-                    ghostRectangles[i][j].setArcHeight(RECTANGLE_ARC_SIZE);
-                    ghostRectangles[i][j].setArcWidth(RECTANGLE_ARC_SIZE);
-                    ghostRectangles[i][j].setStroke(Color.rgb(255, 255, 255, 0.5));
-                    ghostRectangles[i][j].setStrokeWidth(1);
+                    ghostRect.setFill(Color.rgb(255, 255, 255, 0.3));
+                    ghostRect.setArcHeight(RECTANGLE_ARC_SIZE);
+                    ghostRect.setArcWidth(RECTANGLE_ARC_SIZE);
+                    ghostRect.setStroke(Color.rgb(255, 255, 255, 0.5));
+                    ghostRect.setStrokeWidth(1);
+                    
+                    if (wasTransparent) {
+                        ghostRect.setOpacity(0.0);
+                        FadeTransition fadeIn = new FadeTransition(Duration.millis(200), ghostRect);
+                        fadeIn.setFromValue(0.0);
+                        fadeIn.setToValue(1.0);
+                        fadeIn.play();
+                    }
                 } else {
-                    ghostRectangles[i][j].setFill(Color.TRANSPARENT);
-                    ghostRectangles[i][j].setStroke(Color.TRANSPARENT);
+                    if (!wasTransparent) {
+                        FadeTransition fadeOut = new FadeTransition(Duration.millis(150), ghostRect);
+                        fadeOut.setFromValue(ghostRect.getOpacity());
+                        fadeOut.setToValue(0.0);
+                        fadeOut.setOnFinished(_ -> {
+                            ghostRectangles[row][col].setFill(Color.TRANSPARENT);
+                            ghostRectangles[row][col].setStroke(Color.TRANSPARENT);
+                            ghostRectangles[row][col].setOpacity(1.0);
+                        });
+                        fadeOut.play();
+                    } else {
+                        ghostRect.setFill(Color.TRANSPARENT);
+                        ghostRect.setStroke(Color.TRANSPARENT);
+                    }
                 }
             }
         }
@@ -345,6 +426,108 @@ public class GuiController implements Initializable {
                     nextBlockRectangles[i][j].setFill(Color.TRANSPARENT);
                 }
             }
+        }
+    }
+    
+    private void initHoldBlockPanel(ViewData brick) {
+        int maxSize = 4;
+        holdBlockRectangles = new Rectangle[maxSize][maxSize];
+        previousHoldData = null;
+        for (int i = 0; i < maxSize; i++) {
+            for (int j = 0; j < maxSize; j++) {
+                Rectangle rect = new Rectangle(BRICK_SIZE, BRICK_SIZE);
+                rect.setArcHeight(RECTANGLE_ARC_SIZE);
+                rect.setArcWidth(RECTANGLE_ARC_SIZE);
+                rect.setFill(Color.TRANSPARENT);
+                holdBlockRectangles[i][j] = rect;
+                holdBlockPanel.add(rect, j, i);
+            }
+        }
+        updateHoldBlock(brick);
+    }
+    
+    private void updateHoldBlock(ViewData brick) {
+        int[][] holdData = brick.getHoldBrickData();
+        boolean holdChanged = false;
+        
+        if (previousHoldData == null && holdData != null) {
+            holdChanged = true;
+        } else if (previousHoldData != null && holdData != null) {
+            if (previousHoldData.length != holdData.length || 
+                (holdData.length > 0 && previousHoldData.length > 0 && 
+                 (previousHoldData[0].length != holdData[0].length))) {
+                holdChanged = true;
+            } else {
+                for (int i = 0; i < holdData.length && !holdChanged; i++) {
+                    for (int j = 0; j < holdData[i].length && !holdChanged; j++) {
+                        int prevVal = (i < previousHoldData.length && j < previousHoldData[i].length) ? previousHoldData[i][j] : 0;
+                        int currVal = holdData[i][j];
+                        if (prevVal != currVal) {
+                            holdChanged = true;
+                        }
+                    }
+                }
+            }
+        } else if (previousHoldData != null && holdData == null) {
+            holdChanged = true;
+        }
+        
+        for (int i = 0; i < holdBlockRectangles.length; i++) {
+            for (int j = 0; j < holdBlockRectangles[i].length; j++) {
+                if (holdData != null && i < holdData.length && j < holdData[i].length && holdData[i][j] != 0) {
+                    holdBlockRectangles[i][j].setFill(getFillColor(holdData[i][j]));
+                } else {
+                    holdBlockRectangles[i][j].setFill(Color.TRANSPARENT);
+                }
+            }
+        }
+        
+        if (holdChanged && holdData != null) {
+            previousHoldData = new int[holdData.length][];
+            for (int i = 0; i < holdData.length; i++) {
+                previousHoldData[i] = holdData[i].clone();
+            }
+            spinHoldBlock();
+        } else if (previousHoldData == null) {
+            previousHoldData = holdData != null ? new int[holdData.length][] : null;
+            if (previousHoldData != null) {
+                for (int i = 0; i < holdData.length; i++) {
+                    previousHoldData[i] = holdData[i].clone();
+                }
+            }
+        }
+    }
+    
+    private void holdBrick() {
+        if (eventListener != null) {
+            ViewData newData = eventListener.onHoldEvent();
+            refreshBrick(newData);
+            updateHoldBlock(newData);
+        }
+    }
+    
+    private void spinHoldBlock() {
+        if (holdBlockContainer != null) {
+            holdBlockContainer.setRotate(0);
+            
+            RotateTransition spin = new RotateTransition(Duration.seconds(0.3), holdBlockContainer);
+            spin.setFromAngle(0);
+            spin.setToAngle(180);
+            spin.setCycleCount(1);
+            spin.setAutoReverse(false);
+            spin.setOnFinished(_ -> {
+                holdBlockContainer.setRotate(0);
+            });
+            spin.play();
+            
+            ScaleTransition bounce = new ScaleTransition(Duration.seconds(0.15), holdBlockContainer);
+            bounce.setFromX(1.0);
+            bounce.setFromY(1.0);
+            bounce.setToX(1.15);
+            bounce.setToY(1.15);
+            bounce.setCycleCount(2);
+            bounce.setAutoReverse(true);
+            bounce.play();
         }
     }
 
@@ -391,6 +574,7 @@ public class GuiController implements Initializable {
             updateBrickPanelPosition(brick);
             updateGhostPosition(brick);
             updateNextBlock(brick);
+            updateHoldBlock(brick);
             for (int i = 0; i < brick.getBrickData().length; i++) {
                 for (int j = 0; j < brick.getBrickData()[i].length; j++) {
                     setRectangleData(brick.getBrickData()[i][j], rectangles[i][j]);
@@ -484,21 +668,54 @@ public class GuiController implements Initializable {
         gamePane.setVisible(false);
         
         int finalScore = currentScoreProperty != null ? currentScoreProperty.get() : 0;
-        boolean isNewHighScore = HighScoreManager.updateHighScore(finalScore);
-        gameOverPanel.showFinalScore(finalScore, HighScoreManager.getHighScore(), isNewHighScore);
-        highScoreLabel.setText("High Score: " + HighScoreManager.getHighScore());
+        boolean isNewHighScore = false;
+        if (!isGuest && playerName != null && !playerName.isEmpty()) {
+            isNewHighScore = HighScoreManager.updateHighScore(finalScore, playerName);
+        }
+        
+        int highScore = HighScoreManager.getHighScore();
+        String highScoreHolder = HighScoreManager.getHighScoreHolder();
+        highScoreLabel.setText("High Score: " + highScore);
+        if (highScoreHolder != null && !highScoreHolder.isEmpty()) {
+            String capitalizedName = highScoreHolder.substring(0, 1).toUpperCase() + 
+                                    (highScoreHolder.length() > 1 ? highScoreHolder.substring(1).toLowerCase() : "");
+            highScoreHolderLabel.setText(capitalizedName);
+            highScoreHolderLabel.setVisible(true);
+            animateHighScoreHolder();
+        } else {
+            highScoreHolderLabel.setVisible(false);
+        }
+        
+        gameOverPanel.showFinalScore(finalScore, highScore, isNewHighScore, playerName, isGuest);
         
         gameOverPanel.setVisible(true);
         gameOverContainer.setVisible(true);
         isGameOver.set(true);
+        
+        gamePanel.setFocusTraversable(false);
+        gamePanel.setDisable(true);
     }
 
     public void newGame(ActionEvent actionEvent) {
         if (actionEvent != null) {
             actionEvent.consume();
         }
+        requestPlayerNameAndStart();
+    }
+    
+    private void requestPlayerNameAndStart() {
+        PlayerNameDialog nameDialog = new PlayerNameDialog(stage);
+        String name = nameDialog.getPlayerName();
+        boolean guest = nameDialog.isGuest();
+        
+        if (!guest && name == null) {
+            return;
+        }
+        
+        setPlayerName(name, guest);
         startNewGame();
     }
+    
     private void startNewGame() {
         gamePane.setVisible(true);
         gameOverPanel.setVisible(false);
@@ -507,6 +724,9 @@ public class GuiController implements Initializable {
         pauseContainer.setVisible(false);
         isGameOver.set(false);
         setPaused(false);
+        
+        gamePanel.setFocusTraversable(true);
+        gamePanel.setDisable(false);
 
         ViewData newBrickData = eventListener.createNewGame();
         refreshBrick(newBrickData);
@@ -538,11 +758,37 @@ public class GuiController implements Initializable {
         setPaused(newPauseState);
         pausePanel.setVisible(newPauseState);
         pauseContainer.setVisible(newPauseState);
+        
+        if (newPauseState) {
+            positionPauseMenu();
+        }
+        
         gamePanel.requestFocus();
     }
 
     public boolean isPaused() {
         return isPause.get();
+    }
+    
+    private void positionPauseMenu() {
+        gameBoard.applyCss();
+        gameBoard.layout();
+        
+        double gameBoardX = gameBoard.getLayoutX();
+        double gameBoardY = gameBoard.getLayoutY();
+        double gameBoardWidth = gameBoard.getWidth() > 0 ? gameBoard.getWidth() : 276;
+        double gameBoardHeight = gameBoard.getHeight() > 0 ? gameBoard.getHeight() : 556;
+        
+        double gameBoardCenterX = gameBoardX + gameBoardWidth / 2;
+        double gameBoardCenterY = gameBoardY + gameBoardHeight / 2;
+        double rootCenterX = rootPane.getWidth() > 0 ? rootPane.getWidth() / 2 : 360;
+        double rootCenterY = rootPane.getHeight() > 0 ? rootPane.getHeight() / 2 : 340;
+        
+        double translateX = gameBoardCenterX - rootCenterX + 5;
+        double translateY = gameBoardCenterY - rootCenterY - 10;
+        
+        pauseContainer.setTranslateX(translateX);
+        pauseContainer.setTranslateY(translateY);
     }
 
     public boolean isGameOver() {
@@ -551,5 +797,25 @@ public class GuiController implements Initializable {
 
     public void requestFocus() {
         gamePanel.requestFocus();
+    }
+    
+    private void animateHighScoreHolder() {
+        if (highScoreHolderLabel != null && highScoreHolderLabel.isVisible()) {
+            ScaleTransition pulse = new ScaleTransition(Duration.seconds(1.2), highScoreHolderLabel);
+            pulse.setFromX(1.0);
+            pulse.setFromY(1.0);
+            pulse.setToX(1.1);
+            pulse.setToY(1.1);
+            pulse.setCycleCount(Timeline.INDEFINITE);
+            pulse.setAutoReverse(true);
+            pulse.play();
+            
+            FadeTransition glow = new FadeTransition(Duration.seconds(1.2), highScoreHolderLabel);
+            glow.setFromValue(0.8);
+            glow.setToValue(1.0);
+            glow.setCycleCount(Timeline.INDEFINITE);
+            glow.setAutoReverse(true);
+            glow.play();
+        }
     }
 }

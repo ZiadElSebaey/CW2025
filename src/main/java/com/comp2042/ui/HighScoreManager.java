@@ -7,6 +7,7 @@ public final class HighScoreManager {
 
     private static final String HIGH_SCORE_FILE = "highscore.dat";
     private static int highScore = 0;
+    private static String highScoreHolder = null;
 
     static {
         loadHighScore();
@@ -17,10 +18,19 @@ public final class HighScoreManager {
     public static int getHighScore() {
         return highScore;
     }
+    
+    public static String getHighScoreHolder() {
+        return highScoreHolder;
+    }
 
-    public static boolean updateHighScore(int score) {
+    public static boolean updateHighScore(int score, String playerName) {
+        if (playerName == null || playerName.isEmpty()) {
+            return false;
+        }
+        
         if (score > highScore) {
             highScore = score;
+            highScoreHolder = playerName;
             saveHighScore();
             return true;
         }
@@ -32,7 +42,13 @@ public final class HighScoreManager {
             Path path = getHighScorePath();
             if (Files.exists(path)) {
                 String content = Files.readString(path).trim();
-                highScore = Integer.parseInt(content);
+                String[] parts = content.split("\\|");
+                if (parts.length >= 1) {
+                    highScore = Integer.parseInt(parts[0]);
+                }
+                if (parts.length >= 2 && !parts[1].isEmpty()) {
+                    highScoreHolder = parts[1];
+                }
             }
         } catch (IOException | NumberFormatException ignored) {
         }
@@ -41,7 +57,8 @@ public final class HighScoreManager {
     private static void saveHighScore() {
         try {
             Path path = getHighScorePath();
-            Files.writeString(path, String.valueOf(highScore));
+            String content = highScore + "|" + (highScoreHolder != null ? highScoreHolder : "");
+            Files.writeString(path, content);
         } catch (IOException ignored) {
         }
     }
@@ -59,6 +76,12 @@ public final class HighScoreManager {
             }
         } catch (IOException ignored) {
         }
+    }
+    
+    public static void resetHighScore() {
+        highScore = 0;
+        highScoreHolder = null;
+        saveHighScore();
     }
 }
 

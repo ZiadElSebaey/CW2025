@@ -280,6 +280,37 @@
                 dropshadow(gaussian, rgba(255, 150, 0, 0.6), 30, 0.4, 0, 0);
 }
 
+.gameover-highscore-holder {
+    -fx-font-family: 'Frozenland';
+    -fx-font-size: 32px;
+    -fx-text-fill: #a0e8ff;
+    -fx-effect: dropshadow(gaussian, rgba(160, 232, 255, 0.8), 15, 0.5, 0, 0),
+                dropshadow(gaussian, rgba(100, 200, 255, 0.6), 25, 0.4, 0, 0);
+}
+
+.highscore-holder-label {
+    -fx-font-family: 'Frozenland';
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #b794f6;
+    -fx-effect: dropshadow(gaussian, rgba(183, 148, 246, 0.9), 15, 0.6, 0, 0),
+                dropshadow(gaussian, rgba(139, 92, 246, 0.8), 25, 0.5, 0, 0),
+                dropshadow(gaussian, rgba(124, 58, 237, 0.7), 35, 0.4, 0, 0),
+                innershadow(gaussian, rgba(183, 148, 246, 0.5), 8, 0.3, 0, 0);
+}
+
+.gameover-highscore-holder {
+    -fx-font-family: 'Frozenland';
+    -fx-font-size: 36px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #b794f6;
+    -fx-effect: dropshadow(gaussian, rgba(183, 148, 246, 0.9), 20, 0.7, 0, 0),
+                dropshadow(gaussian, rgba(139, 92, 246, 0.8), 30, 0.6, 0, 0),
+                dropshadow(gaussian, rgba(124, 58, 237, 0.7), 40, 0.5, 0, 0),
+                dropshadow(gaussian, rgba(109, 40, 217, 0.6), 50, 0.4, 0, 0),
+                innershadow(gaussian, rgba(183, 148, 246, 0.5), 10, 0.4, 0, 0);
+}
+
 .gameover-new-highscore {
     -fx-font-family: 'Frozenland';
     -fx-font-size: 48px;
@@ -310,6 +341,23 @@
 .next-block-label {
     -fx-font-family: 'Frozenland';
     -fx-font-size: 26px;
+    -fx-text-fill: #a0e8ff;
+    -fx-effect: dropshadow(gaussian, rgba(80, 200, 255, 0.6), 10, 0.4, 0, 0);
+}
+
+.hold-block-container {
+    -fx-background-color: rgba(20, 60, 90, 0.6);
+    -fx-background-radius: 12;
+    -fx-padding: 10 18 10 18;
+    -fx-border-color: rgba(150, 220, 255, 0.4);
+    -fx-border-width: 2;
+    -fx-border-radius: 12;
+    -fx-effect: dropshadow(gaussian, rgba(80, 180, 255, 0.3), 12, 0.3, 0, 0);
+}
+
+.hold-block-label {
+    -fx-font-family: 'Frozenland';
+    -fx-font-size: 22px;
     -fx-text-fill: #a0e8ff;
     -fx-effect: dropshadow(gaussian, rgba(80, 200, 255, 0.6), 10, 0.4, 0, 0);
 }
