@@ -92,7 +92,15 @@ public class GuiController implements Initializable {
     @FXML
     private GridPane nextBlockPanel;
 
+    @FXML
+    private javafx.scene.control.Button backButton;
+
+    @FXML
+    private javafx.scene.control.Button leaderboardButton;
+
     private Rectangle[][] displayMatrix;
+    private VBox leaderboardContainer;
+    private LeaderboardPanel leaderboardPanel;
     
     private Rectangle[][] nextBlockRectangles;
     
@@ -143,6 +151,36 @@ public class GuiController implements Initializable {
 
         AnimatedBackground animatedBackground = new AnimatedBackground(720, 680);
         rootPane.getChildren().addFirst(animatedBackground);
+
+        ScaleTransition pulse = new ScaleTransition(Duration.seconds(1), leaderboardButton);
+        pulse.setFromX(1.0);
+        pulse.setFromY(1.0);
+        pulse.setToX(1.15);
+        pulse.setToY(1.15);
+        pulse.setCycleCount(Timeline.INDEFINITE);
+        pulse.setAutoReverse(true);
+        pulse.play();
+
+        leaderboardButton.setOnAction(_ -> showLeaderboard());
+        backButton.setOnAction(_ -> returnToMainMenu());
+        setupLeaderboardPanel();
+    }
+
+    private void setupLeaderboardPanel() {
+        leaderboardPanel = new LeaderboardPanel();
+        leaderboardContainer = new VBox(leaderboardPanel);
+        leaderboardContainer.setAlignment(javafx.geometry.Pos.CENTER);
+        leaderboardContainer.setVisible(false);
+        leaderboardPanel.getCloseButton().setOnAction(_ -> {
+            leaderboardContainer.setVisible(false);
+            gamePanel.requestFocus();
+        });
+        rootPane.getChildren().add(leaderboardContainer);
+    }
+
+    private void showLeaderboard() {
+        leaderboardPanel.refreshEntries();
+        leaderboardContainer.setVisible(true);
     }
 
     private void resumeGame() {

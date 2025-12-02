@@ -9,6 +9,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -29,7 +30,16 @@ public class MainMenuController {
     private Button settingsButton;
 
     @FXML
+    private Button leaderboardButton;
+
+    @FXML
+    private VBox creatorPanel;
+
+    @FXML
     private StackPane rootPane;
+
+    private VBox leaderboardContainer;
+    private LeaderboardPanel leaderboardPanel;
 
     public void setStage(Stage stage) {
         this.stage = stage;
@@ -41,11 +51,36 @@ public class MainMenuController {
         AnimatedBackground animatedBackground = new AnimatedBackground(720, 680);
         rootPane.getChildren().addFirst(animatedBackground);
         
-        // Animate settings gear - slow continuous rotation
         RotateTransition rotate = new RotateTransition(Duration.seconds(4), settingsButton);
         rotate.setByAngle(360);
         rotate.setCycleCount(Timeline.INDEFINITE);
         rotate.play();
+
+        javafx.animation.ScaleTransition pulse = new javafx.animation.ScaleTransition(Duration.seconds(1), leaderboardButton);
+        pulse.setFromX(1.0);
+        pulse.setFromY(1.0);
+        pulse.setToX(1.15);
+        pulse.setToY(1.15);
+        pulse.setCycleCount(Timeline.INDEFINITE);
+        pulse.setAutoReverse(true);
+        pulse.play();
+
+        javafx.animation.TranslateTransition floatUp = new javafx.animation.TranslateTransition(Duration.seconds(2), creatorPanel);
+        floatUp.setByY(-10);
+        floatUp.setCycleCount(Timeline.INDEFINITE);
+        floatUp.setAutoReverse(true);
+        floatUp.play();
+
+        setupLeaderboardPanel();
+    }
+
+    private void setupLeaderboardPanel() {
+        leaderboardPanel = new LeaderboardPanel();
+        leaderboardContainer = new VBox(leaderboardPanel);
+        leaderboardContainer.setAlignment(javafx.geometry.Pos.CENTER);
+        leaderboardContainer.setVisible(false);
+        leaderboardPanel.getCloseButton().setOnAction(_ -> leaderboardContainer.setVisible(false));
+        rootPane.getChildren().add(leaderboardContainer);
     }
 
     private void updateResumeButtonVisibility() {
@@ -85,12 +120,10 @@ public class MainMenuController {
 
     @FXML
     private void onLevelsClicked() {
-        // TODO: Implement levels screen
     }
 
     @FXML
     private void onGamemodesClicked() {
-        // TODO: Implement gamemodes screen
     }
 
     @FXML
@@ -101,6 +134,12 @@ public class MainMenuController {
     @FXML
     private void onSettingsClicked() {
         loadScene("settings.fxml");
+    }
+
+    @FXML
+    private void onLeaderboardClicked() {
+        leaderboardPanel.refreshEntries();
+        leaderboardContainer.setVisible(true);
     }
 
     private void loadScene(String fxmlFile) {
