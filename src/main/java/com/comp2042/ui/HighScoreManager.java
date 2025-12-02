@@ -28,13 +28,17 @@ public final class HighScoreManager {
             return false;
         }
         
+        boolean updated = false;
         if (score > highScore) {
             highScore = score;
             highScoreHolder = playerName;
             saveHighScore();
-            return true;
+            updated = true;
+        } else if (highScoreHolder != null && highScoreHolder.equalsIgnoreCase(playerName) && score == highScore) {
+            highScoreHolder = playerName;
+            saveHighScore();
         }
-        return false;
+        return updated;
     }
 
     private static void loadHighScore() {

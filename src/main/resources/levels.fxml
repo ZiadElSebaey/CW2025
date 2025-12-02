@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.VBox?>
+<?import java.net.URL?>
+
+<StackPane xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.comp2042.ui.LevelsController">
+    <VBox alignment="CENTER" spacing="25">
+        <Label text="LEVELS" styleClass="menu-title"/>
+        <GridPane fx:id="levelsGrid" alignment="CENTER"/>
+        <Button fx:id="backButton" text="Back" styleClass="menu-button"/>
+    </VBox>
+    <stylesheets>
+        <URL value="@window_style.css"/>
+    </stylesheets>
+</StackPane>
+

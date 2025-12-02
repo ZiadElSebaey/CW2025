@@ -7,8 +7,8 @@ import com.comp2042.logic.InputEventListener;
 import com.comp2042.logic.MoveEvent;
 import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
-import javafx.animation.RotateTransition;
 import javafx.animation.ScaleTransition;
+import javafx.animation.TranslateTransition;
 import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -42,12 +42,11 @@ import java.util.ResourceBundle;
 public class GuiController implements Initializable {
 
     private static final int BRICK_SIZE = 20;
-    private static final int DROP_INTERVAL_MS = 400;
+    private static final int DEFAULT_DROP_INTERVAL_MS = 400;
     private static final int BRICK_PANEL_Y_OFFSET = -20;
     private static final int HIDDEN_ROWS = 2;
     private static final int BOARD_PADDING = 8;
     private static final int RECTANGLE_ARC_SIZE = 9;
-
 
     @FXML
     private GridPane gamePanel;
@@ -93,6 +92,9 @@ public class GuiController implements Initializable {
 
     @FXML
     private Label linesLabel;
+    
+    @FXML
+    private VBox rightPanel;
 
     @FXML
     private GridPane nextBlockPanel;
@@ -134,6 +136,10 @@ public class GuiController implements Initializable {
     
     private String playerName;
     private boolean isGuest;
+    private com.comp2042.logic.Level currentLevel;
+    private int tripleClearsCount;
+    private long levelStartTime;
+    private int dropIntervalMs = DEFAULT_DROP_INTERVAL_MS;
 
     public void setStage(Stage stage) {
         this.stage = stage;
@@ -142,6 +148,41 @@ public class GuiController implements Initializable {
     public void setPlayerName(String name, boolean guest) {
         this.playerName = name;
         this.isGuest = guest;
+    }
+    
+    public void setLevel(com.comp2042.logic.Level level) {
+        this.currentLevel = level;
+        if (level != null) {
+            this.dropIntervalMs = level.getDropSpeed();
+            this.tripleClearsCount = 0;
+            this.levelStartTime = System.currentTimeMillis();
+            highScoreLabel.setVisible(false);
+            highScoreHolderLabel.setVisible(false);
+            updateLevelObjectiveLabel();
+            if (rightPanel != null) {
+                rightPanel.setLayoutX(500);
+            }
+        } else {
+            this.dropIntervalMs = DEFAULT_DROP_INTERVAL_MS;
+            highScoreLabel.setVisible(true);
+            if (HighScoreManager.getHighScoreHolder() != null && !HighScoreManager.getHighScoreHolder().isEmpty()) {
+                highScoreHolderLabel.setVisible(true);
+            }
+            if (rightPanel != null) {
+                rightPanel.setLayoutX(520);
+            }
+        }
+    }
+    
+    private void updateLevelObjectiveLabel() {
+        if (currentLevel == null || highScoreLabel == null) {
+            return;
+        }
+        
+        String objectiveText = "Objective: " + currentLevel.getObjective();
+        highScoreLabel.setText(objectiveText);
+        highScoreLabel.setVisible(true);
+        highScoreLabel.setWrapText(false);
     }
 
     @Override
@@ -176,6 +217,7 @@ public class GuiController implements Initializable {
 
         gameOverPanel.getRestartButton().setOnAction(_ -> newGame(null));
         gameOverPanel.getMainMenuButton().setOnAction(_ -> returnToMainMenu());
+        gameOverPanel.getLeaderboardButton().setOnAction(_ -> showLeaderboard());
 
         pausePanel.getResumeButton().setOnAction(_ -> resumeGame());
         pausePanel.getRestartButton().setOnAction(_ -> newGame(null));
@@ -335,7 +377,7 @@ public class GuiController implements Initializable {
         initHoldBlockPanel(brick);
 
         timeLine = new Timeline(new KeyFrame(
-                Duration.millis(DROP_INTERVAL_MS),
+                Duration.millis(dropIntervalMs),
                 _ -> moveDown(threadMove())
         ));
         timeLine.setCycleCount(Timeline.INDEFINITE);
@@ -376,14 +418,14 @@ public class GuiController implements Initializable {
                     
                     if (wasTransparent) {
                         ghostRect.setOpacity(0.0);
-                        FadeTransition fadeIn = new FadeTransition(Duration.millis(200), ghostRect);
+                        FadeTransition fadeIn = new FadeTransition(Duration.millis(80), ghostRect);
                         fadeIn.setFromValue(0.0);
                         fadeIn.setToValue(1.0);
                         fadeIn.play();
                     }
                 } else {
                     if (!wasTransparent) {
-                        FadeTransition fadeOut = new FadeTransition(Duration.millis(150), ghostRect);
+                        FadeTransition fadeOut = new FadeTransition(Duration.millis(60), ghostRect);
                         fadeOut.setFromValue(ghostRect.getOpacity());
                         fadeOut.setToValue(0.0);
                         fadeOut.setOnFinished(_ -> {
@@ -508,26 +550,52 @@ public class GuiController implements Initializable {
     
     private void spinHoldBlock() {
         if (holdBlockContainer != null) {
-            holdBlockContainer.setRotate(0);
+            holdBlockContainer.setScaleX(1.0);
+            holdBlockContainer.setScaleY(1.0);
+            holdBlockContainer.setTranslateX(0);
+            holdBlockContainer.setTranslateY(0);
             
-            RotateTransition spin = new RotateTransition(Duration.seconds(0.3), holdBlockContainer);
-            spin.setFromAngle(0);
-            spin.setToAngle(180);
-            spin.setCycleCount(1);
-            spin.setAutoReverse(false);
-            spin.setOnFinished(_ -> {
-                holdBlockContainer.setRotate(0);
+            ScaleTransition scaleUp = new ScaleTransition(Duration.millis(100), holdBlockContainer);
+            scaleUp.setFromX(1.0);
+            scaleUp.setFromY(1.0);
+            scaleUp.setToX(1.4);
+            scaleUp.setToY(1.4);
+            scaleUp.setCycleCount(1);
+            
+            ScaleTransition scaleDown = new ScaleTransition(Duration.millis(150), holdBlockContainer);
+            scaleDown.setFromX(1.4);
+            scaleDown.setFromY(1.4);
+            scaleDown.setToX(1.0);
+            scaleDown.setToY(1.0);
+            scaleDown.setCycleCount(1);
+            
+            TranslateTransition shake1 = new TranslateTransition(Duration.millis(50), holdBlockContainer);
+            shake1.setFromX(0);
+            shake1.setToX(-8);
+            shake1.setAutoReverse(true);
+            shake1.setCycleCount(2);
+            
+            TranslateTransition shake2 = new TranslateTransition(Duration.millis(50), holdBlockContainer);
+            shake2.setFromX(0);
+            shake2.setToX(8);
+            shake2.setAutoReverse(true);
+            shake2.setCycleCount(2);
+            shake2.setDelay(Duration.millis(100));
+            
+            FadeTransition flash = new FadeTransition(Duration.millis(100), holdBlockContainer);
+            flash.setFromValue(1.0);
+            flash.setToValue(0.6);
+            flash.setAutoReverse(true);
+            flash.setCycleCount(2);
+            
+            scaleUp.setOnFinished(_ -> {
+                scaleDown.play();
+                shake1.play();
+                shake2.play();
+                flash.play();
             });
-            spin.play();
             
-            ScaleTransition bounce = new ScaleTransition(Duration.seconds(0.15), holdBlockContainer);
-            bounce.setFromX(1.0);
-            bounce.setFromY(1.0);
-            bounce.setToX(1.15);
-            bounce.setToY(1.15);
-            bounce.setCycleCount(2);
-            bounce.setAutoReverse(true);
-            bounce.play();
+            scaleUp.play();
         }
     }
 
@@ -648,8 +716,79 @@ public class GuiController implements Initializable {
         linesProperty.addListener((_, oldVal, newVal) -> {
             if (newVal.intValue() > oldVal.intValue()) {
                 animateLabel(linesLabel);
+                if (currentLevel != null) {
+                    checkLevelObjective();
+                }
             }
         });
+    }
+    
+    public void onLinesCleared(int linesCount) {
+        if (currentLevel != null && linesCount == 3) {
+            tripleClearsCount++;
+        }
+        if (currentLevel != null) {
+            checkLevelObjective();
+        }
+    }
+    
+    private void checkLevelObjective() {
+        if (currentLevel == null || eventListener == null) {
+            return;
+        }
+        
+        IntegerProperty linesProp = ((com.comp2042.logic.GameController) eventListener).getLinesProperty();
+        int totalLines = linesProp != null ? linesProp.get() : 0;
+        long timeElapsed = (System.currentTimeMillis() - levelStartTime) / 1000;
+        
+        boolean objectiveMet = false;
+        
+        if (currentLevel.getLevelNumber() == 1) {
+            objectiveMet = totalLines >= currentLevel.getTargetLines();
+        } else if (currentLevel.getLevelNumber() == 2) {
+            objectiveMet = totalLines >= currentLevel.getTargetLines() && 
+                          timeElapsed <= currentLevel.getTimeLimit();
+        } else if (currentLevel.getLevelNumber() == 3) {
+            objectiveMet = tripleClearsCount >= 2;
+        }
+        
+        updateLevelProgress(totalLines, timeElapsed);
+        
+        if (objectiveMet) {
+            currentLevel.setCompleted(true);
+            showLevelComplete();
+        }
+    }
+    
+    private void updateLevelProgress(int totalLines, long timeElapsed) {
+        if (currentLevel == null || highScoreLabel == null) {
+            return;
+        }
+        
+        String progressText = "Objective: " + currentLevel.getObjective();
+        
+        if (currentLevel.getLevelNumber() == 1) {
+            progressText = "Lines: " + totalLines + "/" + currentLevel.getTargetLines();
+        } else if (currentLevel.getLevelNumber() == 2) {
+            int remainingTime = (int)(currentLevel.getTimeLimit() - timeElapsed);
+            progressText = "Lines: " + totalLines + "/" + currentLevel.getTargetLines() + " | Time: " + 
+                          Math.max(0, remainingTime) + "s";
+        } else if (currentLevel.getLevelNumber() == 3) {
+            progressText = "Triple Clears: " + tripleClearsCount + "/2";
+        }
+        
+        highScoreLabel.setText(progressText);
+        highScoreLabel.setWrapText(false);
+    }
+    
+    private void showLevelComplete() {
+        setPaused(true);
+        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
+        alert.setTitle("Level Complete!");
+        alert.setHeaderText("Congratulations!");
+        alert.setContentText("You completed " + currentLevel.getName() + "!");
+        alert.showAndWait();
+        returnToMainMenu();
     }
 
     private void animateLabel(Label label) {
@@ -700,7 +839,14 @@ public class GuiController implements Initializable {
         if (actionEvent != null) {
             actionEvent.consume();
         }
-        requestPlayerNameAndStart();
+        if (currentLevel != null) {
+            tripleClearsCount = 0;
+            levelStartTime = System.currentTimeMillis();
+            updateLevelObjectiveLabel();
+            startNewGame();
+        } else {
+            requestPlayerNameAndStart();
+        }
     }
     
     private void requestPlayerNameAndStart() {
@@ -728,9 +874,20 @@ public class GuiController implements Initializable {
         gamePanel.setFocusTraversable(true);
         gamePanel.setDisable(false);
 
-        ViewData newBrickData = eventListener.createNewGame();
-        refreshBrick(newBrickData);
+        if (eventListener != null) {
+            ViewData newBrickData = eventListener.createNewGame();
+            refreshBrick(newBrickData);
+        }
         gamePanel.requestFocus();
+    }
+    
+    public void startLevelGame() {
+        if (currentLevel != null && eventListener == null) {
+            eventListener = new com.comp2042.logic.GameController(this);
+        }
+        if (currentLevel != null) {
+            startNewGame();
+        }
     }
     private void setPaused(boolean paused) {
         isPause.set(paused);

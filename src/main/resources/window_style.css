@@ -116,6 +116,64 @@
                 innershadow(gaussian, rgba(255, 255, 255, 0.2), 12, 0.3, 0, 2);
 }
 
+.level-container {
+    -fx-background-color: rgba(20, 50, 80, 0.7);
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(100, 200, 255, 0.6);
+    -fx-border-width: 1.5;
+    -fx-border-radius: 12;
+    -fx-padding: 12;
+    -fx-effect: dropshadow(gaussian, rgba(80, 180, 255, 0.4), 10, 0.3, 0, 0);
+    -fx-cursor: hand;
+}
+
+.level-container:hover {
+    -fx-background-color: rgba(40, 90, 140, 0.8);
+    -fx-border-color: rgba(150, 240, 255, 0.9);
+    -fx-effect: dropshadow(gaussian, rgba(100, 220, 255, 0.7), 18, 0.5, 0, 0);
+}
+
+.level-locked {
+    -fx-background-color: rgba(30, 30, 30, 0.6);
+    -fx-border-color: rgba(100, 100, 100, 0.4);
+    -fx-opacity: 0.5;
+    -fx-cursor: default;
+}
+
+.level-locked:hover {
+    -fx-background-color: rgba(30, 30, 30, 0.6);
+    -fx-border-color: rgba(100, 100, 100, 0.4);
+}
+
+.level-number {
+    -fx-font-family: 'Frozenland';
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #b0e0ff;
+    -fx-effect: dropshadow(gaussian, rgba(100, 200, 255, 0.8), 6, 0.4, 0, 0);
+}
+
+.level-name {
+    -fx-font-family: 'Frozenland';
+    -fx-font-size: 16px;
+    -fx-text-fill: #e0f8ff;
+    -fx-effect: dropshadow(gaussian, rgba(150, 220, 255, 0.6), 5, 0.3, 0, 0);
+}
+
+.level-objective {
+    -fx-font-family: 'Frozenland';
+    -fx-font-size: 12px;
+    -fx-text-fill: #b8d4ff;
+    -fx-text-alignment: center;
+}
+
+.level-locked-text {
+    -fx-font-family: 'Frozenland';
+    -fx-font-size: 16px;
+    -fx-text-fill: #888888;
+    -fx-effect: dropshadow(gaussian, rgba(100, 100, 100, 0.5), 4, 0.3, 0, 0);
+}
+
 .gameover-button {
     -fx-font-family: 'Frozenland';
     -fx-font-size: 28px;
@@ -280,35 +338,25 @@
                 dropshadow(gaussian, rgba(255, 150, 0, 0.6), 30, 0.4, 0, 0);
 }
 
-.gameover-highscore-holder {
-    -fx-font-family: 'Frozenland';
-    -fx-font-size: 32px;
-    -fx-text-fill: #a0e8ff;
-    -fx-effect: dropshadow(gaussian, rgba(160, 232, 255, 0.8), 15, 0.5, 0, 0),
-                dropshadow(gaussian, rgba(100, 200, 255, 0.6), 25, 0.4, 0, 0);
-}
-
 .highscore-holder-label {
     -fx-font-family: 'Frozenland';
-    -fx-font-size: 24px;
+    -fx-font-size: 28px;
     -fx-font-weight: bold;
-    -fx-text-fill: #b794f6;
-    -fx-effect: dropshadow(gaussian, rgba(183, 148, 246, 0.9), 15, 0.6, 0, 0),
-                dropshadow(gaussian, rgba(139, 92, 246, 0.8), 25, 0.5, 0, 0),
-                dropshadow(gaussian, rgba(124, 58, 237, 0.7), 35, 0.4, 0, 0),
-                innershadow(gaussian, rgba(183, 148, 246, 0.5), 8, 0.3, 0, 0);
+    -fx-text-fill: #b0e0ff;
+    -fx-letter-spacing: 1px;
+    -fx-effect: dropshadow(gaussian, rgba(176, 224, 255, 0.8), 12, 0.5, 0, 0),
+                dropshadow(gaussian, rgba(135, 206, 250, 0.7), 20, 0.4, 0, 0);
 }
 
 .gameover-highscore-holder {
     -fx-font-family: 'Frozenland';
-    -fx-font-size: 36px;
+    -fx-font-size: 42px;
     -fx-font-weight: bold;
-    -fx-text-fill: #b794f6;
-    -fx-effect: dropshadow(gaussian, rgba(183, 148, 246, 0.9), 20, 0.7, 0, 0),
-                dropshadow(gaussian, rgba(139, 92, 246, 0.8), 30, 0.6, 0, 0),
-                dropshadow(gaussian, rgba(124, 58, 237, 0.7), 40, 0.5, 0, 0),
-                dropshadow(gaussian, rgba(109, 40, 217, 0.6), 50, 0.4, 0, 0),
-                innershadow(gaussian, rgba(183, 148, 246, 0.5), 10, 0.4, 0, 0);
+    -fx-text-fill: #ffd700;
+    -fx-letter-spacing: 2px;
+    -fx-effect: dropshadow(gaussian, rgba(255, 200, 0, 0.9), 25, 0.6, 0, 0),
+                dropshadow(gaussian, rgba(255, 150, 0, 0.8), 35, 0.5, 0, 0),
+                dropshadow(gaussian, rgba(255, 100, 0, 0.7), 45, 0.4, 0, 0);
 }
 
 .gameover-new-highscore {
@@ -434,6 +482,27 @@
     -fx-background-color: rgba(255, 200, 50, 0.5);
     -fx-border-color: rgba(255, 220, 100, 0.8);
     -fx-effect: dropshadow(gaussian, rgba(255, 200, 0, 0.8), 20, 0.5, 0, 0);
+}
+
+.music-icon {
+    -fx-font-size: 28px;
+    -fx-background-color: rgba(150, 50, 200, 0.5);
+    -fx-text-fill: #c080ff;
+    -fx-background-radius: 50;
+    -fx-min-width: 50px;
+    -fx-min-height: 50px;
+    -fx-cursor: hand;
+    -fx-border-color: rgba(180, 100, 255, 0.6);
+    -fx-border-width: 2;
+    -fx-border-radius: 50;
+    -fx-effect: dropshadow(gaussian, rgba(180, 80, 255, 0.6), 12, 0.4, 0, 0);
+}
+
+.music-icon:hover {
+    -fx-background-color: rgba(170, 70, 220, 0.6);
+    -fx-border-color: rgba(200, 120, 255, 0.8);
+    -fx-text-fill: #d0a0ff;
+    -fx-effect: dropshadow(gaussian, rgba(200, 100, 255, 0.8), 20, 0.5, 0, 0);
 }
 
 .back-icon {

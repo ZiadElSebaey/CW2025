@@ -33,6 +33,9 @@ public class MainMenuController {
     private Button leaderboardButton;
 
     @FXML
+    private Button musicButton;
+
+    @FXML
     private VBox creatorPanel;
 
     @FXML
@@ -64,6 +67,22 @@ public class MainMenuController {
         pulse.setCycleCount(Timeline.INDEFINITE);
         pulse.setAutoReverse(true);
         pulse.play();
+
+        javafx.animation.ScaleTransition musicPulse = new javafx.animation.ScaleTransition(Duration.seconds(0.8), musicButton);
+        musicPulse.setFromX(1.0);
+        musicPulse.setFromY(1.0);
+        musicPulse.setToX(1.2);
+        musicPulse.setToY(1.2);
+        musicPulse.setCycleCount(Timeline.INDEFINITE);
+        musicPulse.setAutoReverse(true);
+        musicPulse.play();
+        
+        javafx.animation.FadeTransition musicFade = new javafx.animation.FadeTransition(Duration.seconds(0.8), musicButton);
+        musicFade.setFromValue(0.8);
+        musicFade.setToValue(1.0);
+        musicFade.setCycleCount(Timeline.INDEFINITE);
+        musicFade.setAutoReverse(true);
+        musicFade.play();
 
         javafx.animation.TranslateTransition floatUp = new javafx.animation.TranslateTransition(Duration.seconds(2), creatorPanel);
         floatUp.setByY(-10);
@@ -129,6 +148,16 @@ public class MainMenuController {
 
     @FXML
     private void onLevelsClicked() {
+        try {
+            URL location = getClass().getClassLoader().getResource("levels.fxml");
+            FXMLLoader fxmlLoader = new FXMLLoader(location);
+            Parent root = fxmlLoader.load();
+            LevelsController levelsController = fxmlLoader.getController();
+            levelsController.setStage(stage);
+            Scene scene = new Scene(root, 720, 680);
+            stage.setScene(scene);
+        } catch (IOException ignored) {
+        }
     }
 
     @FXML
@@ -149,6 +178,12 @@ public class MainMenuController {
     private void onLeaderboardClicked() {
         leaderboardPanel.refreshEntries();
         leaderboardContainer.setVisible(true);
+    }
+
+    @FXML
+    private void onMusicClicked() {
+        MusicSelectionDialog musicDialog = new MusicSelectionDialog(stage);
+        musicDialog.show();
     }
 
     private void loadScene(String fxmlFile) {

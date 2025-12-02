@@ -1,0 +1,121 @@
+package com.comp2042.ui;
+
+import com.comp2042.logic.Level;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.layout.GridPane;
+import javafx.stage.Stage;
+
+import java.io.IOException;
+import java.net.URL;
+import java.util.List;
+import java.util.ResourceBundle;
+
+public class LevelsController implements Initializable {
+    
+    @FXML
+    private GridPane levelsGrid;
+    
+    @FXML
+    private Button backButton;
+    
+    private Stage stage;
+    
+    public void setStage(Stage stage) {
+        this.stage = stage;
+    }
+    
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        List<Level> levels = LevelManager.getLevels();
+        
+        int col = 0;
+        int row = 0;
+        int colsPerRow = 2;
+        
+        for (Level level : levels) {
+            javafx.scene.Node levelNode = createLevelButton(level);
+            levelsGrid.add(levelNode, col, row);
+            
+            col++;
+            if (col >= colsPerRow) {
+                col = 0;
+                row++;
+            }
+        }
+        
+        levelsGrid.setHgap(15);
+        levelsGrid.setVgap(15);
+        levelsGrid.setAlignment(javafx.geometry.Pos.CENTER);
+        
+        backButton.setOnAction(_ -> returnToMainMenu());
+    }
+    
+    private javafx.scene.Node createLevelButton(Level level) {
+        javafx.scene.layout.VBox container = new javafx.scene.layout.VBox(6);
+        container.setAlignment(javafx.geometry.Pos.CENTER);
+        container.setPrefWidth(160);
+        container.setPrefHeight(100);
+        container.getStyleClass().add("level-container");
+        
+        javafx.scene.control.Label numberLabel = new javafx.scene.control.Label("LEVEL " + level.getLevelNumber());
+        numberLabel.getStyleClass().add("level-number");
+        
+        javafx.scene.control.Label nameLabel = new javafx.scene.control.Label(level.getName());
+        nameLabel.getStyleClass().add("level-name");
+        
+        javafx.scene.control.Label objectiveLabel = new javafx.scene.control.Label(level.getObjective());
+        objectiveLabel.getStyleClass().add("level-objective");
+        objectiveLabel.setWrapText(true);
+        objectiveLabel.setMaxWidth(140);
+        
+        boolean unlocked = LevelManager.isLevelUnlocked(level.getLevelNumber());
+        if (!unlocked) {
+            container.getStyleClass().add("level-locked");
+            javafx.scene.control.Label lockedLabel = new javafx.scene.control.Label("🔒 LOCKED");
+            lockedLabel.getStyleClass().add("level-locked-text");
+            container.getChildren().addAll(numberLabel, lockedLabel);
+        } else {
+            container.getStyleClass().add("level-unlocked");
+            container.getChildren().addAll(numberLabel, nameLabel, objectiveLabel);
+            container.setOnMouseClicked(_ -> startLevel(level));
+        }
+        
+        return container;
+    }
+    
+    private void startLevel(Level level) {
+        try {
+            URL location = getClass().getClassLoader().getResource("gameLayout.fxml");
+            FXMLLoader fxmlLoader = new FXMLLoader(location);
+            Parent root = fxmlLoader.load();
+            GuiController gameController = fxmlLoader.getController();
+            gameController.setPlayerName("Level Player", true);
+            gameController.setLevel(level);
+            gameController.setStage(stage);
+            gameController.startLevelGame();
+            
+            Scene scene = new Scene(root, 720, 680);
+            stage.setScene(scene);
+        } catch (IOException ignored) {
+        }
+    }
+    
+    private void returnToMainMenu() {
+        try {
+            URL location = getClass().getClassLoader().getResource("mainMenu.fxml");
+            FXMLLoader fxmlLoader = new FXMLLoader(location);
+            Parent root = fxmlLoader.load();
+            MainMenuController menuController = fxmlLoader.getController();
+            menuController.setStage(stage);
+            Scene scene = new Scene(root, 720, 680);
+            stage.setScene(scene);
+        } catch (IOException ignored) {
+        }
+    }
+}
+

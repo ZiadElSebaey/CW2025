@@ -20,7 +20,7 @@
                 </StackPane>
             </VBox>
         </VBox>
-        <VBox layoutX="520" layoutY="30" spacing="20" alignment="CENTER">
+        <VBox fx:id="rightPanel" layoutX="520" layoutY="30" spacing="20" alignment="CENTER">
             <VBox fx:id="nextBlockContainer" styleClass="next-block-container" alignment="CENTER" spacing="15">
                 <Label text="NEXT" styleClass="next-block-label"/>
                 <StackPane alignment="CENTER" minWidth="90" minHeight="90">
@@ -52,7 +52,6 @@
                 <image><Image url="@AlexeyPajitnov.png"/></image>
             </ImageView>
             <Label text="Alexey Pajitnov" styleClass="creator-name-small"/>
-            <Label text="Creator of Tetris" styleClass="creator-title-small"/>
         </VBox>
     </Pane>
     <VBox fx:id="pauseContainer" alignment="CENTER">

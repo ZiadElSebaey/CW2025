@@ -29,10 +29,10 @@
                 <image><Image url="@AlexeyPajitnov.png"/></image>
             </ImageView>
             <Label text="Alexey Pajitnov" styleClass="creator-name"/>
-            <Label text="Creator of Tetris" styleClass="creator-title"/>
         </VBox>
         <Button fx:id="leaderboardButton" text="🏆" styleClass="trophy-icon" onAction="#onLeaderboardClicked" layoutX="15" layoutY="15"/>
         <Button fx:id="settingsButton" text="⚙" styleClass="settings-icon" onAction="#onSettingsClicked" layoutX="15" layoutY="580"/>
+        <Button fx:id="musicButton" text="🎵" styleClass="music-icon" onAction="#onMusicClicked" layoutX="640" layoutY="15"/>
     </Pane>
     <stylesheets>
         <URL value="@window_style.css"/>
