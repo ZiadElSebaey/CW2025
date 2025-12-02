@@ -22,6 +22,8 @@ public class SimpleBoard implements Board {
     private int[][] currentGameMatrix;
     private Point currentOffset;
     private final Score score;
+    private Brick heldBrick;
+    private boolean canHold = true;
     public SimpleBoard() {
         this(BOARD_ROWS, BOARD_COLUMNS);
     }
@@ -89,6 +91,7 @@ public class SimpleBoard implements Board {
         Brick currentBrick = brickGenerator.getBrick();
         brickRotator.setBrick(currentBrick);
         currentOffset = new Point(SPAWN_X, SPAWN_Y);
+        canHold = true;
 
         return hasCollision(brickRotator.getCurrentShape(), currentOffset);
     }
@@ -100,7 +103,26 @@ public class SimpleBoard implements Board {
 
     @Override
     public ViewData getViewData() {
-        return new ViewData(brickRotator.getCurrentShape(), (int) currentOffset.getX(), (int) currentOffset.getY(), brickGenerator.getNextBrick().getShapeMatrix().get(0));
+        int[][] holdData = heldBrick != null ? heldBrick.getShapeMatrix().get(0) : null;
+        return new ViewData(brickRotator.getCurrentShape(), (int) currentOffset.getX(), (int) currentOffset.getY(), brickGenerator.getNextBrick().getShapeMatrix().get(0), getGhostY(), holdData);
+    }
+
+    public int getGhostY() {
+        int ghostY = (int) currentOffset.getY();
+        Point testOffset = new Point(currentOffset);
+        while (!hasCollision(brickRotator.getCurrentShape(), testOffset)) {
+            ghostY = (int) testOffset.getY();
+            testOffset.translate(0, 1);
+        }
+        return ghostY;
+    }
+
+    public int hardDrop() {
+        int dropDistance = 0;
+        while (tryMove(0, 1)) {
+            dropDistance++;
+        }
+        return dropDistance;
     }
 
     @Override
@@ -126,6 +148,36 @@ public class SimpleBoard implements Board {
     public void newGame() {
         currentGameMatrix = new int[width][height];
         score.reset();
+        heldBrick = null;
+        canHold = true;
         spawnNewBrick();
+    }
+    
+    @Override
+    public ViewData holdBrick() {
+        if (!canHold) {
+            return getViewData();
+        }
+        
+        Brick currentBrick = brickRotator.getBrick();
+        
+        if (heldBrick == null) {
+            heldBrick = currentBrick;
+            Brick nextBrick = brickGenerator.getBrick();
+            brickRotator.setBrick(nextBrick);
+            currentOffset = new Point(SPAWN_X, SPAWN_Y);
+        } else {
+            Brick temp = heldBrick;
+            heldBrick = currentBrick;
+            brickRotator.setBrick(temp);
+            currentOffset = new Point(SPAWN_X, SPAWN_Y);
+        }
+        
+        canHold = false;
+        return getViewData();
+    }
+    
+    public Brick getHeldBrick() {
+        return heldBrick;
     }
 }

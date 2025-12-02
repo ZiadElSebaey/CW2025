@@ -1,13 +1,17 @@
 package com.comp2042.ui;
 
 import com.comp2042.logic.GameController;
+import javafx.animation.RotateTransition;
+import javafx.animation.Timeline;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.io.IOException;
 import java.net.URL;
@@ -23,7 +27,19 @@ public class MainMenuController {
     private Button resumeButton;
 
     @FXML
+    private Button settingsButton;
+
+    @FXML
+    private Button leaderboardButton;
+
+    @FXML
+    private VBox creatorPanel;
+
+    @FXML
     private StackPane rootPane;
+
+    private VBox leaderboardContainer;
+    private LeaderboardPanel leaderboardPanel;
 
     public void setStage(Stage stage) {
         this.stage = stage;
@@ -34,6 +50,37 @@ public class MainMenuController {
         updateResumeButtonVisibility();
         AnimatedBackground animatedBackground = new AnimatedBackground(720, 680);
         rootPane.getChildren().addFirst(animatedBackground);
+        
+        RotateTransition rotate = new RotateTransition(Duration.seconds(4), settingsButton);
+        rotate.setByAngle(360);
+        rotate.setCycleCount(Timeline.INDEFINITE);
+        rotate.play();
+
+        javafx.animation.ScaleTransition pulse = new javafx.animation.ScaleTransition(Duration.seconds(1), leaderboardButton);
+        pulse.setFromX(1.0);
+        pulse.setFromY(1.0);
+        pulse.setToX(1.15);
+        pulse.setToY(1.15);
+        pulse.setCycleCount(Timeline.INDEFINITE);
+        pulse.setAutoReverse(true);
+        pulse.play();
+
+        javafx.animation.TranslateTransition floatUp = new javafx.animation.TranslateTransition(Duration.seconds(2), creatorPanel);
+        floatUp.setByY(-10);
+        floatUp.setCycleCount(Timeline.INDEFINITE);
+        floatUp.setAutoReverse(true);
+        floatUp.play();
+
+        setupLeaderboardPanel();
+    }
+
+    private void setupLeaderboardPanel() {
+        leaderboardPanel = new LeaderboardPanel();
+        leaderboardContainer = new VBox(leaderboardPanel);
+        leaderboardContainer.setAlignment(javafx.geometry.Pos.CENTER);
+        leaderboardContainer.setVisible(false);
+        leaderboardPanel.getCloseButton().setOnAction(_ -> leaderboardContainer.setVisible(false));
+        rootPane.getChildren().add(leaderboardContainer);
     }
 
     private void updateResumeButtonVisibility() {
@@ -46,12 +93,21 @@ public class MainMenuController {
 
     @FXML
     private void onPlayClicked() {
+        PlayerNameDialog nameDialog = new PlayerNameDialog(stage);
+        String playerName = nameDialog.getPlayerName();
+        boolean isGuest = nameDialog.isGuest();
+        
+        if (!isGuest && playerName == null) {
+            return;
+        }
+        
         try {
             URL location = getClass().getClassLoader().getResource("gameLayout.fxml");
             FXMLLoader fxmlLoader = new FXMLLoader(location);
             Parent root = fxmlLoader.load();
             GuiController guiController = fxmlLoader.getController();
             guiController.setStage(stage);
+            guiController.setPlayerName(playerName, isGuest);
 
             Scene gameScene = new Scene(root, 720, 680);
             activeGameScene = gameScene;
@@ -72,6 +128,14 @@ public class MainMenuController {
     }
 
     @FXML
+    private void onLevelsClicked() {
+    }
+
+    @FXML
+    private void onGamemodesClicked() {
+    }
+
+    @FXML
     private void onHowToPlayClicked() {
         loadScene("howToPlay.fxml");
     }
@@ -79,6 +143,12 @@ public class MainMenuController {
     @FXML
     private void onSettingsClicked() {
         loadScene("settings.fxml");
+    }
+
+    @FXML
+    private void onLeaderboardClicked() {
+        leaderboardPanel.refreshEntries();
+        leaderboardContainer.setVisible(true);
     }
 
     private void loadScene(String fxmlFile) {

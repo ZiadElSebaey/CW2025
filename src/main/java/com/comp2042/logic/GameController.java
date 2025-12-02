@@ -18,6 +18,7 @@ public class GameController implements InputEventListener {
         viewGuiController.setEventListener(this);
         viewGuiController.initGameView(board.getBoardMatrix(), board.getViewData());
         viewGuiController.bindScore(board.getScore().scoreProperty());
+        viewGuiController.bindLines(board.getScore().linesProperty());
     }
 
     @Override
@@ -48,6 +49,7 @@ public class GameController implements InputEventListener {
     private void applyRowScore(ClearRow clearRow) {
         if (clearRow != null && clearRow.getLinesRemoved() > 0) {
             board.getScore().add(clearRow.getScoreBonus());
+            board.getScore().addLines(clearRow.getLinesRemoved());
         }
     }
     private ViewData performMove(Runnable moveAction) {
@@ -77,5 +79,18 @@ public class GameController implements InputEventListener {
         board.newGame();
         viewGuiController.refreshGameBackground(board.getBoardMatrix());
         return board.getViewData();
+    }
+
+    @Override
+    public DownData onHardDropEvent() {
+        int dropDistance = board.hardDrop();
+        board.getScore().add(dropDistance * 2);
+        ClearRow clearRow = handleBrickLanded();
+        return new DownData(clearRow, board.getViewData());
+    }
+    
+    @Override
+    public ViewData onHoldEvent() {
+        return board.holdBrick();
     }
 }

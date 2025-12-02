@@ -19,7 +19,7 @@ public class Main extends Application {
         if (fontStream != null) {
             Font.loadFont(fontStream, 12);
         }
-        
+
         URL location = getClass().getClassLoader().getResource("mainMenu.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(location);
         Parent root = fxmlLoader.load();

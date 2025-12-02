@@ -1,19 +1,59 @@
 <?import com.comp2042.ui.GameOverPanel?>
 <?import com.comp2042.ui.PausePanel?>
 <?import javafx.scene.Group?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
 <?import javafx.geometry.Pos?>
 <?import java.net.URL?>
 <StackPane fx:id="rootPane" fx:controller="com.comp2042.ui.GuiController"
       xmlns:fx="http://javafx.com/fxml">
     <Pane fx:id="gamePane">
-        <BorderPane styleClass="gameBoard" fx:id="gameBoard" layoutX="212" layoutY="66">
+        <Button fx:id="backButton" text="←" styleClass="back-icon" layoutX="15" layoutY="15"/>
+        <VBox layoutX="15" layoutY="280" spacing="10" alignment="CENTER">
+            <VBox fx:id="holdBlockContainer" styleClass="hold-block-container" alignment="CENTER" spacing="10">
+                <Label text="HOLD" styleClass="hold-block-label"/>
+                <StackPane alignment="CENTER" minWidth="70" minHeight="70">
+                    <GridPane fx:id="holdBlockPanel" hgap="1" vgap="1" alignment="CENTER"/>
+                </StackPane>
+            </VBox>
+        </VBox>
+        <VBox layoutX="520" layoutY="30" spacing="20" alignment="CENTER">
+            <VBox fx:id="nextBlockContainer" styleClass="next-block-container" alignment="CENTER" spacing="15">
+                <Label text="NEXT" styleClass="next-block-label"/>
+                <StackPane alignment="CENTER" minWidth="90" minHeight="90">
+                    <GridPane fx:id="nextBlockPanel" hgap="1" vgap="1" alignment="CENTER"/>
+                </StackPane>
+            </VBox>
+            <VBox alignment="CENTER" spacing="8" styleClass="stats-container">
+                <Label fx:id="scoreLabel" text="Score: 0" styleClass="score-label"/>
+                <Label fx:id="linesLabel" text="Lines: 0" styleClass="lines-label"/>
+                <VBox alignment="CENTER" spacing="2">
+                    <Label fx:id="highScoreLabel" text="High Score: 0" styleClass="highscore-label"/>
+                    <Label fx:id="highScoreHolderLabel" text="" styleClass="highscore-holder-label" visible="false"/>
+                </VBox>
+            </VBox>
+        </VBox>
+        <BorderPane styleClass="gameBoard" fx:id="gameBoard" layoutX="185" layoutY="50">
             <center>
                 <GridPane fx:id="gamePanel" hgap="1" vgap="1"/>
             </center>
         </BorderPane>
+        <ImageView fx:id="borderFrame" layoutX="130" layoutY="0" fitWidth="405" fitHeight="695" preserveRatio="false" mouseTransparent="true">
+            <image><Image url="@Frozenframe.png"/></image>
+        </ImageView>
+        <GridPane fx:id="ghostPanel" vgap="1" hgap="1"/>
         <GridPane fx:id="brickPanel" vgap="1" hgap="1"/>
-        <Group fx:id="groupNotification" layoutX="240" layoutY="340"/>
+        <Group fx:id="groupNotification" layoutX="215" layoutY="320"/>
+        <VBox alignment="CENTER" spacing="3" layoutX="560" layoutY="450">
+            <ImageView fitWidth="160" fitHeight="160" preserveRatio="true">
+                <image><Image url="@AlexeyPajitnov.png"/></image>
+            </ImageView>
+            <Label text="Alexey Pajitnov" styleClass="creator-name-small"/>
+            <Label text="Creator of Tetris" styleClass="creator-title-small"/>
+        </VBox>
     </Pane>
     <VBox fx:id="pauseContainer" alignment="CENTER">
         <PausePanel fx:id="pausePanel"/>
