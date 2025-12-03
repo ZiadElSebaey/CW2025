@@ -4,8 +4,6 @@ import javafx.animation.FadeTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.Timeline;
-import javafx.animation.RotateTransition;
-import javafx.animation.SequentialTransition;
 import javafx.geometry.Pos;
 import javafx.util.Duration;
 import javafx.scene.control.Button;
@@ -44,6 +42,8 @@ public class LevelCompletePanel extends VBox {
         levelNameLabel = new Label("");
         levelNameLabel.getStyleClass().add("gameover-highscore");
         levelNameLabel.setAlignment(Pos.CENTER);
+        levelNameLabel.setVisible(false);
+        levelNameLabel.setManaged(false);
 
         nextLevelButton = new Button("Next Level");
         nextLevelButton.getStyleClass().add("gameover-button");
@@ -61,7 +61,7 @@ public class LevelCompletePanel extends VBox {
         
         VBox topSection = new VBox(-10);
         topSection.setAlignment(Pos.CENTER);
-        topSection.getChildren().addAll(congratulationsLabel, levelNumberLabel, spacer, levelNameLabel);
+        topSection.getChildren().addAll(congratulationsLabel, levelNumberLabel);
         
         VBox buttonSection = new VBox(7);
         buttonSection.setAlignment(Pos.CENTER);
@@ -75,7 +75,6 @@ public class LevelCompletePanel extends VBox {
     }
 
     public void showLevelComplete(String levelName, int levelNumber, boolean hasNextLevel) {
-        levelNameLabel.setText(levelName);
         levelNumberLabel.setText("LEVEL " + levelNumber + " COMPLETE!");
         
         nextLevelButton.setVisible(hasNextLevel);
@@ -83,92 +82,58 @@ public class LevelCompletePanel extends VBox {
         
         animateLabel(congratulationsLabel);
         animateLabel(levelNumberLabel);
-        animateLabel(levelNameLabel);
         
         playLevelCompleteAnimation();
     }
 
     private void playLevelCompleteAnimation() {
-        congratulationsLabel.setScaleX(4.0);
-        congratulationsLabel.setScaleY(4.0);
+        congratulationsLabel.setScaleX(3.0);
+        congratulationsLabel.setScaleY(3.0);
         congratulationsLabel.setOpacity(0);
-        congratulationsLabel.setRotate(0);
         congratulationsLabel.setTranslateX(0);
         congratulationsLabel.setTranslateY(0);
 
-        // Big slam entrance
-        ScaleTransition slam = new ScaleTransition(Duration.millis(200), congratulationsLabel);
-        slam.setFromX(4.0);
-        slam.setFromY(4.0);
-        slam.setToX(1.2);
-        slam.setToY(1.2);
+        ScaleTransition gentleScale = new ScaleTransition(Duration.millis(600), congratulationsLabel);
+        gentleScale.setFromX(3.0);
+        gentleScale.setFromY(3.0);
+        gentleScale.setToX(1.0);
+        gentleScale.setToY(1.0);
+        gentleScale.setInterpolator(javafx.animation.Interpolator.EASE_OUT);
 
-        FadeTransition fade = new FadeTransition(Duration.millis(200), congratulationsLabel);
+        FadeTransition fade = new FadeTransition(Duration.millis(600), congratulationsLabel);
         fade.setFromValue(0);
         fade.setToValue(1);
+        fade.setInterpolator(javafx.animation.Interpolator.EASE_OUT);
 
-        ParallelTransition slamIn = new ParallelTransition(slam, fade);
-        
-        // Bounce back effect
-        ScaleTransition bounce = new ScaleTransition(Duration.millis(150), congratulationsLabel);
-        bounce.setFromX(1.2);
-        bounce.setFromY(1.2);
-        bounce.setToX(0.9);
-        bounce.setToY(0.9);
-        
-        ScaleTransition bounceBack = new ScaleTransition(Duration.millis(100), congratulationsLabel);
-        bounceBack.setFromX(0.9);
-        bounceBack.setFromY(0.9);
-        bounceBack.setToX(1.0);
-        bounceBack.setToY(1.0);
-        
-        SequentialTransition bounceSequence = new SequentialTransition(bounce, bounceBack);
-        
-        slamIn.setOnFinished(_ -> {
-            // Party shake with rotation
-            javafx.animation.TranslateTransition shake1 = new javafx.animation.TranslateTransition(Duration.millis(30), congratulationsLabel);
-            shake1.setByX(-20);
-            shake1.setAutoReverse(true);
-            shake1.setCycleCount(8);
+        ParallelTransition entrance = new ParallelTransition(gentleScale, fade);
+        entrance.setOnFinished(_ -> {
+            ScaleTransition chillPulse = new ScaleTransition(Duration.millis(2000), congratulationsLabel);
+            chillPulse.setFromX(1.0);
+            chillPulse.setFromY(1.0);
+            chillPulse.setToX(1.08);
+            chillPulse.setToY(1.08);
+            chillPulse.setCycleCount(Timeline.INDEFINITE);
+            chillPulse.setAutoReverse(true);
+            chillPulse.setInterpolator(javafx.animation.Interpolator.EASE_BOTH);
             
-            RotateTransition rotate1 = new RotateTransition(Duration.millis(30), congratulationsLabel);
-            rotate1.setByAngle(-5);
-            rotate1.setAutoReverse(true);
-            rotate1.setCycleCount(8);
+            javafx.animation.TranslateTransition chillFloat = new javafx.animation.TranslateTransition(Duration.millis(3000), congratulationsLabel);
+            chillFloat.setByY(-8);
+            chillFloat.setCycleCount(Timeline.INDEFINITE);
+            chillFloat.setAutoReverse(true);
+            chillFloat.setInterpolator(javafx.animation.Interpolator.EASE_BOTH);
             
-            ParallelTransition partyShake = new ParallelTransition(shake1, rotate1);
-            partyShake.setOnFinished(__ -> {
-                congratulationsLabel.setTranslateX(0);
-                congratulationsLabel.setRotate(0);
-                
-                // Continuous party pulse
-                ScaleTransition partyPulse = new ScaleTransition(Duration.millis(800), congratulationsLabel);
-                partyPulse.setFromX(1.0);
-                partyPulse.setFromY(1.0);
-                partyPulse.setToX(1.25);
-                partyPulse.setToY(1.25);
-                partyPulse.setCycleCount(Timeline.INDEFINITE);
-                partyPulse.setAutoReverse(true);
-                
-                RotateTransition partyRotate = new RotateTransition(Duration.millis(2000), congratulationsLabel);
-                partyRotate.setByAngle(360);
-                partyRotate.setCycleCount(Timeline.INDEFINITE);
-                
-                FadeTransition partyGlow = new FadeTransition(Duration.millis(600), congratulationsLabel);
-                partyGlow.setFromValue(0.7);
-                partyGlow.setToValue(1.0);
-                partyGlow.setCycleCount(Timeline.INDEFINITE);
-                partyGlow.setAutoReverse(true);
-                
-                ParallelTransition partyLoop = new ParallelTransition(partyPulse, partyRotate, partyGlow);
-                partyLoop.play();
-            });
+            FadeTransition chillGlow = new FadeTransition(Duration.millis(1500), congratulationsLabel);
+            chillGlow.setFromValue(0.9);
+            chillGlow.setToValue(1.0);
+            chillGlow.setCycleCount(Timeline.INDEFINITE);
+            chillGlow.setAutoReverse(true);
+            chillGlow.setInterpolator(javafx.animation.Interpolator.EASE_BOTH);
             
-            bounceSequence.setOnFinished(___ -> partyShake.play());
-            bounceSequence.play();
+            ParallelTransition chillLoop = new ParallelTransition(chillPulse, chillFloat, chillGlow);
+            chillLoop.play();
         });
         
-        slamIn.play();
+        entrance.play();
     }
 
     public Button getNextLevelButton() {

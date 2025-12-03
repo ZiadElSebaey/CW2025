@@ -317,9 +317,11 @@
 
 .highscore-label {
     -fx-font-family: 'Frozenland';
-    -fx-font-size: 26px;
+    -fx-font-size: 24.8px;
     -fx-text-fill: #ffd700;
     -fx-effect: dropshadow(gaussian, rgba(255, 180, 0, 0.5), 10, 0.4, 0, 0);
+    -fx-text-alignment: center;
+    -fx-alignment: center;
 }
 
 .gameover-score {
@@ -344,6 +346,8 @@
     -fx-font-weight: bold;
     -fx-text-fill: #b0e0ff;
     -fx-letter-spacing: 1px;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
     -fx-effect: dropshadow(gaussian, rgba(176, 224, 255, 0.8), 12, 0.5, 0, 0),
                 dropshadow(gaussian, rgba(135, 206, 250, 0.7), 20, 0.4, 0, 0);
 }
@@ -391,6 +395,45 @@
     -fx-font-size: 26px;
     -fx-text-fill: #a0e8ff;
     -fx-effect: dropshadow(gaussian, rgba(80, 200, 255, 0.6), 10, 0.4, 0, 0);
+}
+
+.timer-label {
+    -fx-font-family: 'Frozenland';
+    -fx-font-size: 32px;
+    -fx-text-fill: #ffd700;
+    -fx-font-weight: bold;
+    -fx-alignment: center;
+    -fx-effect: dropshadow(gaussian, rgba(255, 215, 0, 0.8), 15, 0.6, 0, 0),
+                dropshadow(gaussian, rgba(255, 100, 0, 0.5), 20, 0.4, 0, 0);
+}
+
+.objective-label {
+    -fx-font-family: 'Frozenland';
+    -fx-font-size: 18px;
+    -fx-text-fill: #ffd700;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+    -fx-effect: dropshadow(gaussian, rgba(255, 215, 0, 0.8), 10, 0.5, 0, 0);
+}
+
+.objective-panel {
+    -fx-background-color: rgba(20, 60, 90, 0.5);
+    -fx-background-radius: 12;
+    -fx-padding: 12 15 12 15;
+    -fx-border-color: rgba(150, 220, 255, 0.3);
+    -fx-border-width: 2;
+    -fx-border-radius: 12;
+    -fx-max-width: 150;
+}
+
+.right-panel-container {
+    -fx-background-color: rgba(20, 60, 90, 0.5);
+    -fx-background-radius: 12;
+    -fx-padding: 15 18 15 18;
+    -fx-border-color: rgba(150, 220, 255, 0.3);
+    -fx-border-width: 2;
+    -fx-border-radius: 12;
+    -fx-max-width: 180;
 }
 
 .hold-block-container {

@@ -6,7 +6,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
@@ -39,6 +41,9 @@ public class LevelsController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         AnimatedBackground animatedBackground = new AnimatedBackground(720, 680);
         rootPane.getChildren().addFirst(animatedBackground);
+        
+        LevelProgressManager.ensureDirectoryExists();
+        LevelProgressManager.initialize();
         
         List<Level> levels = LevelManager.getLevels();
         
@@ -116,8 +121,20 @@ public class LevelsController implements Initializable {
     }
     
     private void resetLevels() {
-        LevelManager.resetLevels();
-        refreshLevelsGrid();
+        Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmationDialog.setTitle("Reset Progress");
+        confirmationDialog.setHeaderText(null);
+        confirmationDialog.setContentText("Are you sure you want to reset all the levels?");
+        
+        ButtonType acceptButton = new ButtonType("Accept");
+        ButtonType closeButton = new ButtonType("Close");
+        confirmationDialog.getButtonTypes().setAll(acceptButton, closeButton);
+        
+        java.util.Optional<ButtonType> result = confirmationDialog.showAndWait();
+        if (result.isPresent() && result.get() == acceptButton) {
+            LevelManager.resetLevels();
+            refreshLevelsGrid();
+        }
     }
     
     private void refreshLevelsGrid() {

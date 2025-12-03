@@ -35,11 +35,7 @@ public class LevelManager {
     }
     
     public static void resetLevels() {
-        for (Level level : levels) {
-            if (level.getLevelNumber() != 1) {
-                level.setCompleted(false);
-            }
-        }
+        LevelProgressManager.resetLevelProgress();
     }
 }
 
