@@ -65,6 +65,12 @@ public class GuiController implements Initializable {
 
     @FXML
     private PausePanel pausePanel;
+    
+    @FXML
+    private LevelCompletePanel levelCompletePanel;
+    
+    @FXML
+    private VBox levelCompleteContainer;
 
     @FXML
     private BorderPane gameBoard;
@@ -160,7 +166,7 @@ public class GuiController implements Initializable {
             highScoreHolderLabel.setVisible(false);
             updateLevelObjectiveLabel();
             if (rightPanel != null) {
-                rightPanel.setLayoutX(500);
+                rightPanel.setLayoutX(520);
             }
         } else {
             this.dropIntervalMs = DEFAULT_DROP_INTERVAL_MS;
@@ -214,6 +220,9 @@ public class GuiController implements Initializable {
         gameOverContainer.setVisible(false);
         pausePanel.setVisible(false);
         pauseContainer.setVisible(false);
+        if (levelCompleteContainer != null) {
+            levelCompleteContainer.setVisible(false);
+        }
 
         gameOverPanel.getRestartButton().setOnAction(_ -> newGame(null));
         gameOverPanel.getMainMenuButton().setOnAction(_ -> returnToMainMenu());
@@ -750,6 +759,12 @@ public class GuiController implements Initializable {
                           timeElapsed <= currentLevel.getTimeLimit();
         } else if (currentLevel.getLevelNumber() == 3) {
             objectiveMet = tripleClearsCount >= 2;
+        } else if (currentLevel.getLevelNumber() == 4) {
+            int currentScore = currentScoreProperty != null ? currentScoreProperty.get() : 0;
+            objectiveMet = currentScore >= currentLevel.getTargetScore();
+        } else if (currentLevel.getLevelNumber() == 5) {
+            objectiveMet = totalLines >= currentLevel.getTargetLines() && 
+                          timeElapsed <= currentLevel.getTimeLimit();
         }
         
         updateLevelProgress(totalLines, timeElapsed);
@@ -775,6 +790,13 @@ public class GuiController implements Initializable {
                           Math.max(0, remainingTime) + "s";
         } else if (currentLevel.getLevelNumber() == 3) {
             progressText = "Triple Clears: " + tripleClearsCount + "/2";
+        } else if (currentLevel.getLevelNumber() == 4) {
+            int currentScore = currentScoreProperty != null ? currentScoreProperty.get() : 0;
+            progressText = "Score: " + currentScore + "/" + currentLevel.getTargetScore();
+        } else if (currentLevel.getLevelNumber() == 5) {
+            int remainingTime = (int)(currentLevel.getTimeLimit() - timeElapsed);
+            progressText = "Lines: " + totalLines + "/" + currentLevel.getTargetLines() + " | Time: " + 
+                          Math.max(0, remainingTime) + "s";
         }
         
         highScoreLabel.setText(progressText);
@@ -783,12 +805,67 @@ public class GuiController implements Initializable {
     
     private void showLevelComplete() {
         setPaused(true);
-        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
-        alert.setTitle("Level Complete!");
-        alert.setHeaderText("Congratulations!");
-        alert.setContentText("You completed " + currentLevel.getName() + "!");
-        alert.showAndWait();
-        returnToMainMenu();
+        if (levelCompletePanel != null && levelCompleteContainer != null && currentLevel != null) {
+            // Hide game screen
+            if (gamePane != null) {
+                gamePane.setVisible(false);
+            }
+            
+            int nextLevelNumber = currentLevel.getLevelNumber() + 1;
+            boolean hasNextLevel = LevelManager.getLevel(nextLevelNumber) != null;
+            
+            levelCompletePanel.showLevelComplete(
+                currentLevel.getName(), 
+                currentLevel.getLevelNumber(),
+                hasNextLevel
+            );
+            
+            levelCompleteContainer.setVisible(true);
+            
+            levelCompletePanel.getNextLevelButton().setOnAction(_ -> {
+                com.comp2042.logic.Level nextLevel = LevelManager.getLevel(nextLevelNumber);
+                if (nextLevel != null) {
+                    levelCompleteContainer.setVisible(false);
+                    if (gamePane != null) {
+                        gamePane.setVisible(true);
+                    }
+                    setLevel(nextLevel);
+                    startLevelGame();
+                }
+            });
+            
+            levelCompletePanel.getLevelsMenuButton().setOnAction(_ -> {
+                levelCompleteContainer.setVisible(false);
+                if (gamePane != null) {
+                    gamePane.setVisible(true);
+                }
+                returnToLevelsMenu();
+            });
+            
+            levelCompletePanel.getMainMenuButton().setOnAction(_ -> {
+                levelCompleteContainer.setVisible(false);
+                if (gamePane != null) {
+                    gamePane.setVisible(true);
+                }
+                returnToMainMenu();
+            });
+        }
+    }
+    
+    private void returnToLevelsMenu() {
+        if (timeLine != null) {
+            timeLine.stop();
+        }
+        try {
+            URL location = getClass().getClassLoader().getResource("levels.fxml");
+            FXMLLoader fxmlLoader = new FXMLLoader(location);
+            Parent root = fxmlLoader.load();
+            LevelsController levelsController = fxmlLoader.getController();
+            levelsController.setStage(stage);
+            Scene scene = new Scene(root, 720, 680);
+            stage.setScene(scene);
+        } catch (IOException ignored) {
+        }
     }
 
     private void animateLabel(Label label) {
@@ -868,6 +945,9 @@ public class GuiController implements Initializable {
         gameOverContainer.setVisible(false);
         pausePanel.setVisible(false);
         pauseContainer.setVisible(false);
+        if (levelCompleteContainer != null) {
+            levelCompleteContainer.setVisible(false);
+        }
         isGameOver.set(false);
         setPaused(false);
         

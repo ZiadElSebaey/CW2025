@@ -1,5 +1,6 @@
 <?import com.comp2042.ui.GameOverPanel?>
 <?import com.comp2042.ui.PausePanel?>
+<?import com.comp2042.ui.LevelCompletePanel?>
 <?import javafx.scene.Group?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
@@ -59,6 +60,9 @@
     </VBox>
     <VBox fx:id="gameOverContainer" alignment="CENTER">
         <GameOverPanel fx:id="gameOverPanel"/>
+    </VBox>
+    <VBox fx:id="levelCompleteContainer" alignment="CENTER">
+        <LevelCompletePanel fx:id="levelCompletePanel"/>
     </VBox>
     <stylesheets>
         <URL value="@window_style.css"/>

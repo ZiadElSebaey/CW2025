@@ -23,6 +23,12 @@ public class LevelsController implements Initializable {
     @FXML
     private Button backButton;
     
+    @FXML
+    private Button resetButton;
+    
+    @FXML
+    private javafx.scene.layout.StackPane rootPane;
+    
     private Stage stage;
     
     public void setStage(Stage stage) {
@@ -31,6 +37,9 @@ public class LevelsController implements Initializable {
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        AnimatedBackground animatedBackground = new AnimatedBackground(720, 680);
+        rootPane.getChildren().addFirst(animatedBackground);
+        
         List<Level> levels = LevelManager.getLevels();
         
         int col = 0;
@@ -53,6 +62,7 @@ public class LevelsController implements Initializable {
         levelsGrid.setAlignment(javafx.geometry.Pos.CENTER);
         
         backButton.setOnAction(_ -> returnToMainMenu());
+        resetButton.setOnAction(_ -> resetLevels());
     }
     
     private javafx.scene.Node createLevelButton(Level level) {
@@ -102,6 +112,31 @@ public class LevelsController implements Initializable {
             Scene scene = new Scene(root, 720, 680);
             stage.setScene(scene);
         } catch (IOException ignored) {
+        }
+    }
+    
+    private void resetLevels() {
+        LevelManager.resetLevels();
+        refreshLevelsGrid();
+    }
+    
+    private void refreshLevelsGrid() {
+        levelsGrid.getChildren().clear();
+        List<Level> levels = LevelManager.getLevels();
+        
+        int col = 0;
+        int row = 0;
+        int colsPerRow = 2;
+        
+        for (Level level : levels) {
+            javafx.scene.Node levelNode = createLevelButton(level);
+            levelsGrid.add(levelNode, col, row);
+            
+            col++;
+            if (col >= colsPerRow) {
+                col = 0;
+                row++;
+            }
         }
     }
     
