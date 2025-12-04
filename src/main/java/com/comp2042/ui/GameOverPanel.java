@@ -11,13 +11,14 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.util.Duration;
 
 public class GameOverPanel extends VBox {
 
     private final Button restartButton;
     private final Button mainMenuButton;
+    private final Button leaderboardButton;
     private final Label scoreLabel;
     private final Label highScoreLabel;
     private final Label highScoreHolderLabel;
@@ -30,11 +31,13 @@ public class GameOverPanel extends VBox {
     private final Button skipButton;
     private final Label savedLabel;
     private final Label errorLabel;
+    private final Label timePlayedLabel;
     private int currentScore;
+    private String gameMode;
 
     public GameOverPanel() {
         setAlignment(Pos.CENTER);
-        setSpacing(8);
+        setSpacing(4);
         setMinWidth(720);
         setPrefWidth(720);
         setMaxWidth(720);
@@ -47,10 +50,8 @@ public class GameOverPanel extends VBox {
 
         scoreLabel = new Label("Score: 0");
         scoreLabel.getStyleClass().add("gameover-score");
-        
         highScoreLabel = new Label("High Score: 0");
         highScoreLabel.getStyleClass().add("gameover-highscore");
-        
         highScoreHolderLabel = new Label("");
         highScoreHolderLabel.getStyleClass().add("gameover-highscore-holder");
         
@@ -93,43 +94,112 @@ public class GameOverPanel extends VBox {
         errorLabel.getStyleClass().add("error-label");
         errorLabel.setVisible(false);
 
+        timePlayedLabel = new Label("");
+        timePlayedLabel.getStyleClass().add("gameover-score");
+        timePlayedLabel.setVisible(false);
+
         restartButton = new Button("Restart");
         restartButton.getStyleClass().add("gameover-button");
 
         mainMenuButton = new Button("Main Menu");
         mainMenuButton.getStyleClass().add("gameover-button");
+        
+        leaderboardButton = new Button("🏆 Leaderboard");
+        leaderboardButton.getStyleClass().add("gameover-button");
 
-        getChildren().addAll(gameOverLabel, scoreLabel, highScoreLabel, highScoreHolderLabel, newHighScoreLabel, 
-                            enterNameLabel, nameInputBox, savedLabel, errorLabel, restartButton, mainMenuButton);
+        Region spacer = new Region();
+        spacer.setMinHeight(20);
+        spacer.setPrefHeight(35);
+        spacer.setMaxHeight(30);
+        
+        VBox topSection = new VBox(-10);
+        topSection.setAlignment(Pos.CENTER);
+        topSection.getChildren().addAll(gameOverLabel, scoreLabel, timePlayedLabel, highScoreLabel, spacer, highScoreHolderLabel, newHighScoreLabel);
+        
+        VBox middleSection = new VBox(8);
+        middleSection.setAlignment(Pos.CENTER);
+        middleSection.getChildren().addAll(enterNameLabel, nameInputBox, savedLabel, errorLabel);
+        
+        VBox buttonSection = new VBox(7);
+        buttonSection.setAlignment(Pos.CENTER);
+        buttonSection.getChildren().addAll(restartButton, mainMenuButton, leaderboardButton);
+        
+        VBox mainContainer = new VBox(-10);
+        mainContainer.setAlignment(Pos.CENTER);
+        mainContainer.getChildren().addAll(topSection, middleSection, buttonSection);
+        
+        getChildren().add(mainContainer);
     }
 
     public void showFinalScore(int score, int highScore, boolean isNewHighScore) {
-        showFinalScore(score, highScore, isNewHighScore, null, false);
+        showFinalScore(score, highScore, isNewHighScore, null, false, 0);
     }
     
     public void showFinalScore(int score, int highScore, boolean isNewHighScore, String playerName, boolean isGuest) {
+        showFinalScore(score, highScore, isNewHighScore, playerName, isGuest, 0);
+    }
+    
+    public void showFinalScore(int score, int highScore, boolean isNewHighScore, String playerName, boolean isGuest, long timePlayed) {
         this.currentScore = score;
-        scoreLabel.setText("Score: " + score);
-        highScoreLabel.setText("High Score: " + highScore);
         
-        String highScoreHolder = HighScoreManager.getHighScoreHolder();
-        if (highScoreHolder != null && !highScoreHolder.isEmpty()) {
-            String capitalizedName = highScoreHolder.substring(0, 1).toUpperCase() + 
-                                    (highScoreHolder.length() > 1 ? highScoreHolder.substring(1).toLowerCase() : "");
-            highScoreHolderLabel.setText(capitalizedName);
-            highScoreHolderLabel.setVisible(true);
-            animateHighScoreHolder();
+        if (playerName != null && !playerName.isEmpty()) {
+            String capitalizedPlayerName = playerName.substring(0, 1).toUpperCase() + 
+                                          (playerName.length() > 1 ? playerName.substring(1).toLowerCase() : "");
+            scoreLabel.setText(capitalizedPlayerName + " (You): " + score);
         } else {
-            highScoreHolderLabel.setVisible(false);
+            scoreLabel.setText("Score: " + score);
         }
         
-        newHighScoreLabel.setVisible(isNewHighScore);
+        if (timePlayed > 0) {
+            int minutes = (int)(timePlayed / 60);
+            int seconds = (int)(timePlayed % 60);
+            String timeStr = String.format("Time Played: %d:%02d", minutes, seconds);
+            timePlayedLabel.setText(timeStr);
+            timePlayedLabel.setVisible(true);
+            animateLabel(timePlayedLabel);
+        } else {
+            timePlayedLabel.setVisible(false);
+        }
         
-        if (isGuest) {
+        boolean isLevelGame = playerName != null && playerName.equals("Level Player");
+        boolean isInvertedMode = gameMode != null && gameMode.equals("inverted");
+        
+        if (isLevelGame || isInvertedMode) {
+            highScoreLabel.setVisible(false);
+            highScoreHolderLabel.setVisible(false);
+            newHighScoreLabel.setVisible(false);
+            if (isInvertedMode) {
+                timePlayedLabel.setVisible(false);
+            }
+        } else {
+            highScoreLabel.setText("High Score: " + highScore);
+            highScoreLabel.setVisible(true);
+            animateLabel(highScoreLabel);
+            
+            String highScoreHolder = HighScoreManager.getHighScoreHolder();
+            if (highScoreHolder != null && !highScoreHolder.isEmpty()) {
+                String capitalizedName = highScoreHolder.substring(0, 1).toUpperCase() + 
+                                        (highScoreHolder.length() > 1 ? highScoreHolder.substring(1).toLowerCase() : "");
+                highScoreHolderLabel.setText("by " + capitalizedName);
+                highScoreHolderLabel.setVisible(true);
+                animateLabel(highScoreHolderLabel);
+            } else {
+                highScoreHolderLabel.setVisible(false);
+            }
+            
+            newHighScoreLabel.setVisible(isNewHighScore);
+        }
+        
+        animateLabel(scoreLabel);
+        
+        if (isGuest || isLevelGame || isInvertedMode) {
             enterNameLabel.setVisible(false);
             nameInputBox.setVisible(false);
             savedLabel.setVisible(false);
             errorLabel.setVisible(false);
+            if (isInvertedMode) {
+                leaderboardButton.setVisible(false);
+            }
         } else if (playerName != null && !playerName.isEmpty()) {
             LeaderboardManager.addEntry(playerName, score);
             enterNameLabel.setVisible(false);
@@ -150,10 +220,42 @@ public class GameOverPanel extends VBox {
     private void saveToLeaderboard() {
         String name = nameField.getText().trim();
         if (!name.isEmpty()) {
-            LeaderboardManager.addEntry(name, currentScore);
+            boolean isInvertedMode = gameMode != null && gameMode.equals("inverted");
+            
+            if (!isInvertedMode) {
+                LeaderboardManager.addEntry(name, currentScore);
+                HighScoreManager.updateHighScore(currentScore, name);
+            }
+            
             hideNameInput();
             savedLabel.setVisible(true);
             errorLabel.setVisible(false);
+            
+            boolean isLevelGame = name != null && name.equals("Level Player");
+            
+            if (!isLevelGame && !isInvertedMode) {
+                String highScoreHolder = HighScoreManager.getHighScoreHolder();
+                if (highScoreHolder != null && !highScoreHolder.isEmpty()) {
+                    String capitalizedName = highScoreHolder.substring(0, 1).toUpperCase() + 
+                                            (highScoreHolder.length() > 1 ? highScoreHolder.substring(1).toLowerCase() : "");
+                    highScoreHolderLabel.setText("by " + capitalizedName);
+                    highScoreHolderLabel.setVisible(true);
+                    animateLabel(highScoreHolderLabel);
+                }
+                
+                int highScore = HighScoreManager.getHighScore();
+                highScoreLabel.setText("High Score: " + highScore);
+                highScoreLabel.setVisible(true);
+            } else {
+                highScoreLabel.setVisible(false);
+                highScoreHolderLabel.setVisible(false);
+            }
+            
+            if (name != null && !name.isEmpty()) {
+                String capitalizedPlayerName = name.substring(0, 1).toUpperCase() + 
+                                              (name.length() > 1 ? name.substring(1).toLowerCase() : "");
+                scoreLabel.setText(capitalizedPlayerName + " (You): " + currentScore);
+            }
         } else {
             errorLabel.setVisible(true);
             savedLabel.setVisible(false);
@@ -199,23 +301,35 @@ public class GameOverPanel extends VBox {
         return mainMenuButton;
     }
     
-    private void animateHighScoreHolder() {
-        if (highScoreHolderLabel != null && highScoreHolderLabel.isVisible()) {
-            ScaleTransition pulse = new ScaleTransition(Duration.seconds(1.2), highScoreHolderLabel);
+    public Button getLeaderboardButton() {
+        return leaderboardButton;
+    }
+    
+    public void setGameMode(String mode) {
+        this.gameMode = mode;
+    }
+    
+    private void animateLabel(Label label) {
+        if (label != null && label.isVisible()) {
+            ScaleTransition pulse = new ScaleTransition(Duration.seconds(1.2), label);
             pulse.setFromX(1.0);
             pulse.setFromY(1.0);
             pulse.setToX(1.15);
             pulse.setToY(1.15);
             pulse.setCycleCount(Timeline.INDEFINITE);
             pulse.setAutoReverse(true);
-            pulse.play();
+            pulse.setInterpolator(javafx.animation.Interpolator.EASE_BOTH);
             
-            FadeTransition glow = new FadeTransition(Duration.seconds(1.2), highScoreHolderLabel);
-            glow.setFromValue(0.7);
+            FadeTransition glow = new FadeTransition(Duration.seconds(1.2), label);
+            glow.setFromValue(0.85);
             glow.setToValue(1.0);
             glow.setCycleCount(Timeline.INDEFINITE);
             glow.setAutoReverse(true);
-            glow.play();
+            glow.setInterpolator(javafx.animation.Interpolator.EASE_BOTH);
+            
+            ParallelTransition combined = new ParallelTransition(pulse, glow);
+            combined.play();
         }
     }
+    
 }

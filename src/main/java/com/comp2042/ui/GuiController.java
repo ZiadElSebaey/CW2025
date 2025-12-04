@@ -7,8 +7,8 @@ import com.comp2042.logic.InputEventListener;
 import com.comp2042.logic.MoveEvent;
 import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
-import javafx.animation.RotateTransition;
 import javafx.animation.ScaleTransition;
+import javafx.animation.SequentialTransition;
 import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -42,12 +42,11 @@ import java.util.ResourceBundle;
 public class GuiController implements Initializable {
 
     private static final int BRICK_SIZE = 20;
-    private static final int DROP_INTERVAL_MS = 400;
+    private static final int DEFAULT_DROP_INTERVAL_MS = 400;
     private static final int BRICK_PANEL_Y_OFFSET = -20;
     private static final int HIDDEN_ROWS = 2;
     private static final int BOARD_PADDING = 8;
     private static final int RECTANGLE_ARC_SIZE = 9;
-
 
     @FXML
     private GridPane gamePanel;
@@ -66,6 +65,14 @@ public class GuiController implements Initializable {
 
     @FXML
     private PausePanel pausePanel;
+    @FXML
+    private LevelCompletePanel levelCompletePanel;
+    @FXML
+    private VBox levelCompleteContainer;
+    @FXML
+    private CountdownPanel countdownPanel;
+    @FXML
+    private VBox countdownContainer;
 
     @FXML
     private BorderPane gameBoard;
@@ -87,19 +94,26 @@ public class GuiController implements Initializable {
 
     @FXML
     private Label highScoreLabel;
-    
     @FXML
     private Label highScoreHolderLabel;
-
     @FXML
     private Label linesLabel;
-
+    @FXML
+    private Label timerLabel;
+    @FXML
+    private Label objectiveLabel;
+    @FXML
+    private VBox objectivePanel;
+    @FXML
+    private VBox rightPanel;
+    @FXML
+    private VBox nextBlockContainer;
+    @FXML
+    private StackPane nextBlockStackPane;
     @FXML
     private GridPane nextBlockPanel;
-    
     @FXML
     private GridPane holdBlockPanel;
-    
     @FXML
     private VBox holdBlockContainer;
 
@@ -109,31 +123,31 @@ public class GuiController implements Initializable {
     private Rectangle[][] displayMatrix;
     private VBox leaderboardContainer;
     private LeaderboardPanel leaderboardPanel;
-    
     private Rectangle[][] nextBlockRectangles;
-    
     private Rectangle[][] holdBlockRectangles;
-    
     private int[][] previousHoldData;
-    
     private IntegerProperty currentScoreProperty;
-
     private InputEventListener eventListener;
-
     private Rectangle[][] rectangles;
-    
     private Rectangle[][] ghostRectangles;
-
     private Timeline timeLine;
-
+    private Timeline timerUpdateLine;
+    private Timeline freePlayTimerLine;
     private final BooleanProperty isPause = new SimpleBooleanProperty();
-
     private final BooleanProperty isGameOver = new SimpleBooleanProperty();
-
     private Stage stage;
-    
     private String playerName;
     private boolean isGuest;
+    private String gameMode;
+    private com.comp2042.logic.Level currentLevel;
+    private int tripleClearsCount;
+    private long levelStartTime;
+    private long pauseStartTime;
+    private long totalPauseDuration;
+    private long freePlayStartTime;
+    private long freePlayPauseStartTime;
+    private long freePlayTotalPauseDuration;
+    private int dropIntervalMs = DEFAULT_DROP_INTERVAL_MS;
 
     public void setStage(Stage stage) {
         this.stage = stage;
@@ -142,6 +156,226 @@ public class GuiController implements Initializable {
     public void setPlayerName(String name, boolean guest) {
         this.playerName = name;
         this.isGuest = guest;
+    }
+    
+    public com.comp2042.logic.Level getCurrentLevel() {
+        return currentLevel;
+    }
+    
+    public String getGameMode() {
+        return gameMode;
+    }
+    
+    public void setGameMode(String mode) {
+        this.gameMode = mode;
+        boolean isInvertedMode = mode != null && mode.equals("inverted");
+        if (isInvertedMode && objectivePanel != null) {
+            objectivePanel.setVisible(false);
+        } else if (!isInvertedMode && objectivePanel != null && currentLevel == null) {
+            objectivePanel.setVisible(true);
+        }
+    }
+    
+    public void setLevel(com.comp2042.logic.Level level) {
+        this.currentLevel = level;
+        if (level != null) {
+            this.dropIntervalMs = level.getDropSpeed();
+            this.tripleClearsCount = 0;
+            this.levelStartTime = System.currentTimeMillis();
+            this.totalPauseDuration = 0;
+            this.pauseStartTime = 0;
+            stopTimerUpdate();
+            highScoreLabel.setVisible(false);
+            highScoreHolderLabel.setVisible(false);
+            updateLevelObjectiveLabel();
+            
+            if (rightPanel != null) {
+                rightPanel.setLayoutX(500);
+                rightPanel.setSpacing(20);
+            }
+            if (nextBlockContainer != null) {
+                nextBlockContainer.setSpacing(15);
+                nextBlockContainer.setStyle("");
+            }
+            if (nextBlockStackPane != null) {
+                nextBlockStackPane.setMinWidth(90);
+                nextBlockStackPane.setMinHeight(90);
+                nextBlockStackPane.setPrefWidth(90);
+                nextBlockStackPane.setPrefHeight(90);
+            }
+            
+            if (timerLabel != null) {
+                boolean needsTimer = level.getLevelNumber() == 2 || level.getLevelNumber() == 5;
+                timerLabel.setVisible(needsTimer);
+                if (needsTimer) {
+                    startTimerUpdate();
+                }
+            }
+        } else {
+            this.dropIntervalMs = DEFAULT_DROP_INTERVAL_MS;
+            boolean isInvertedMode = gameMode != null && gameMode.equals("inverted");
+            if (isInvertedMode) {
+                highScoreLabel.setVisible(false);
+                highScoreHolderLabel.setVisible(false);
+                if (objectivePanel != null) {
+                    objectivePanel.setVisible(false);
+                }
+            } else {
+                highScoreLabel.setVisible(true);
+                if (HighScoreManager.getHighScoreHolder() != null && !HighScoreManager.getHighScoreHolder().isEmpty()) {
+                    highScoreHolderLabel.setVisible(true);
+                }
+                if (objectivePanel != null) {
+                    objectivePanel.setVisible(true);
+                }
+            }
+            updateLevelObjectiveLabel();
+            
+            if (rightPanel != null) {
+                rightPanel.setLayoutX(500);
+                rightPanel.setSpacing(20);
+            }
+            if (nextBlockContainer != null) {
+                nextBlockContainer.setSpacing(15);
+                nextBlockContainer.setStyle("");
+            }
+            if (nextBlockStackPane != null) {
+                nextBlockStackPane.setMinWidth(90);
+                nextBlockStackPane.setMinHeight(90);
+                nextBlockStackPane.setPrefWidth(90);
+                nextBlockStackPane.setPrefHeight(90);
+            }
+            stopTimerUpdate();
+            startFreePlayTimer();
+        }
+    }
+    
+    private void startTimerUpdate() {
+        stopTimerUpdate();
+        if (currentLevel != null && (currentLevel.getLevelNumber() == 2 || currentLevel.getLevelNumber() == 5)) {
+            updateTimerLabel();
+            timerUpdateLine = new Timeline(new KeyFrame(
+                Duration.seconds(1),
+                _ -> updateTimerLabel()
+            ));
+            timerUpdateLine.setCycleCount(Timeline.INDEFINITE);
+            timerUpdateLine.play();
+        }
+    }
+    
+    private void updateTimerLabel() {
+        if (currentLevel != null && timerLabel != null && timerLabel.isVisible()) {
+            long currentPauseTime = (pauseStartTime > 0) ? (System.currentTimeMillis() - pauseStartTime) : 0;
+            long timeElapsed = (System.currentTimeMillis() - levelStartTime - totalPauseDuration - currentPauseTime) / 1000;
+            int remainingTime = (int)(currentLevel.getTimeLimit() - timeElapsed);
+            int minutes = Math.max(0, remainingTime) / 60;
+            int seconds = Math.max(0, remainingTime) % 60;
+            String timeStr = String.format("%d:%02d", minutes, seconds);
+            timerLabel.setText("Time: " + timeStr);
+        }
+    }
+
+    private void stopTimerUpdate() {
+        if (timerUpdateLine != null) {
+            timerUpdateLine.stop();
+            timerUpdateLine = null;
+        }
+    }
+    
+    private void startFreePlayTimer() {
+        stopFreePlayTimer();
+        if (currentLevel == null && (gameMode == null || !gameMode.equals("inverted"))) {
+            freePlayStartTime = System.currentTimeMillis();
+            freePlayTotalPauseDuration = 0;
+            freePlayPauseStartTime = 0;
+            if (timerLabel != null) {
+                timerLabel.setVisible(true);
+                updateFreePlayTimer();
+            }
+            freePlayTimerLine = new Timeline(new KeyFrame(
+                Duration.seconds(1),
+                _ -> updateFreePlayTimer()
+            ));
+            freePlayTimerLine.setCycleCount(Timeline.INDEFINITE);
+            freePlayTimerLine.play();
+        }
+    }
+    
+    private void updateFreePlayTimer() {
+        if (currentLevel == null && timerLabel != null && 
+            (gameMode == null || !gameMode.equals("inverted"))) {
+            if (freePlayStartTime == 0) {
+                timerLabel.setText("Time: 0:00");
+                return;
+            }
+            long currentPauseTime = (freePlayPauseStartTime > 0) ? (System.currentTimeMillis() - freePlayPauseStartTime) : 0;
+            long timeElapsed = (System.currentTimeMillis() - freePlayStartTime - freePlayTotalPauseDuration - currentPauseTime) / 1000;
+            timeElapsed = Math.max(0, timeElapsed);
+            int minutes = (int)(timeElapsed / 60);
+            int seconds = (int)(timeElapsed % 60);
+            String timeStr = String.format("%d:%02d", minutes, seconds);
+            timerLabel.setText("Time: " + timeStr);
+        }
+    }
+    
+    private void stopFreePlayTimer() {
+        if (freePlayTimerLine != null) {
+            freePlayTimerLine.stop();
+            freePlayTimerLine = null;
+        }
+    }
+    
+    private long getFreePlayElapsedTime() {
+        if (currentLevel != null || (gameMode != null && gameMode.equals("inverted"))) {
+            return 0;
+        }
+        if (freePlayStartTime == 0) {
+            return 0;
+        }
+        long currentPauseTime = (freePlayPauseStartTime > 0) ? (System.currentTimeMillis() - freePlayPauseStartTime) : 0;
+        long elapsed = (System.currentTimeMillis() - freePlayStartTime - freePlayTotalPauseDuration - currentPauseTime) / 1000;
+        return Math.max(0, elapsed);
+    }
+    
+    private void updateLevelObjectiveLabel() {
+        if (objectiveLabel != null) {
+            boolean isInvertedMode = gameMode != null && gameMode.equals("inverted");
+            
+            if (currentLevel == null) {
+                if (isInvertedMode) {
+                    objectiveLabel.setVisible(false);
+                } else {
+                    String playerDisplayName = "";
+                    if (playerName != null && !playerName.isEmpty()) {
+                        String capitalizedName = playerName.substring(0, 1).toUpperCase() + 
+                                                (playerName.length() > 1 ? playerName.substring(1).toLowerCase() : "");
+                        playerDisplayName = capitalizedName;
+                    } else {
+                        playerDisplayName = "Player";
+                    }
+                    
+                    String highScoreHolder = HighScoreManager.getHighScoreHolder();
+                    String message = "Keep Going " + playerDisplayName + "!";
+                    if (highScoreHolder != null && !highScoreHolder.isEmpty()) {
+                        String capitalizedHolder = highScoreHolder.substring(0, 1).toUpperCase() + 
+                                                  (highScoreHolder.length() > 1 ? highScoreHolder.substring(1).toLowerCase() : "");
+                        message += " You can beat " + capitalizedHolder + "'s Highscore!!!";
+                    } else {
+                        message += " Set a new Highscore!!!";
+                    }
+                    objectiveLabel.setText(message);
+                    objectiveLabel.setVisible(true);
+                }
+            } else {
+                String objectiveText = "Objective: " + currentLevel.getObjective();
+                objectiveLabel.setText(objectiveText);
+                objectiveLabel.setVisible(true);
+            }
+        }
+        
+        if (highScoreLabel != null && currentLevel != null) {
+            highScoreLabel.setVisible(false);
+        }
     }
 
     @Override
@@ -152,19 +386,10 @@ public class GuiController implements Initializable {
         }
         HighScoreManager.ensureDirectoryExists();
         LeaderboardManager.ensureDirectoryExists();
+        LevelProgressManager.ensureDirectoryExists();
+        LevelProgressManager.initialize();
         
-        int highScore = HighScoreManager.getHighScore();
-        String highScoreHolder = HighScoreManager.getHighScoreHolder();
-        highScoreLabel.setText("High Score: " + highScore);
-        if (highScoreHolder != null && !highScoreHolder.isEmpty()) {
-            String capitalizedName = highScoreHolder.substring(0, 1).toUpperCase() + 
-                                    (highScoreHolder.length() > 1 ? highScoreHolder.substring(1).toLowerCase() : "");
-            highScoreHolderLabel.setText(capitalizedName);
-            highScoreHolderLabel.setVisible(true);
-            animateHighScoreHolder();
-        } else {
-            highScoreHolderLabel.setVisible(false);
-        }
+        refreshHighScoreDisplay();
         
         gamePanel.setFocusTraversable(true);
         gamePanel.requestFocus();
@@ -173,9 +398,18 @@ public class GuiController implements Initializable {
         gameOverContainer.setVisible(false);
         pausePanel.setVisible(false);
         pauseContainer.setVisible(false);
+        if (levelCompleteContainer != null) {
+            levelCompleteContainer.setVisible(false);
+        }
+        if (countdownContainer != null) {
+            countdownContainer.setVisible(false);
+        }
+        
+        updateLevelObjectiveLabel();
 
         gameOverPanel.getRestartButton().setOnAction(_ -> newGame(null));
         gameOverPanel.getMainMenuButton().setOnAction(_ -> returnToMainMenu());
+        gameOverPanel.getLeaderboardButton().setOnAction(_ -> showLeaderboard());
 
         pausePanel.getResumeButton().setOnAction(_ -> resumeGame());
         pausePanel.getRestartButton().setOnAction(_ -> newGame(null));
@@ -186,27 +420,29 @@ public class GuiController implements Initializable {
         AnimatedBackground animatedBackground = new AnimatedBackground(720, 680);
         rootPane.getChildren().addFirst(animatedBackground);
 
-        backButton.setOnAction(_ -> returnToMainMenu());
+        backButton.setOnAction(_ -> returnToPlayMenu());
         setupLeaderboardPanel();
         setupHoldBlockAnimation();
     }
     
     private void setupHoldBlockAnimation() {
         if (holdBlockContainer != null) {
-            ScaleTransition pulse = new ScaleTransition(Duration.seconds(1.5), holdBlockContainer);
+            ScaleTransition pulse = new ScaleTransition(Duration.seconds(3.0), holdBlockContainer);
             pulse.setFromX(1.0);
             pulse.setFromY(1.0);
-            pulse.setToX(1.05);
-            pulse.setToY(1.05);
+            pulse.setToX(1.02);
+            pulse.setToY(1.02);
             pulse.setCycleCount(Timeline.INDEFINITE);
             pulse.setAutoReverse(true);
+            pulse.setInterpolator(javafx.animation.Interpolator.EASE_BOTH);
             pulse.play();
             
-            FadeTransition glow = new FadeTransition(Duration.seconds(1.5), holdBlockContainer);
-            glow.setFromValue(0.9);
+            FadeTransition glow = new FadeTransition(Duration.seconds(3.0), holdBlockContainer);
+            glow.setFromValue(0.95);
             glow.setToValue(1.0);
             glow.setCycleCount(Timeline.INDEFINITE);
             glow.setAutoReverse(true);
+            glow.setInterpolator(javafx.animation.Interpolator.EASE_BOTH);
             glow.play();
         }
     }
@@ -229,10 +465,9 @@ public class GuiController implements Initializable {
     }
 
     private void resumeGame() {
-        setPaused(false);
         pausePanel.setVisible(false);
         pauseContainer.setVisible(false);
-        gamePanel.requestFocus();
+        startCountdown();
     }
 
     private void openSettingsFromPause() {
@@ -253,6 +488,7 @@ public class GuiController implements Initializable {
         if (timeLine != null) {
             timeLine.stop();
         }
+        stopTimerUpdate();
         MainMenuController.clearActiveGame();
         try {
             URL location = getClass().getClassLoader().getResource("mainMenu.fxml");
@@ -260,6 +496,26 @@ public class GuiController implements Initializable {
             Parent root = fxmlLoader.load();
             MainMenuController menuController = fxmlLoader.getController();
             menuController.setStage(stage);
+            Scene scene = new Scene(root, 720, 680);
+            stage.setScene(scene);
+        } catch (IOException ignored) {
+        }
+    }
+    
+    private void returnToPlayMenu() {
+        if (timeLine != null) {
+            timeLine.stop();
+        }
+        stopTimerUpdate();
+        stopFreePlayTimer();
+        MainMenuController.clearActiveGame();
+        try {
+            URL location = getClass().getClassLoader().getResource("mainMenu.fxml");
+            FXMLLoader fxmlLoader = new FXMLLoader(location);
+            Parent root = fxmlLoader.load();
+            MainMenuController menuController = fxmlLoader.getController();
+            menuController.setStage(stage);
+            menuController.showPlayMenu();
             Scene scene = new Scene(root, 720, 680);
             stage.setScene(scene);
         } catch (IOException ignored) {
@@ -335,7 +591,7 @@ public class GuiController implements Initializable {
         initHoldBlockPanel(brick);
 
         timeLine = new Timeline(new KeyFrame(
-                Duration.millis(DROP_INTERVAL_MS),
+                Duration.millis(dropIntervalMs),
                 _ -> moveDown(threadMove())
         ));
         timeLine.setCycleCount(Timeline.INDEFINITE);
@@ -373,17 +629,16 @@ public class GuiController implements Initializable {
                     ghostRect.setArcWidth(RECTANGLE_ARC_SIZE);
                     ghostRect.setStroke(Color.rgb(255, 255, 255, 0.5));
                     ghostRect.setStrokeWidth(1);
-                    
                     if (wasTransparent) {
                         ghostRect.setOpacity(0.0);
-                        FadeTransition fadeIn = new FadeTransition(Duration.millis(200), ghostRect);
+                        FadeTransition fadeIn = new FadeTransition(Duration.millis(80), ghostRect);
                         fadeIn.setFromValue(0.0);
                         fadeIn.setToValue(1.0);
                         fadeIn.play();
                     }
                 } else {
                     if (!wasTransparent) {
-                        FadeTransition fadeOut = new FadeTransition(Duration.millis(150), ghostRect);
+                        FadeTransition fadeOut = new FadeTransition(Duration.millis(60), ghostRect);
                         fadeOut.setFromValue(ghostRect.getOpacity());
                         fadeOut.setToValue(0.0);
                         fadeOut.setOnFinished(_ -> {
@@ -508,26 +763,29 @@ public class GuiController implements Initializable {
     
     private void spinHoldBlock() {
         if (holdBlockContainer != null) {
-            holdBlockContainer.setRotate(0);
+            holdBlockContainer.setScaleX(1.0);
+            holdBlockContainer.setScaleY(1.0);
+            holdBlockContainer.setTranslateX(0);
+            holdBlockContainer.setTranslateY(0);
             
-            RotateTransition spin = new RotateTransition(Duration.seconds(0.3), holdBlockContainer);
-            spin.setFromAngle(0);
-            spin.setToAngle(180);
-            spin.setCycleCount(1);
-            spin.setAutoReverse(false);
-            spin.setOnFinished(_ -> {
-                holdBlockContainer.setRotate(0);
-            });
-            spin.play();
+            ScaleTransition scaleUp = new ScaleTransition(Duration.millis(200), holdBlockContainer);
+            scaleUp.setFromX(1.0);
+            scaleUp.setFromY(1.0);
+            scaleUp.setToX(1.15);
+            scaleUp.setToY(1.15);
+            scaleUp.setCycleCount(1);
+            scaleUp.setInterpolator(javafx.animation.Interpolator.EASE_OUT);
             
-            ScaleTransition bounce = new ScaleTransition(Duration.seconds(0.15), holdBlockContainer);
-            bounce.setFromX(1.0);
-            bounce.setFromY(1.0);
-            bounce.setToX(1.15);
-            bounce.setToY(1.15);
-            bounce.setCycleCount(2);
-            bounce.setAutoReverse(true);
-            bounce.play();
+            ScaleTransition scaleDown = new ScaleTransition(Duration.millis(300), holdBlockContainer);
+            scaleDown.setFromX(1.15);
+            scaleDown.setFromY(1.15);
+            scaleDown.setToX(1.0);
+            scaleDown.setToY(1.0);
+            scaleDown.setCycleCount(1);
+            scaleDown.setInterpolator(javafx.animation.Interpolator.EASE_IN);
+            
+            SequentialTransition sequence = new SequentialTransition(scaleUp, scaleDown);
+            sequence.play();
         }
     }
 
@@ -648,8 +906,162 @@ public class GuiController implements Initializable {
         linesProperty.addListener((_, oldVal, newVal) -> {
             if (newVal.intValue() > oldVal.intValue()) {
                 animateLabel(linesLabel);
+                if (currentLevel != null) {
+                    checkLevelObjective();
+                }
             }
         });
+    }
+    
+    public void onLinesCleared(int linesCount) {
+        if (currentLevel != null && linesCount == 3) {
+            tripleClearsCount++;
+        }
+        if (currentLevel != null) {
+            checkLevelObjective();
+        }
+    }
+    
+    private void checkLevelObjective() {
+        if (currentLevel == null || eventListener == null) {
+            return;
+        }
+        
+        IntegerProperty linesProp = ((com.comp2042.logic.GameController) eventListener).getLinesProperty();
+        int totalLines = linesProp != null ? linesProp.get() : 0;
+        long currentPauseTime = (pauseStartTime > 0) ? (System.currentTimeMillis() - pauseStartTime) : 0;
+        long timeElapsed = (System.currentTimeMillis() - levelStartTime - totalPauseDuration - currentPauseTime) / 1000;
+        
+        boolean objectiveMet = false;
+        
+        if (currentLevel.getLevelNumber() == 1) {
+            objectiveMet = totalLines >= currentLevel.getTargetLines();
+        } else if (currentLevel.getLevelNumber() == 2) {
+            objectiveMet = totalLines >= currentLevel.getTargetLines() && 
+                          timeElapsed <= currentLevel.getTimeLimit();
+        } else if (currentLevel.getLevelNumber() == 3) {
+            objectiveMet = tripleClearsCount >= 2;
+        } else if (currentLevel.getLevelNumber() == 4) {
+            int currentScore = currentScoreProperty != null ? currentScoreProperty.get() : 0;
+            objectiveMet = currentScore >= currentLevel.getTargetScore();
+        } else if (currentLevel.getLevelNumber() == 5) {
+            objectiveMet = totalLines >= currentLevel.getTargetLines() && 
+                          timeElapsed <= currentLevel.getTimeLimit();
+        }
+        
+        updateLevelProgress(totalLines, timeElapsed);
+        
+        if (currentLevel.getLevelNumber() == 2 || currentLevel.getLevelNumber() == 5) {
+            if (timeElapsed > currentLevel.getTimeLimit()) {
+                if (timeLine != null) {
+                    timeLine.stop();
+                }
+                gameOver();
+                return;
+            }
+        }
+        
+        if (objectiveMet) {
+            currentLevel.setCompleted(true);
+            LevelProgressManager.saveLevelProgress();
+            showLevelComplete();
+        }
+    }
+    
+    private void updateLevelProgress(int totalLines, long timeElapsedParam) {
+        if (currentLevel == null) {
+            return;
+        }
+        
+        String progressText = "";
+        
+        if (currentLevel.getLevelNumber() == 1) {
+            progressText = "Lines: " + totalLines + "/" + currentLevel.getTargetLines();
+        } else if (currentLevel.getLevelNumber() == 2) {
+            progressText = "Lines: " + totalLines + "/" + currentLevel.getTargetLines();
+        } else if (currentLevel.getLevelNumber() == 3) {
+            progressText = "Triple Clears: " + tripleClearsCount + "/2";
+        } else if (currentLevel.getLevelNumber() == 4) {
+            int currentScore = currentScoreProperty != null ? currentScoreProperty.get() : 0;
+            progressText = "Score: " + currentScore + "/" + currentLevel.getTargetScore();
+        } else if (currentLevel.getLevelNumber() == 5) {
+            progressText = "Lines: " + totalLines + "/" + currentLevel.getTargetLines();
+            if (timerLabel != null) {
+                timerLabel.setVisible(true);
+            }
+        } else {
+            if (timerLabel != null) {
+                timerLabel.setVisible(false);
+            }
+        }
+        
+        if (objectiveLabel != null && !progressText.isEmpty()) {
+            objectiveLabel.setText(progressText);
+        }
+    }
+    
+    private void showLevelComplete() {
+        setPaused(true);
+        if (levelCompletePanel != null && levelCompleteContainer != null && currentLevel != null) {
+            if (gamePane != null) {
+                gamePane.setVisible(false);
+            }
+            
+            int nextLevelNumber = currentLevel.getLevelNumber() + 1;
+            boolean hasNextLevel = LevelManager.getLevel(nextLevelNumber) != null;
+            
+            levelCompletePanel.showLevelComplete(
+                currentLevel.getName(), 
+                currentLevel.getLevelNumber(),
+                hasNextLevel
+            );
+            
+            levelCompleteContainer.setVisible(true);
+            
+            levelCompletePanel.getNextLevelButton().setOnAction(_ -> {
+                com.comp2042.logic.Level nextLevel = LevelManager.getLevel(nextLevelNumber);
+                if (nextLevel != null) {
+                    levelCompleteContainer.setVisible(false);
+                    if (gamePane != null) {
+                        gamePane.setVisible(true);
+                    }
+                    setLevel(nextLevel);
+                    startLevelGame();
+                }
+            });
+            
+            levelCompletePanel.getLevelsMenuButton().setOnAction(_ -> {
+                levelCompleteContainer.setVisible(false);
+                if (gamePane != null) {
+                    gamePane.setVisible(true);
+                }
+                returnToLevelsMenu();
+            });
+            
+            levelCompletePanel.getMainMenuButton().setOnAction(_ -> {
+                levelCompleteContainer.setVisible(false);
+                if (gamePane != null) {
+                    gamePane.setVisible(true);
+                }
+                returnToMainMenu();
+            });
+        }
+    }
+    
+    private void returnToLevelsMenu() {
+        if (timeLine != null) {
+            timeLine.stop();
+        }
+        try {
+            URL location = getClass().getClassLoader().getResource("levels.fxml");
+            FXMLLoader fxmlLoader = new FXMLLoader(location);
+            Parent root = fxmlLoader.load();
+            LevelsController levelsController = fxmlLoader.getController();
+            levelsController.setStage(stage);
+            Scene scene = new Scene(root, 720, 680);
+            stage.setScene(scene);
+        } catch (IOException ignored) {
+        }
     }
 
     private void animateLabel(Label label) {
@@ -669,24 +1081,40 @@ public class GuiController implements Initializable {
         
         int finalScore = currentScoreProperty != null ? currentScoreProperty.get() : 0;
         boolean isNewHighScore = false;
-        if (!isGuest && playerName != null && !playerName.isEmpty()) {
+        boolean isInvertedMode = gameMode != null && gameMode.equals("inverted");
+        
+        if (!isGuest && playerName != null && !playerName.isEmpty() && !isInvertedMode && currentLevel == null) {
             isNewHighScore = HighScoreManager.updateHighScore(finalScore, playerName);
         }
         
-        int highScore = HighScoreManager.getHighScore();
-        String highScoreHolder = HighScoreManager.getHighScoreHolder();
-        highScoreLabel.setText("High Score: " + highScore);
-        if (highScoreHolder != null && !highScoreHolder.isEmpty()) {
-            String capitalizedName = highScoreHolder.substring(0, 1).toUpperCase() + 
-                                    (highScoreHolder.length() > 1 ? highScoreHolder.substring(1).toLowerCase() : "");
-            highScoreHolderLabel.setText(capitalizedName);
-            highScoreHolderLabel.setVisible(true);
-            animateHighScoreHolder();
+        long timePlayed = 0;
+        if (currentLevel == null && !isInvertedMode) {
+            stopFreePlayTimer();
+            timePlayed = getFreePlayElapsedTime();
+        }
+        
+        int highScore = 0;
+        String highScoreHolder = null;
+        if (!isInvertedMode && currentLevel == null) {
+            highScore = HighScoreManager.getHighScore();
+            highScoreHolder = HighScoreManager.getHighScoreHolder();
+            highScoreLabel.setText("High Score: " + highScore);
+            if (highScoreHolder != null && !highScoreHolder.isEmpty()) {
+                String capitalizedName = highScoreHolder.substring(0, 1).toUpperCase() + 
+                                        (highScoreHolder.length() > 1 ? highScoreHolder.substring(1).toLowerCase() : "");
+                highScoreHolderLabel.setText("by " + capitalizedName);
+                highScoreHolderLabel.setVisible(true);
+                animateHighScoreHolder();
+            } else {
+                highScoreHolderLabel.setVisible(false);
+            }
         } else {
+            highScoreLabel.setVisible(false);
             highScoreHolderLabel.setVisible(false);
         }
         
-        gameOverPanel.showFinalScore(finalScore, highScore, isNewHighScore, playerName, isGuest);
+        gameOverPanel.setGameMode(gameMode);
+        gameOverPanel.showFinalScore(finalScore, highScore, isNewHighScore, playerName, isGuest, timePlayed);
         
         gameOverPanel.setVisible(true);
         gameOverContainer.setVisible(true);
@@ -700,7 +1128,26 @@ public class GuiController implements Initializable {
         if (actionEvent != null) {
             actionEvent.consume();
         }
-        requestPlayerNameAndStart();
+        if (currentLevel != null) {
+            tripleClearsCount = 0;
+            levelStartTime = System.currentTimeMillis();
+            totalPauseDuration = 0;
+            pauseStartTime = 0;
+            stopTimerUpdate();
+            stopFreePlayTimer();
+            updateLevelObjectiveLabel();
+            startCountdown();
+        } else {
+            stopFreePlayTimer();
+            boolean isInvertedMode = gameMode != null && gameMode.equals("inverted");
+            if (isInvertedMode) {
+                setPlayerName("Inverted Player", false);
+                updateLevelObjectiveLabel();
+                startCountdown();
+            } else {
+                requestPlayerNameAndStart();
+            }
+        }
     }
     
     private void requestPlayerNameAndStart() {
@@ -713,24 +1160,85 @@ public class GuiController implements Initializable {
         }
         
         setPlayerName(name, guest);
-        startNewGame();
+        updateLevelObjectiveLabel();
+        startCountdown();
     }
     
-    private void startNewGame() {
+    public void startCountdown() {
         gamePane.setVisible(true);
         gameOverPanel.setVisible(false);
         gameOverContainer.setVisible(false);
         pausePanel.setVisible(false);
         pauseContainer.setVisible(false);
+        if (levelCompleteContainer != null) {
+            levelCompleteContainer.setVisible(false);
+        }
+        if (countdownContainer != null) {
+            countdownContainer.setVisible(true);
+        }
+        isGameOver.set(false);
+        setPaused(true);
+        
+        if (countdownPanel != null) {
+            countdownPanel.startCountdown(() -> {
+                if (countdownContainer != null) {
+                    countdownContainer.setVisible(false);
+                }
+                if (currentLevel != null && (currentLevel.getLevelNumber() == 2 || currentLevel.getLevelNumber() == 5)) {
+                    if (pauseStartTime > 0) {
+                        totalPauseDuration += (System.currentTimeMillis() - pauseStartTime);
+                        pauseStartTime = 0;
+                    }
+                }
+                startNewGame();
+            });
+        } else {
+            startNewGame();
+        }
+    }
+    
+    public void startNewGame() {
+        gamePane.setVisible(true);
+        gameOverPanel.setVisible(false);
+        gameOverContainer.setVisible(false);
+        pausePanel.setVisible(false);
+        pauseContainer.setVisible(false);
+        if (levelCompleteContainer != null) {
+            levelCompleteContainer.setVisible(false);
+        }
+        if (countdownContainer != null) {
+            countdownContainer.setVisible(false);
+        }
         isGameOver.set(false);
         setPaused(false);
+        
+        if (currentLevel != null && (currentLevel.getLevelNumber() == 2 || currentLevel.getLevelNumber() == 5)) {
+            levelStartTime = System.currentTimeMillis();
+            totalPauseDuration = 0;
+            pauseStartTime = 0;
+            stopTimerUpdate();
+            startTimerUpdate();
+        } else if (currentLevel == null && (gameMode == null || !gameMode.equals("inverted"))) {
+            startFreePlayTimer();
+        }
         
         gamePanel.setFocusTraversable(true);
         gamePanel.setDisable(false);
 
-        ViewData newBrickData = eventListener.createNewGame();
-        refreshBrick(newBrickData);
+        if (eventListener != null) {
+            ViewData newBrickData = eventListener.createNewGame();
+            refreshBrick(newBrickData);
+        }
         gamePanel.requestFocus();
+    }
+    
+    public void startLevelGame() {
+        if (currentLevel != null && eventListener == null) {
+            eventListener = new com.comp2042.logic.GameController(this);
+        }
+        if (currentLevel != null) {
+            startCountdown();
+        }
     }
     private void setPaused(boolean paused) {
         isPause.set(paused);
@@ -741,8 +1249,34 @@ public class GuiController implements Initializable {
 
         if (paused) {
             timeLine.stop();
+            stopTimerUpdate();
+            if (currentLevel != null && (currentLevel.getLevelNumber() == 2 || currentLevel.getLevelNumber() == 5)) {
+                pauseStartTime = System.currentTimeMillis();
+            }
+            if (currentLevel == null && (gameMode == null || !gameMode.equals("inverted"))) {
+                if (freePlayTimerLine != null) {
+                    freePlayTimerLine.pause();
+                }
+                freePlayPauseStartTime = System.currentTimeMillis();
+            }
         } else {
             timeLine.play();
+            if (currentLevel != null && (currentLevel.getLevelNumber() == 2 || currentLevel.getLevelNumber() == 5)) {
+                if (pauseStartTime > 0) {
+                    totalPauseDuration += System.currentTimeMillis() - pauseStartTime;
+                    pauseStartTime = 0;
+                }
+                startTimerUpdate();
+            }
+            if (currentLevel == null && (gameMode == null || !gameMode.equals("inverted"))) {
+                if (freePlayPauseStartTime > 0) {
+                    freePlayTotalPauseDuration += (System.currentTimeMillis() - freePlayPauseStartTime);
+                    freePlayPauseStartTime = 0;
+                }
+                if (freePlayTimerLine != null) {
+                    freePlayTimerLine.play();
+                }
+            }
         }
     }
     public void pauseGame(ActionEvent actionEvent) {
@@ -797,6 +1331,30 @@ public class GuiController implements Initializable {
 
     public void requestFocus() {
         gamePanel.requestFocus();
+    }
+    
+    public void refreshHighScoreDisplay() {
+        if (currentLevel != null) {
+            return;
+        }
+        boolean isInvertedMode = gameMode != null && gameMode.equals("inverted");
+        if (isInvertedMode) {
+            highScoreLabel.setVisible(false);
+            highScoreHolderLabel.setVisible(false);
+            return;
+        }
+        int highScore = HighScoreManager.getHighScore();
+        String highScoreHolder = HighScoreManager.getHighScoreHolder();
+        highScoreLabel.setText("High Score: " + highScore);
+        if (highScoreHolder != null && !highScoreHolder.isEmpty()) {
+            String capitalizedName = highScoreHolder.substring(0, 1).toUpperCase() + 
+                                    (highScoreHolder.length() > 1 ? highScoreHolder.substring(1).toLowerCase() : "");
+            highScoreHolderLabel.setText("by " + capitalizedName);
+            highScoreHolderLabel.setVisible(true);
+            animateHighScoreHolder();
+        } else {
+            highScoreHolderLabel.setVisible(false);
+        }
     }
     
     private void animateHighScoreHolder() {

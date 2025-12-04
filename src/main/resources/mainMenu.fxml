@@ -5,6 +5,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
 <?import javafx.geometry.Insets?>
@@ -13,14 +14,31 @@
 <StackPane fx:id="rootPane" xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.comp2042.ui.MainMenuController">
     <VBox alignment="CENTER" spacing="40" pickOnBounds="false">
-        <Label text="TETRIS" styleClass="menu-title"/>
+        <Label fx:id="titleLabel" text="TETRIS" styleClass="menu-title"/>
         <VBox alignment="CENTER" spacing="15">
-            <Button text="Free Play" styleClass="menu-button" onAction="#onPlayClicked"/>
-            <Button text="Levels" styleClass="menu-button" onAction="#onLevelsClicked"/>
-            <Button text="Gamemodes" styleClass="menu-button" onAction="#onGamemodesClicked"/>
-            <Button fx:id="resumeButton" text="Resume Game" styleClass="menu-button" onAction="#onResumeClicked"/>
-            <Button text="How To Play" styleClass="menu-button" onAction="#onHowToPlayClicked"/>
-            <Button text="Quit" styleClass="menu-button" onAction="#onQuitClicked"/>
+            <Button fx:id="playButton" text="Play" styleClass="menu-button" onAction="#onPlayMenuClicked"/>
+            <HBox fx:id="playSubmenu" alignment="CENTER" spacing="30" visible="false" managed="false">
+                <VBox alignment="CENTER" spacing="15" styleClass="play-option-panel" onMouseClicked="#onPlayClicked">
+                    <Label text="FREE PLAY" styleClass="play-option-title"/>
+                    <Label text="Play without limits" styleClass="play-option-subtitle" wrapText="true"/>
+                </VBox>
+                <VBox alignment="CENTER" spacing="15" styleClass="play-option-panel" onMouseClicked="#onLevelsClicked">
+                    <Label text="LEVELS" styleClass="play-option-title"/>
+                    <Label text="Complete challenges" styleClass="play-option-subtitle" wrapText="true"/>
+                </VBox>
+                <VBox alignment="CENTER" spacing="15" styleClass="play-option-panel" onMouseClicked="#onGamemodesClicked">
+                    <VBox alignment="CENTER" spacing="5">
+                        <Label text="Game" styleClass="play-option-title"/>
+                        <Label text="Modes" styleClass="play-option-title"/>
+                    </VBox>
+                    <Label text="Try new modes" styleClass="play-option-subtitle" wrapText="true"/>
+                </VBox>
+            </HBox>
+            <VBox fx:id="otherButtons" alignment="CENTER" spacing="15">
+                <Button fx:id="resumeButton" text="Resume Game" styleClass="menu-button" onAction="#onResumeClicked"/>
+                <Button text="How To Play" styleClass="menu-button" onAction="#onHowToPlayClicked"/>
+                <Button text="Quit" styleClass="menu-button" onAction="#onQuitClicked"/>
+            </VBox>
         </VBox>
     </VBox>
     <Pane pickOnBounds="false">
@@ -29,10 +47,11 @@
                 <image><Image url="@AlexeyPajitnov.png"/></image>
             </ImageView>
             <Label text="Alexey Pajitnov" styleClass="creator-name"/>
-            <Label text="Creator of Tetris" styleClass="creator-title"/>
         </VBox>
         <Button fx:id="leaderboardButton" text="🏆" styleClass="trophy-icon" onAction="#onLeaderboardClicked" layoutX="15" layoutY="15"/>
         <Button fx:id="settingsButton" text="⚙" styleClass="settings-icon" onAction="#onSettingsClicked" layoutX="15" layoutY="580"/>
+        <Button fx:id="musicButton" text="🎵" styleClass="music-icon" onAction="#onMusicClicked" layoutX="640" layoutY="15"/>
+        <Button fx:id="backButton" text="←" styleClass="back-icon" onAction="#onPlayMenuBackClicked" layoutX="15" layoutY="15" visible="false" managed="false"/>
     </Pane>
     <stylesheets>
         <URL value="@window_style.css"/>

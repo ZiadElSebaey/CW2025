@@ -28,7 +28,6 @@ public class SimpleBoard implements Board {
         this(BOARD_ROWS, BOARD_COLUMNS);
     }
 
-
     public SimpleBoard(int width, int height) {
         this.width = width;
         this.height = height;
@@ -67,7 +66,6 @@ public class SimpleBoard implements Board {
         return tryMove(-1, 0);
     }
 
-
     @Override
     public boolean moveBrickRight() {
         return tryMove(1, 0);
@@ -84,7 +82,6 @@ public class SimpleBoard implements Board {
         brickRotator.setCurrentShape(nextShape.getPosition());
         return true;
     }
-
 
     @Override
     public boolean spawnNewBrick() {
@@ -135,14 +132,12 @@ public class SimpleBoard implements Board {
         ClearRow clearRow = MatrixOperations.checkRemoving(currentGameMatrix);
         currentGameMatrix = clearRow.getNewMatrix();
         return clearRow;
-
     }
 
     @Override
     public Score getScore() {
         return score;
     }
-
 
     @Override
     public void newGame() {

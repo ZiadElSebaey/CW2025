@@ -8,6 +8,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -20,8 +22,8 @@ public class MainMenuController {
 
     private Stage stage;
 
-    private static Scene activeGameScene;
-    private static GuiController activeGuiController;
+    public static Scene activeGameScene;
+    public static GuiController activeGuiController;
 
     @FXML
     private Button resumeButton;
@@ -33,10 +35,28 @@ public class MainMenuController {
     private Button leaderboardButton;
 
     @FXML
+    private Button musicButton;
+
+    @FXML
     private VBox creatorPanel;
 
     @FXML
     private StackPane rootPane;
+
+    @FXML
+    private HBox playSubmenu;
+
+    @FXML
+    private Button playButton;
+
+    @FXML
+    private VBox otherButtons;
+
+    @FXML
+    private Label titleLabel;
+
+    @FXML
+    private Button backButton;
 
     private VBox leaderboardContainer;
     private LeaderboardPanel leaderboardPanel;
@@ -65,6 +85,22 @@ public class MainMenuController {
         pulse.setAutoReverse(true);
         pulse.play();
 
+        javafx.animation.ScaleTransition musicPulse = new javafx.animation.ScaleTransition(Duration.seconds(0.8), musicButton);
+        musicPulse.setFromX(1.0);
+        musicPulse.setFromY(1.0);
+        musicPulse.setToX(1.2);
+        musicPulse.setToY(1.2);
+        musicPulse.setCycleCount(Timeline.INDEFINITE);
+        musicPulse.setAutoReverse(true);
+        musicPulse.play();
+        
+        javafx.animation.FadeTransition musicFade = new javafx.animation.FadeTransition(Duration.seconds(0.8), musicButton);
+        musicFade.setFromValue(0.8);
+        musicFade.setToValue(1.0);
+        musicFade.setCycleCount(Timeline.INDEFINITE);
+        musicFade.setAutoReverse(true);
+        musicFade.play();
+
         javafx.animation.TranslateTransition floatUp = new javafx.animation.TranslateTransition(Duration.seconds(2), creatorPanel);
         floatUp.setByY(-10);
         floatUp.setCycleCount(Timeline.INDEFINITE);
@@ -80,6 +116,11 @@ public class MainMenuController {
         leaderboardContainer.setAlignment(javafx.geometry.Pos.CENTER);
         leaderboardContainer.setVisible(false);
         leaderboardPanel.getCloseButton().setOnAction(_ -> leaderboardContainer.setVisible(false));
+        leaderboardPanel.setOnClearCallback(() -> {
+            if (activeGuiController != null) {
+                activeGuiController.refreshHighScoreDisplay();
+            }
+        });
         rootPane.getChildren().add(leaderboardContainer);
     }
 
@@ -101,6 +142,8 @@ public class MainMenuController {
             return;
         }
         
+        resetMainMenu();
+        
         try {
             URL location = getClass().getClassLoader().getResource("gameLayout.fxml");
             FXMLLoader fxmlLoader = new FXMLLoader(location);
@@ -108,6 +151,7 @@ public class MainMenuController {
             GuiController guiController = fxmlLoader.getController();
             guiController.setStage(stage);
             guiController.setPlayerName(playerName, isGuest);
+            guiController.setLevel(null);
 
             Scene gameScene = new Scene(root, 720, 680);
             activeGameScene = gameScene;
@@ -115,8 +159,33 @@ public class MainMenuController {
 
             stage.setScene(gameScene);
             new GameController(guiController);
+            
+            if (guiController.getCurrentLevel() == null && (guiController.getGameMode() == null || !guiController.getGameMode().equals("inverted"))) {
+                guiController.startCountdown();
+            } else {
+                guiController.startNewGame();
+            }
         } catch (IOException ignored) {
         }
+    }
+    
+    private void resetMainMenu() {
+        playSubmenu.setVisible(false);
+        playSubmenu.setManaged(false);
+        playButton.setVisible(true);
+        playButton.setManaged(true);
+        otherButtons.setVisible(true);
+        otherButtons.setManaged(true);
+        leaderboardButton.setVisible(true);
+        leaderboardButton.setManaged(true);
+        musicButton.setVisible(true);
+        musicButton.setManaged(true);
+        titleLabel.setVisible(true);
+        titleLabel.setManaged(true);
+        creatorPanel.setVisible(true);
+        creatorPanel.setManaged(true);
+        backButton.setVisible(false);
+        backButton.setManaged(false);
     }
 
     @FXML
@@ -128,11 +197,63 @@ public class MainMenuController {
     }
 
     @FXML
+    private void onPlayMenuClicked() {
+        showPlayMenu();
+    }
+    
+    public void showPlayMenu() {
+        playButton.setVisible(false);
+        playButton.setManaged(false);
+        otherButtons.setVisible(false);
+        otherButtons.setManaged(false);
+        leaderboardButton.setVisible(false);
+        leaderboardButton.setManaged(false);
+        musicButton.setVisible(false);
+        musicButton.setManaged(false);
+        titleLabel.setVisible(false);
+        titleLabel.setManaged(false);
+        creatorPanel.setVisible(false);
+        creatorPanel.setManaged(false);
+        backButton.setVisible(true);
+        backButton.setManaged(true);
+        playSubmenu.setVisible(true);
+        playSubmenu.setManaged(true);
+    }
+
+    @FXML
     private void onLevelsClicked() {
+        resetMainMenu();
+        try {
+            URL location = getClass().getClassLoader().getResource("levels.fxml");
+            FXMLLoader fxmlLoader = new FXMLLoader(location);
+            Parent root = fxmlLoader.load();
+            LevelsController levelsController = fxmlLoader.getController();
+            levelsController.setStage(stage);
+            Scene scene = new Scene(root, 720, 680);
+            stage.setScene(scene);
+        } catch (IOException ignored) {
+        }
     }
 
     @FXML
     private void onGamemodesClicked() {
+        resetMainMenu();
+        try {
+            URL location = getClass().getClassLoader().getResource("gamemodes.fxml");
+            FXMLLoader fxmlLoader = new FXMLLoader(location);
+            Parent root = fxmlLoader.load();
+            GamemodesController gamemodesController = fxmlLoader.getController();
+            gamemodesController.setStage(stage);
+            Scene scene = new Scene(root, 720, 680);
+            stage.setScene(scene);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void onPlayMenuBackClicked() {
+        resetMainMenu();
     }
 
     @FXML
@@ -151,6 +272,12 @@ public class MainMenuController {
         leaderboardContainer.setVisible(true);
     }
 
+    @FXML
+    private void onMusicClicked() {
+        MusicSelectionDialog musicDialog = new MusicSelectionDialog(stage);
+        musicDialog.show();
+    }
+
     private void loadScene(String fxmlFile) {
         try {
             URL location = getClass().getClassLoader().getResource(fxmlFile);
@@ -161,6 +288,8 @@ public class MainMenuController {
                 howToPlayController.setStage(stage);
             } else if (controller instanceof SettingsController settingsController) {
                 settingsController.setStage(stage);
+            } else if (controller instanceof GamemodesController gamemodesController) {
+                gamemodesController.setStage(stage);
             }
             Scene scene = new Scene(root, 720, 680);
             stage.setScene(scene);

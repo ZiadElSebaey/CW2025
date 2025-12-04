@@ -2,6 +2,7 @@ package com.comp2042.logic;
 
 import com.comp2042.ui.GuiController;
 import com.comp2042.ui.ViewData;
+import javafx.beans.property.IntegerProperty;
 
 public class GameController implements InputEventListener {
 
@@ -50,13 +51,13 @@ public class GameController implements InputEventListener {
         if (clearRow != null && clearRow.getLinesRemoved() > 0) {
             board.getScore().add(clearRow.getScoreBonus());
             board.getScore().addLines(clearRow.getLinesRemoved());
+            viewGuiController.onLinesCleared(clearRow.getLinesRemoved());
         }
     }
     private ViewData performMove(Runnable moveAction) {
         moveAction.run();
         return board.getViewData();
     }
-
 
     @Override
     public ViewData onLeftEvent(MoveEvent event) {
@@ -72,7 +73,6 @@ public class GameController implements InputEventListener {
     public ViewData onRotateEvent(MoveEvent event) {
         return performMove(board::rotateBrick);
     }
-
 
     @Override
     public ViewData createNewGame() {
@@ -92,5 +92,9 @@ public class GameController implements InputEventListener {
     @Override
     public ViewData onHoldEvent() {
         return board.holdBrick();
+    }
+    
+    public IntegerProperty getLinesProperty() {
+        return board.getScore().linesProperty();
     }
 }
