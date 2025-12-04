@@ -26,13 +26,8 @@ public class SettingsController {
     @FXML
     private Button soundButton;
 
-    @FXML
-    private Button themeButton;
-
     private boolean musicOn = true;
     private boolean soundOn = true;
-    private int themeIndex = 0;
-    private final String[] themes = {"Default", "Retro", "Neon"};
 
     public void setStage(Stage stage) {
         this.stage = stage;
@@ -47,7 +42,6 @@ public class SettingsController {
     private void initialize() {
         musicButton.setOnAction(_ -> toggleMusic());
         soundButton.setOnAction(_ -> toggleSound());
-        themeButton.setOnAction(_ -> cycleTheme());
         
         AnimatedBackground animatedBackground = new AnimatedBackground(720, 680);
         rootPane.getChildren().addFirst(animatedBackground);
@@ -61,11 +55,6 @@ public class SettingsController {
     private void toggleSound() {
         soundOn = !soundOn;
         soundButton.setText(soundOn ? "ON" : "OFF");
-    }
-
-    private void cycleTheme() {
-        themeIndex = (themeIndex + 1) % themes.length;
-        themeButton.setText(themes[themeIndex]);
     }
 
     @FXML

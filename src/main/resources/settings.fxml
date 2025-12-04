@@ -22,10 +22,6 @@
             <Label text="Sound Effects:" styleClass="settings-label" prefWidth="150"/>
             <Button fx:id="soundButton" text="ON" styleClass="toggle-button" prefWidth="80"/>
         </HBox>
-        <HBox spacing="20" alignment="CENTER">
-            <Label text="Color Theme:" styleClass="settings-label" prefWidth="150"/>
-            <Button fx:id="themeButton" text="Default" styleClass="toggle-button" prefWidth="80"/>
-        </HBox>
     </VBox>
 
     <Button text="Back" styleClass="menu-button" onAction="#onBackClicked" prefWidth="200"/>

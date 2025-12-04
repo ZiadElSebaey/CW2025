@@ -569,6 +569,50 @@
     -fx-effect: dropshadow(gaussian, rgba(100, 200, 255, 0.8), 18, 0.5, 0, 0);
 }
 
+.play-menu-panel {
+    -fx-background-color: rgba(20, 50, 80, 0.85);
+    -fx-background-radius: 25;
+    -fx-border-color: linear-gradient(to bottom, rgba(100, 200, 255, 0.8), rgba(150, 240, 255, 0.6));
+    -fx-border-width: 3;
+    -fx-border-radius: 25;
+    -fx-padding: 40 50 40 50;
+    -fx-effect: dropshadow(gaussian, rgba(80, 180, 255, 0.6), 30, 0.7, 0, 0),
+                innershadow(gaussian, rgba(255, 255, 255, 0.1), 20, 0.3, 0, 0);
+    -fx-min-width: 320px;
+    -fx-pref-width: 320px;
+    -fx-min-height: 350px;
+    -fx-pref-height: 350px;
+}
+
+.play-menu-button {
+    -fx-font-family: 'Frozenland';
+    -fx-font-size: 32px;
+    -fx-background-color: linear-gradient(to bottom, rgba(60, 140, 200, 0.6), rgba(40, 100, 160, 0.5));
+    -fx-text-fill: #e0f8ff;
+    -fx-min-width: 280px;
+    -fx-pref-width: 280px;
+    -fx-min-height: 70px;
+    -fx-pref-height: 70px;
+    -fx-padding: 15 30 15 30;
+    -fx-background-radius: 18;
+    -fx-cursor: hand;
+    -fx-border-color: rgba(150, 220, 255, 0.6);
+    -fx-border-width: 2.5;
+    -fx-border-radius: 18;
+    -fx-effect: dropshadow(gaussian, rgba(80, 180, 255, 0.5), 15, 0.5, 0, 0),
+                innershadow(gaussian, rgba(255, 255, 255, 0.15), 8, 0.4, 0, 1);
+}
+
+.play-menu-button:hover {
+    -fx-background-color: linear-gradient(to bottom, rgba(80, 180, 255, 0.7), rgba(60, 140, 200, 0.6));
+    -fx-border-color: rgba(180, 240, 255, 0.9);
+    -fx-text-fill: #ffffff;
+    -fx-effect: dropshadow(gaussian, rgba(100, 220, 255, 0.8), 25, 0.6, 0, 0),
+                innershadow(gaussian, rgba(255, 255, 255, 0.2), 10, 0.5, 0, 1);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
 .leaderboard-panel {
     -fx-background-color: rgba(10, 30, 60, 0.95);
     -fx-background-radius: 20;

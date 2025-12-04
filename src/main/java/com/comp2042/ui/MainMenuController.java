@@ -8,6 +8,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -40,6 +41,21 @@ public class MainMenuController {
 
     @FXML
     private StackPane rootPane;
+
+    @FXML
+    private VBox playSubmenu;
+
+    @FXML
+    private Button playButton;
+
+    @FXML
+    private VBox otherButtons;
+
+    @FXML
+    private Label titleLabel;
+
+    @FXML
+    private Button backButton;
 
     private VBox leaderboardContainer;
     private LeaderboardPanel leaderboardPanel;
@@ -117,6 +133,7 @@ public class MainMenuController {
 
     @FXML
     private void onPlayClicked() {
+        resetMainMenu();
         PlayerNameDialog nameDialog = new PlayerNameDialog(stage);
         String playerName = nameDialog.getPlayerName();
         boolean isGuest = nameDialog.isGuest();
@@ -142,6 +159,23 @@ public class MainMenuController {
         } catch (IOException ignored) {
         }
     }
+    
+    private void resetMainMenu() {
+        playSubmenu.setVisible(false);
+        playSubmenu.setManaged(false);
+        playButton.setVisible(true);
+        playButton.setManaged(true);
+        otherButtons.setVisible(true);
+        otherButtons.setManaged(true);
+        leaderboardButton.setVisible(true);
+        leaderboardButton.setManaged(true);
+        musicButton.setVisible(true);
+        musicButton.setManaged(true);
+        titleLabel.setVisible(true);
+        titleLabel.setManaged(true);
+        backButton.setVisible(false);
+        backButton.setManaged(false);
+    }
 
     @FXML
     private void onResumeClicked() {
@@ -152,7 +186,26 @@ public class MainMenuController {
     }
 
     @FXML
+    private void onPlayMenuClicked() {
+        playButton.setVisible(false);
+        playButton.setManaged(false);
+        otherButtons.setVisible(false);
+        otherButtons.setManaged(false);
+        leaderboardButton.setVisible(false);
+        leaderboardButton.setManaged(false);
+        musicButton.setVisible(false);
+        musicButton.setManaged(false);
+        titleLabel.setVisible(false);
+        titleLabel.setManaged(false);
+        backButton.setVisible(true);
+        backButton.setManaged(true);
+        playSubmenu.setVisible(true);
+        playSubmenu.setManaged(true);
+    }
+
+    @FXML
     private void onLevelsClicked() {
+        resetMainMenu();
         try {
             URL location = getClass().getClassLoader().getResource("levels.fxml");
             FXMLLoader fxmlLoader = new FXMLLoader(location);
@@ -167,6 +220,12 @@ public class MainMenuController {
 
     @FXML
     private void onGamemodesClicked() {
+        resetMainMenu();
+    }
+
+    @FXML
+    private void onPlayMenuBackClicked() {
+        resetMainMenu();
     }
 
     @FXML
