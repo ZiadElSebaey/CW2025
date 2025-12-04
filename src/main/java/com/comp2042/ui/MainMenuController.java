@@ -22,8 +22,8 @@ public class MainMenuController {
 
     private Stage stage;
 
-    private static Scene activeGameScene;
-    private static GuiController activeGuiController;
+    public static Scene activeGameScene;
+    public static GuiController activeGuiController;
 
     @FXML
     private Button resumeButton;
@@ -159,7 +159,12 @@ public class MainMenuController {
 
             stage.setScene(gameScene);
             new GameController(guiController);
-            guiController.startNewGame();
+            
+            if (guiController.getCurrentLevel() == null && (guiController.getGameMode() == null || !guiController.getGameMode().equals("inverted"))) {
+                guiController.startCountdown();
+            } else {
+                guiController.startNewGame();
+            }
         } catch (IOException ignored) {
         }
     }
@@ -193,6 +198,10 @@ public class MainMenuController {
 
     @FXML
     private void onPlayMenuClicked() {
+        showPlayMenu();
+    }
+    
+    public void showPlayMenu() {
         playButton.setVisible(false);
         playButton.setManaged(false);
         otherButtons.setVisible(false);
@@ -229,6 +238,17 @@ public class MainMenuController {
     @FXML
     private void onGamemodesClicked() {
         resetMainMenu();
+        try {
+            URL location = getClass().getClassLoader().getResource("gamemodes.fxml");
+            FXMLLoader fxmlLoader = new FXMLLoader(location);
+            Parent root = fxmlLoader.load();
+            GamemodesController gamemodesController = fxmlLoader.getController();
+            gamemodesController.setStage(stage);
+            Scene scene = new Scene(root, 720, 680);
+            stage.setScene(scene);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -268,6 +288,8 @@ public class MainMenuController {
                 howToPlayController.setStage(stage);
             } else if (controller instanceof SettingsController settingsController) {
                 settingsController.setStage(stage);
+            } else if (controller instanceof GamemodesController gamemodesController) {
+                gamemodesController.setStage(stage);
             }
             Scene scene = new Scene(root, 720, 680);
             stage.setScene(scene);

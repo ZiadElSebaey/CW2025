@@ -59,7 +59,6 @@ public class GameController implements InputEventListener {
         return board.getViewData();
     }
 
-
     @Override
     public ViewData onLeftEvent(MoveEvent event) {
         return performMove(board::moveBrickLeft);
@@ -74,7 +73,6 @@ public class GameController implements InputEventListener {
     public ViewData onRotateEvent(MoveEvent event) {
         return performMove(board::rotateBrick);
     }
-
 
     @Override
     public ViewData createNewGame() {

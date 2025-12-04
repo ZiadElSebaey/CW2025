@@ -33,6 +33,7 @@ public class GameOverPanel extends VBox {
     private final Label errorLabel;
     private final Label timePlayedLabel;
     private int currentScore;
+    private String gameMode;
 
     public GameOverPanel() {
         setAlignment(Pos.CENTER);
@@ -49,10 +50,8 @@ public class GameOverPanel extends VBox {
 
         scoreLabel = new Label("Score: 0");
         scoreLabel.getStyleClass().add("gameover-score");
-        
         highScoreLabel = new Label("High Score: 0");
         highScoreLabel.getStyleClass().add("gameover-highscore");
-        
         highScoreHolderLabel = new Label("");
         highScoreHolderLabel.getStyleClass().add("gameover-highscore-holder");
         
@@ -163,11 +162,15 @@ public class GameOverPanel extends VBox {
         }
         
         boolean isLevelGame = playerName != null && playerName.equals("Level Player");
+        boolean isInvertedMode = gameMode != null && gameMode.equals("inverted");
         
-        if (isLevelGame) {
+        if (isLevelGame || isInvertedMode) {
             highScoreLabel.setVisible(false);
             highScoreHolderLabel.setVisible(false);
             newHighScoreLabel.setVisible(false);
+            if (isInvertedMode) {
+                timePlayedLabel.setVisible(false);
+            }
         } else {
             highScoreLabel.setText("High Score: " + highScore);
             highScoreLabel.setVisible(true);
@@ -189,11 +192,14 @@ public class GameOverPanel extends VBox {
         
         animateLabel(scoreLabel);
         
-        if (isGuest || isLevelGame) {
+        if (isGuest || isLevelGame || isInvertedMode) {
             enterNameLabel.setVisible(false);
             nameInputBox.setVisible(false);
             savedLabel.setVisible(false);
             errorLabel.setVisible(false);
+            if (isInvertedMode) {
+                leaderboardButton.setVisible(false);
+            }
         } else if (playerName != null && !playerName.isEmpty()) {
             LeaderboardManager.addEntry(playerName, score);
             enterNameLabel.setVisible(false);
@@ -214,15 +220,20 @@ public class GameOverPanel extends VBox {
     private void saveToLeaderboard() {
         String name = nameField.getText().trim();
         if (!name.isEmpty()) {
-            LeaderboardManager.addEntry(name, currentScore);
-            HighScoreManager.updateHighScore(currentScore, name);
+            boolean isInvertedMode = gameMode != null && gameMode.equals("inverted");
+            
+            if (!isInvertedMode) {
+                LeaderboardManager.addEntry(name, currentScore);
+                HighScoreManager.updateHighScore(currentScore, name);
+            }
+            
             hideNameInput();
             savedLabel.setVisible(true);
             errorLabel.setVisible(false);
             
             boolean isLevelGame = name != null && name.equals("Level Player");
             
-            if (!isLevelGame) {
+            if (!isLevelGame && !isInvertedMode) {
                 String highScoreHolder = HighScoreManager.getHighScoreHolder();
                 if (highScoreHolder != null && !highScoreHolder.isEmpty()) {
                     String capitalizedName = highScoreHolder.substring(0, 1).toUpperCase() + 
@@ -292,6 +303,10 @@ public class GameOverPanel extends VBox {
     
     public Button getLeaderboardButton() {
         return leaderboardButton;
+    }
+    
+    public void setGameMode(String mode) {
+        this.gameMode = mode;
     }
     
     private void animateLabel(Label label) {

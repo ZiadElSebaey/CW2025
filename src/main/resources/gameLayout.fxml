@@ -1,6 +1,7 @@
 <?import com.comp2042.ui.GameOverPanel?>
 <?import com.comp2042.ui.PausePanel?>
 <?import com.comp2042.ui.LevelCompletePanel?>
+<?import com.comp2042.ui.CountdownPanel?>
 <?import javafx.scene.Group?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
@@ -13,8 +14,8 @@
       xmlns:fx="http://javafx.com/fxml">
     <Pane fx:id="gamePane">
         <Button fx:id="backButton" text="←" styleClass="back-icon" layoutX="15" layoutY="15"/>
-        <VBox layoutX="15" layoutY="220" spacing="15" alignment="CENTER">
-            <VBox styleClass="objective-panel" alignment="CENTER" spacing="5" maxWidth="150">
+        <VBox layoutX="15" layoutY="180" spacing="15" alignment="CENTER">
+            <VBox fx:id="objectivePanel" styleClass="objective-panel" alignment="CENTER" spacing="5" maxWidth="150">
                 <Label fx:id="objectiveLabel" text="" styleClass="objective-label" visible="false" wrapText="true" maxWidth="140"/>
             </VBox>
             <VBox fx:id="holdBlockContainer" styleClass="hold-block-container" alignment="CENTER" spacing="10">
@@ -54,7 +55,7 @@
         <GridPane fx:id="ghostPanel" vgap="1" hgap="1"/>
         <GridPane fx:id="brickPanel" vgap="1" hgap="1"/>
         <Group fx:id="groupNotification" layoutX="215" layoutY="320"/>
-        <VBox alignment="CENTER" spacing="3" layoutX="560" layoutY="450">
+        <VBox alignment="CENTER" spacing="3" layoutX="560" layoutY="480">
             <ImageView fitWidth="160" fitHeight="160" preserveRatio="true">
                 <image><Image url="@AlexeyPajitnov.png"/></image>
             </ImageView>
@@ -69,6 +70,9 @@
     </VBox>
     <VBox fx:id="levelCompleteContainer" alignment="CENTER">
         <LevelCompletePanel fx:id="levelCompletePanel"/>
+    </VBox>
+    <VBox fx:id="countdownContainer" alignment="CENTER">
+        <CountdownPanel fx:id="countdownPanel"/>
     </VBox>
     <stylesheets>
         <URL value="@window_style.css"/>
