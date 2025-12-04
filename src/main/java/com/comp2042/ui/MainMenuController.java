@@ -99,6 +99,11 @@ public class MainMenuController {
         leaderboardContainer.setAlignment(javafx.geometry.Pos.CENTER);
         leaderboardContainer.setVisible(false);
         leaderboardPanel.getCloseButton().setOnAction(_ -> leaderboardContainer.setVisible(false));
+        leaderboardPanel.setOnClearCallback(() -> {
+            if (activeGuiController != null) {
+                activeGuiController.refreshHighScoreDisplay();
+            }
+        });
         rootPane.getChildren().add(leaderboardContainer);
     }
 

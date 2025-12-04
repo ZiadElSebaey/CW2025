@@ -295,18 +295,7 @@ public class GuiController implements Initializable {
         LevelProgressManager.ensureDirectoryExists();
         LevelProgressManager.initialize();
         
-        int highScore = HighScoreManager.getHighScore();
-        String highScoreHolder = HighScoreManager.getHighScoreHolder();
-        highScoreLabel.setText("High Score: " + highScore);
-        if (highScoreHolder != null && !highScoreHolder.isEmpty()) {
-            String capitalizedName = highScoreHolder.substring(0, 1).toUpperCase() + 
-                                    (highScoreHolder.length() > 1 ? highScoreHolder.substring(1).toLowerCase() : "");
-            highScoreHolderLabel.setText("by " + capitalizedName);
-            highScoreHolderLabel.setVisible(true);
-            animateHighScoreHolder();
-        } else {
-            highScoreHolderLabel.setVisible(false);
-        }
+        refreshHighScoreDisplay();
         
         gamePanel.setFocusTraversable(true);
         gamePanel.requestFocus();
@@ -1149,6 +1138,24 @@ public class GuiController implements Initializable {
 
     public void requestFocus() {
         gamePanel.requestFocus();
+    }
+    
+    public void refreshHighScoreDisplay() {
+        if (currentLevel != null) {
+            return;
+        }
+        int highScore = HighScoreManager.getHighScore();
+        String highScoreHolder = HighScoreManager.getHighScoreHolder();
+        highScoreLabel.setText("High Score: " + highScore);
+        if (highScoreHolder != null && !highScoreHolder.isEmpty()) {
+            String capitalizedName = highScoreHolder.substring(0, 1).toUpperCase() + 
+                                    (highScoreHolder.length() > 1 ? highScoreHolder.substring(1).toLowerCase() : "");
+            highScoreHolderLabel.setText("by " + capitalizedName);
+            highScoreHolderLabel.setVisible(true);
+            animateHighScoreHolder();
+        } else {
+            highScoreHolderLabel.setVisible(false);
+        }
     }
     
     private void animateHighScoreHolder() {
