@@ -31,6 +31,7 @@ public class GameOverPanel extends VBox {
     private final Button skipButton;
     private final Label savedLabel;
     private final Label errorLabel;
+    private final Label timePlayedLabel;
     private int currentScore;
 
     public GameOverPanel() {
@@ -94,6 +95,10 @@ public class GameOverPanel extends VBox {
         errorLabel.getStyleClass().add("error-label");
         errorLabel.setVisible(false);
 
+        timePlayedLabel = new Label("");
+        timePlayedLabel.getStyleClass().add("gameover-score");
+        timePlayedLabel.setVisible(false);
+
         restartButton = new Button("Restart");
         restartButton.getStyleClass().add("gameover-button");
 
@@ -110,7 +115,7 @@ public class GameOverPanel extends VBox {
         
         VBox topSection = new VBox(-10);
         topSection.setAlignment(Pos.CENTER);
-        topSection.getChildren().addAll(gameOverLabel, scoreLabel, highScoreLabel, spacer, highScoreHolderLabel, newHighScoreLabel);
+        topSection.getChildren().addAll(gameOverLabel, scoreLabel, timePlayedLabel, highScoreLabel, spacer, highScoreHolderLabel, newHighScoreLabel);
         
         VBox middleSection = new VBox(8);
         middleSection.setAlignment(Pos.CENTER);
@@ -128,10 +133,14 @@ public class GameOverPanel extends VBox {
     }
 
     public void showFinalScore(int score, int highScore, boolean isNewHighScore) {
-        showFinalScore(score, highScore, isNewHighScore, null, false);
+        showFinalScore(score, highScore, isNewHighScore, null, false, 0);
     }
     
     public void showFinalScore(int score, int highScore, boolean isNewHighScore, String playerName, boolean isGuest) {
+        showFinalScore(score, highScore, isNewHighScore, playerName, isGuest, 0);
+    }
+    
+    public void showFinalScore(int score, int highScore, boolean isNewHighScore, String playerName, boolean isGuest, long timePlayed) {
         this.currentScore = score;
         
         if (playerName != null && !playerName.isEmpty()) {
@@ -140,6 +149,17 @@ public class GameOverPanel extends VBox {
             scoreLabel.setText(capitalizedPlayerName + " (You): " + score);
         } else {
             scoreLabel.setText("Score: " + score);
+        }
+        
+        if (timePlayed > 0) {
+            int minutes = (int)(timePlayed / 60);
+            int seconds = (int)(timePlayed % 60);
+            String timeStr = String.format("Time Played: %d:%02d", minutes, seconds);
+            timePlayedLabel.setText(timeStr);
+            timePlayedLabel.setVisible(true);
+            animateLabel(timePlayedLabel);
+        } else {
+            timePlayedLabel.setVisible(false);
         }
         
         boolean isLevelGame = playerName != null && playerName.equals("Level Player");

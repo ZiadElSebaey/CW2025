@@ -9,6 +9,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -43,7 +44,7 @@ public class MainMenuController {
     private StackPane rootPane;
 
     @FXML
-    private VBox playSubmenu;
+    private HBox playSubmenu;
 
     @FXML
     private Button playButton;
@@ -133,7 +134,6 @@ public class MainMenuController {
 
     @FXML
     private void onPlayClicked() {
-        resetMainMenu();
         PlayerNameDialog nameDialog = new PlayerNameDialog(stage);
         String playerName = nameDialog.getPlayerName();
         boolean isGuest = nameDialog.isGuest();
@@ -142,6 +142,8 @@ public class MainMenuController {
             return;
         }
         
+        resetMainMenu();
+        
         try {
             URL location = getClass().getClassLoader().getResource("gameLayout.fxml");
             FXMLLoader fxmlLoader = new FXMLLoader(location);
@@ -149,6 +151,7 @@ public class MainMenuController {
             GuiController guiController = fxmlLoader.getController();
             guiController.setStage(stage);
             guiController.setPlayerName(playerName, isGuest);
+            guiController.setLevel(null);
 
             Scene gameScene = new Scene(root, 720, 680);
             activeGameScene = gameScene;
@@ -156,6 +159,7 @@ public class MainMenuController {
 
             stage.setScene(gameScene);
             new GameController(guiController);
+            guiController.startNewGame();
         } catch (IOException ignored) {
         }
     }
@@ -173,6 +177,8 @@ public class MainMenuController {
         musicButton.setManaged(true);
         titleLabel.setVisible(true);
         titleLabel.setManaged(true);
+        creatorPanel.setVisible(true);
+        creatorPanel.setManaged(true);
         backButton.setVisible(false);
         backButton.setManaged(false);
     }
@@ -197,6 +203,8 @@ public class MainMenuController {
         musicButton.setManaged(false);
         titleLabel.setVisible(false);
         titleLabel.setManaged(false);
+        creatorPanel.setVisible(false);
+        creatorPanel.setManaged(false);
         backButton.setVisible(true);
         backButton.setManaged(true);
         playSubmenu.setVisible(true);

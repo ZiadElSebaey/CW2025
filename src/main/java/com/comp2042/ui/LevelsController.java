@@ -132,7 +132,7 @@ public class LevelsController implements Initializable {
         
         java.util.Optional<ButtonType> result = confirmationDialog.showAndWait();
         if (result.isPresent() && result.get() == acceptButton) {
-            LevelManager.resetLevels();
+            LevelProgressManager.resetLevelProgress();
             refreshLevelsGrid();
         }
     }

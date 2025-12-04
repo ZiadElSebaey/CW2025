@@ -146,6 +146,7 @@ public class GuiController implements Initializable {
 
     private Timeline timeLine;
     private Timeline timerUpdateLine;
+    private Timeline freePlayTimerLine;
 
     private final BooleanProperty isPause = new SimpleBooleanProperty();
 
@@ -155,11 +156,15 @@ public class GuiController implements Initializable {
     
     private String playerName;
     private boolean isGuest;
+    private String gameMode;
     private com.comp2042.logic.Level currentLevel;
     private int tripleClearsCount;
     private long levelStartTime;
     private long pauseStartTime;
     private long totalPauseDuration;
+    private long freePlayStartTime;
+    private long freePlayPauseStartTime;
+    private long freePlayTotalPauseDuration;
     private int dropIntervalMs = DEFAULT_DROP_INTERVAL_MS;
 
     public void setStage(Stage stage) {
@@ -228,10 +233,8 @@ public class GuiController implements Initializable {
                 nextBlockStackPane.setPrefWidth(90);
                 nextBlockStackPane.setPrefHeight(90);
             }
-            if (timerLabel != null) {
-                timerLabel.setVisible(false);
-            }
             stopTimerUpdate();
+            startFreePlayTimer();
         }
     }
     
@@ -265,6 +268,61 @@ public class GuiController implements Initializable {
             timerUpdateLine.stop();
             timerUpdateLine = null;
         }
+    }
+    
+    private void startFreePlayTimer() {
+        stopFreePlayTimer();
+        if (currentLevel == null && (gameMode == null || !gameMode.equals("inverted"))) {
+            freePlayStartTime = System.currentTimeMillis();
+            freePlayTotalPauseDuration = 0;
+            freePlayPauseStartTime = 0;
+            if (timerLabel != null) {
+                timerLabel.setVisible(true);
+                updateFreePlayTimer();
+            }
+            freePlayTimerLine = new Timeline(new KeyFrame(
+                Duration.seconds(1),
+                _ -> updateFreePlayTimer()
+            ));
+            freePlayTimerLine.setCycleCount(Timeline.INDEFINITE);
+            freePlayTimerLine.play();
+        }
+    }
+    
+    private void updateFreePlayTimer() {
+        if (currentLevel == null && timerLabel != null && 
+            (gameMode == null || !gameMode.equals("inverted"))) {
+            if (freePlayStartTime == 0) {
+                timerLabel.setText("Time: 0:00");
+                return;
+            }
+            long currentPauseTime = (freePlayPauseStartTime > 0) ? (System.currentTimeMillis() - freePlayPauseStartTime) : 0;
+            long timeElapsed = (System.currentTimeMillis() - freePlayStartTime - freePlayTotalPauseDuration - currentPauseTime) / 1000;
+            timeElapsed = Math.max(0, timeElapsed);
+            int minutes = (int)(timeElapsed / 60);
+            int seconds = (int)(timeElapsed % 60);
+            String timeStr = String.format("%d:%02d", minutes, seconds);
+            timerLabel.setText("Time: " + timeStr);
+        }
+    }
+    
+    private void stopFreePlayTimer() {
+        if (freePlayTimerLine != null) {
+            freePlayTimerLine.stop();
+            freePlayTimerLine = null;
+        }
+    }
+    
+    private long getFreePlayElapsedTime() {
+        if (currentLevel != null || (gameMode != null && gameMode.equals("inverted"))) {
+            return 0;
+        }
+        if (freePlayStartTime == 0) {
+            return 0;
+        }
+        long currentPauseTime = (freePlayPauseStartTime > 0) ? (System.currentTimeMillis() - freePlayPauseStartTime) : 0;
+        long elapsed = (System.currentTimeMillis() - freePlayStartTime - freePlayTotalPauseDuration - currentPauseTime) / 1000;
+        return Math.max(0, elapsed);
     }
     
     private void updateLevelObjectiveLabel() {
@@ -970,6 +1028,12 @@ public class GuiController implements Initializable {
             isNewHighScore = HighScoreManager.updateHighScore(finalScore, playerName);
         }
         
+        long timePlayed = 0;
+        if (currentLevel == null && (gameMode == null || !gameMode.equals("inverted"))) {
+            stopFreePlayTimer();
+            timePlayed = getFreePlayElapsedTime();
+        }
+        
         int highScore = HighScoreManager.getHighScore();
         String highScoreHolder = HighScoreManager.getHighScoreHolder();
         highScoreLabel.setText("High Score: " + highScore);
@@ -983,7 +1047,7 @@ public class GuiController implements Initializable {
             highScoreHolderLabel.setVisible(false);
         }
         
-        gameOverPanel.showFinalScore(finalScore, highScore, isNewHighScore, playerName, isGuest);
+        gameOverPanel.showFinalScore(finalScore, highScore, isNewHighScore, playerName, isGuest, timePlayed);
         
         gameOverPanel.setVisible(true);
         gameOverContainer.setVisible(true);
@@ -1003,9 +1067,11 @@ public class GuiController implements Initializable {
             totalPauseDuration = 0;
             pauseStartTime = 0;
             stopTimerUpdate();
+            stopFreePlayTimer();
             updateLevelObjectiveLabel();
             startNewGame();
         } else {
+            stopFreePlayTimer();
             requestPlayerNameAndStart();
         }
     }
@@ -1024,7 +1090,7 @@ public class GuiController implements Initializable {
         startNewGame();
     }
     
-    private void startNewGame() {
+    public void startNewGame() {
         gamePane.setVisible(true);
         gameOverPanel.setVisible(false);
         gameOverContainer.setVisible(false);
@@ -1042,6 +1108,8 @@ public class GuiController implements Initializable {
             pauseStartTime = 0;
             stopTimerUpdate();
             startTimerUpdate();
+        } else if (currentLevel == null && (gameMode == null || !gameMode.equals("inverted"))) {
+            startFreePlayTimer();
         }
         
         gamePanel.setFocusTraversable(true);
@@ -1075,6 +1143,12 @@ public class GuiController implements Initializable {
             if (currentLevel != null && (currentLevel.getLevelNumber() == 2 || currentLevel.getLevelNumber() == 5)) {
                 pauseStartTime = System.currentTimeMillis();
             }
+            if (currentLevel == null && (gameMode == null || !gameMode.equals("inverted"))) {
+                if (freePlayTimerLine != null) {
+                    freePlayTimerLine.pause();
+                }
+                freePlayPauseStartTime = System.currentTimeMillis();
+            }
         } else {
             timeLine.play();
             if (currentLevel != null && (currentLevel.getLevelNumber() == 2 || currentLevel.getLevelNumber() == 5)) {
@@ -1083,6 +1157,15 @@ public class GuiController implements Initializable {
                     pauseStartTime = 0;
                 }
                 startTimerUpdate();
+            }
+            if (currentLevel == null && (gameMode == null || !gameMode.equals("inverted"))) {
+                if (freePlayPauseStartTime > 0) {
+                    freePlayTotalPauseDuration += (System.currentTimeMillis() - freePlayPauseStartTime);
+                    freePlayPauseStartTime = 0;
+                }
+                if (freePlayTimerLine != null) {
+                    freePlayTimerLine.play();
+                }
             }
         }
     }
