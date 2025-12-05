@@ -14,7 +14,7 @@
       xmlns:fx="http://javafx.com/fxml">
     <Pane fx:id="gamePane">
         <Button fx:id="backButton" text="←" styleClass="back-icon" layoutX="15" layoutY="15"/>
-        <VBox layoutX="15" layoutY="180" spacing="15" alignment="CENTER">
+        <VBox fx:id="leftPanel" layoutX="15" layoutY="180" spacing="15" alignment="CENTER">
             <VBox fx:id="objectivePanel" styleClass="objective-panel" alignment="CENTER" spacing="5" maxWidth="150">
                 <Label fx:id="objectiveLabel" text="" styleClass="objective-label" visible="false" wrapText="true" maxWidth="140"/>
             </VBox>
@@ -45,17 +45,17 @@
             </VBox>
         </VBox>
         <BorderPane styleClass="gameBoard" fx:id="gameBoard" layoutX="185" layoutY="50">
-            <center>
+        <center>
                 <GridPane fx:id="gamePanel" hgap="1" vgap="1"/>
-            </center>
-        </BorderPane>
+        </center>
+    </BorderPane>
         <ImageView fx:id="borderFrame" layoutX="130" layoutY="0" fitWidth="405" fitHeight="695" preserveRatio="false" mouseTransparent="true">
             <image><Image url="@Frozenframe.png"/></image>
         </ImageView>
         <GridPane fx:id="ghostPanel" vgap="1" hgap="1"/>
         <GridPane fx:id="brickPanel" vgap="1" hgap="1"/>
         <Group fx:id="groupNotification" layoutX="215" layoutY="320"/>
-        <VBox alignment="CENTER" spacing="3" layoutX="560" layoutY="480">
+        <VBox fx:id="creatorPanel" alignment="CENTER" spacing="3" layoutX="560" layoutY="480">
             <ImageView fitWidth="160" fitHeight="160" preserveRatio="true">
                 <image><Image url="@AlexeyPajitnov.png"/></image>
             </ImageView>
@@ -66,8 +66,8 @@
         <PausePanel fx:id="pausePanel"/>
     </VBox>
     <VBox fx:id="gameOverContainer" alignment="CENTER">
-        <GameOverPanel fx:id="gameOverPanel"/>
-    </VBox>
+            <GameOverPanel fx:id="gameOverPanel"/>
+        </VBox>
     <VBox fx:id="levelCompleteContainer" alignment="CENTER">
         <LevelCompletePanel fx:id="levelCompletePanel"/>
     </VBox>
