@@ -527,25 +527,55 @@ public class GuiController implements Initializable {
             return;
         }
         
+        boolean isInvertedMode = gameMode != null && gameMode.equals("inverted");
+        
         if (!isPause.get() && eventListener != null) {
-            if (isLeftKey(keyEvent)) {
-                refreshBrick(eventListener.onLeftEvent(userMove(EventType.LEFT)));
-                keyEvent.consume();
-            } else if (isRightKey(keyEvent)) {
-                refreshBrick(eventListener.onRightEvent(userMove(EventType.RIGHT)));
-                keyEvent.consume();
-            } else if (isRotateKey(keyEvent)) {
-                refreshBrick(eventListener.onRotateEvent(userMove(EventType.ROTATE)));
-                keyEvent.consume();
-            } else if (isDownKey(keyEvent)) {
-                moveDown(userMove(EventType.DOWN));
-                keyEvent.consume();
-            } else if (keyEvent.getCode() == KeyCode.SPACE) {
-                hardDrop();
-                keyEvent.consume();
-            } else if (keyEvent.getCode() == KeyCode.H) {
-                holdBrick();
-                keyEvent.consume();
+            if (isInvertedMode) {
+                // Inverted mode: swap key mappings
+                if (isRotateKey(keyEvent)) {
+                    // UP/W now does DOWN (soft drop)
+                    moveDown(userMove(EventType.DOWN));
+                    keyEvent.consume();
+                } else if (isDownKey(keyEvent)) {
+                    // DOWN/S now does ROTATE
+                    refreshBrick(eventListener.onRotateEvent(userMove(EventType.ROTATE)));
+                    keyEvent.consume();
+                } else if (isLeftKey(keyEvent)) {
+                    // LEFT/A now does RIGHT
+                    refreshBrick(eventListener.onRightEvent(userMove(EventType.RIGHT)));
+                    keyEvent.consume();
+                } else if (isRightKey(keyEvent)) {
+                    // RIGHT/D now does LEFT
+                    refreshBrick(eventListener.onLeftEvent(userMove(EventType.LEFT)));
+                    keyEvent.consume();
+                } else if (keyEvent.getCode() == KeyCode.SPACE) {
+                    hardDrop();
+                    keyEvent.consume();
+                } else if (keyEvent.getCode() == KeyCode.H) {
+                    holdBrick();
+                    keyEvent.consume();
+                }
+            } else {
+                // Normal mode: standard key mappings
+                if (isLeftKey(keyEvent)) {
+                    refreshBrick(eventListener.onLeftEvent(userMove(EventType.LEFT)));
+                    keyEvent.consume();
+                } else if (isRightKey(keyEvent)) {
+                    refreshBrick(eventListener.onRightEvent(userMove(EventType.RIGHT)));
+                    keyEvent.consume();
+                } else if (isRotateKey(keyEvent)) {
+                    refreshBrick(eventListener.onRotateEvent(userMove(EventType.ROTATE)));
+                    keyEvent.consume();
+                } else if (isDownKey(keyEvent)) {
+                    moveDown(userMove(EventType.DOWN));
+                    keyEvent.consume();
+                } else if (keyEvent.getCode() == KeyCode.SPACE) {
+                    hardDrop();
+                    keyEvent.consume();
+                } else if (keyEvent.getCode() == KeyCode.H) {
+                    holdBrick();
+                    keyEvent.consume();
+                }
             }
         }
         
