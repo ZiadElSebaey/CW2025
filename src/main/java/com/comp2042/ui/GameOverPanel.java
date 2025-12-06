@@ -22,6 +22,7 @@ public class GameOverPanel extends StackPane {
     private final Button mainMenuButton;
     private final Button leaderboardButton;
     private final Button backButton1984;
+    private final Button backButtonInverted;
     private final Label scoreLabel;
     private final Label highScoreLabel;
     private final Label highScoreHolderLabel;
@@ -37,6 +38,10 @@ public class GameOverPanel extends StackPane {
     private final Label timePlayedLabel;
     private int currentScore;
     private String gameMode;
+    private VBox mainContainer;
+    private VBox buttonSection;
+    private VBox topSection;
+    private VBox middleSection;
 
     public GameOverPanel() {
         setMinWidth(720);
@@ -119,25 +124,31 @@ public class GameOverPanel extends StackPane {
         backButton1984.setLayoutX(15);
         backButton1984.setLayoutY(15);
         backButton1984.setPrefSize(40, 40);
+        
+        backButtonInverted = new Button("←");
+        backButtonInverted.getStyleClass().add("back-icon-1984");
+        backButtonInverted.setVisible(false);
+        backButtonInverted.setManaged(false);
+        backButtonInverted.setPrefSize(40, 40);
 
         Region spacer = new Region();
         spacer.setMinHeight(20);
         spacer.setPrefHeight(35);
         spacer.setMaxHeight(30);
         
-        VBox topSection = new VBox(-10);
+        topSection = new VBox(-10);
         topSection.setAlignment(Pos.CENTER);
         topSection.getChildren().addAll(gameOverLabel, scoreLabel, timePlayedLabel, highScoreLabel, spacer, highScoreHolderLabel, newHighScoreLabel);
         
-        VBox middleSection = new VBox(8);
+        middleSection = new VBox(8);
         middleSection.setAlignment(Pos.CENTER);
         middleSection.getChildren().addAll(enterNameLabel, nameInputBox, savedLabel, errorLabel);
         
-        VBox buttonSection = new VBox(7);
+        buttonSection = new VBox(7);
         buttonSection.setAlignment(Pos.CENTER);
         buttonSection.getChildren().addAll(restartButton, mainMenuButton, leaderboardButton);
         
-        VBox mainContainer = new VBox(-10);
+        mainContainer = new VBox(-10);
         mainContainer.setAlignment(Pos.CENTER);
         mainContainer.getChildren().addAll(topSection, middleSection, buttonSection);
         
@@ -147,6 +158,10 @@ public class GameOverPanel extends StackPane {
         StackPane.setAlignment(backButton1984, Pos.TOP_LEFT);
         StackPane.setMargin(backButton1984, new javafx.geometry.Insets(15, 15, 0, 0));
         getChildren().add(backButton1984);
+        
+        StackPane.setAlignment(backButtonInverted, Pos.BOTTOM_RIGHT);
+        StackPane.setMargin(backButtonInverted, new javafx.geometry.Insets(0, 0, 15, 15));
+        getChildren().add(backButtonInverted);
     }
 
     public void showFinalScore(int score, int highScore, boolean isNewHighScore) {
@@ -234,7 +249,10 @@ public class GameOverPanel extends StackPane {
             errorLabel.setVisible(false);
         }
         
-        playGameOverAnimation();
+        // Skip animation for inverted mode
+        if (gameMode == null || !gameMode.equals("inverted")) {
+            playGameOverAnimation();
+        }
     }
 
     private void saveToLeaderboard() {
@@ -326,6 +344,163 @@ public class GameOverPanel extends StackPane {
         return leaderboardButton;
     }
     
+    public Label getGameOverLabel() {
+        return gameOverLabel;
+    }
+    
+    public Label getScoreLabel() {
+        return scoreLabel;
+    }
+    
+    public VBox getButtonSection() {
+        return buttonSection;
+    }
+    
+    public void applyInvertedLayout() {
+        // Adjust game over title position for inverted mode
+        if (gameOverLabel != null) {
+            // Remove center alignment constraint to allow manual positioning
+            gameOverLabel.setMaxWidth(Double.MAX_VALUE);
+            
+            // Move title down (positive Y = down, negative Y = up)
+            // Adjust this value: larger = more down, smaller/negative = more up
+            gameOverLabel.setTranslateY(320);
+            
+            // Move title horizontally (positive X = right, negative X = left)
+            // Adjust this value: 0 = center, positive = right, negative = left
+            gameOverLabel.setTranslateX(-100);
+            
+            // Use layoutX for absolute positioning (alternative to translateX)
+            // Uncomment the line below and comment translateX if translateX doesn't work
+            // gameOverLabel.setLayoutX(300);
+        }
+        
+        // Adjust score label position if needed
+        if (scoreLabel != null) {
+            // Remove center alignment constraint
+            scoreLabel.setMaxWidth(Double.MAX_VALUE);
+            
+            // Move score label down (adjust to match title position)
+            scoreLabel.setTranslateY(180);
+            
+            // Move score label horizontally (adjust to match title position)
+            // Adjust this value: 0 = center, positive = right, negative = left
+        scoreLabel.setTranslateX(-137);
+            
+            // Use layoutX for absolute positioning (alternative to translateX)
+            // Uncomment the line below and comment translateX if translateX doesn't work
+            // scoreLabel.setLayoutX(300);
+        }
+        
+        // Change VBox alignment to allow manual positioning
+        if (topSection != null) {
+            topSection.setAlignment(Pos.TOP_LEFT);
+        }
+        
+        // Adjust Main Menu button position for inverted mode
+        if (mainMenuButton != null) {
+            // Make button smaller
+            mainMenuButton.setMaxWidth(150);
+            mainMenuButton.setPrefWidth(150);
+            
+            // Move button vertically (positive Y = down, negative Y = up)
+            // Adjust this value: larger = more down, smaller/negative = more up
+            mainMenuButton.setTranslateY(-450);
+            
+            // Move button horizontally (positive X = right, negative X = left)
+            // Adjust this value: 0 = center, positive = right, negative = left
+            // Moved to the right
+            mainMenuButton.setTranslateX(-22);
+            
+            // Use layoutX for absolute positioning (alternative to translateX)
+            // Uncomment the line below and comment translateX if translateX doesn't work
+            // mainMenuButton.setLayoutX(0);
+        }
+        
+        // Adjust Restart button position for inverted mode
+        if (restartButton != null) {
+            // Make button smaller
+            restartButton.setMaxWidth(150);
+            restartButton.setPrefWidth(150);
+            
+            // Move button vertically (positive Y = down, negative Y = up)
+            // Adjust this value: larger = more down, smaller/negative = more up
+            restartButton.setTranslateY(-450);
+            
+            // Move button horizontally (positive X = right, negative X = left)
+            // Adjust this value: 0 = center, positive = right, negative = left
+            // Moved to the right
+            restartButton.setTranslateX(-22);
+            
+            // Use layoutX for absolute positioning (alternative to translateX)
+            // Uncomment the line below and comment translateX if translateX doesn't work
+            // restartButton.setLayoutX(0);
+        }
+        
+        // Make button section smaller
+        if (buttonSection != null) {
+            buttonSection.setMaxWidth(200);
+            buttonSection.setPrefWidth(200);
+        }
+        
+        // Change buttonSection alignment to allow manual positioning
+        if (buttonSection != null) {
+            buttonSection.setAlignment(Pos.TOP_LEFT);
+        }
+        
+        // Show and position back button for inverted mode
+        if (backButtonInverted != null) {
+            backButtonInverted.setVisible(true);
+            backButtonInverted.setManaged(true);
+            StackPane.setAlignment(backButtonInverted, Pos.BOTTOM_RIGHT);
+            // Move button more to the left to center it in the panel
+            StackPane.setMargin(backButtonInverted, new Insets(0, 0, 0, 20));
+            
+            // Remove panel background and make button bigger
+            backButtonInverted.getStyleClass().clear();
+            backButtonInverted.setStyle("-fx-background-color: transparent; -fx-border-color: transparent; -fx-text-fill: white; -fx-font-size: 40px; -fx-cursor: hand;");
+            backButtonInverted.setPrefSize(60, 60);
+        }
+    }
+    
+    public void resetLayout() {
+        // Reset rotations and positioning - handled in GuiController
+        if (gameOverLabel != null) {
+            gameOverLabel.setTranslateX(0);
+            gameOverLabel.setTranslateY(0);
+            gameOverLabel.setLayoutX(0);
+            gameOverLabel.setLayoutY(0);
+        }
+        if (scoreLabel != null) {
+            scoreLabel.setTranslateX(0);
+            scoreLabel.setTranslateY(0);
+            scoreLabel.setLayoutX(0);
+            scoreLabel.setLayoutY(0);
+        }
+        if (mainMenuButton != null) {
+            mainMenuButton.setTranslateX(0);
+            mainMenuButton.setTranslateY(0);
+            mainMenuButton.setLayoutX(0);
+            mainMenuButton.setLayoutY(0);
+        }
+        if (restartButton != null) {
+            restartButton.setTranslateX(0);
+            restartButton.setTranslateY(0);
+            restartButton.setLayoutX(0);
+            restartButton.setLayoutY(0);
+        }
+        if (topSection != null) {
+            topSection.setAlignment(Pos.CENTER);
+        }
+        if (buttonSection != null) {
+            buttonSection.setAlignment(Pos.CENTER);
+        }
+        if (backButtonInverted != null) {
+            backButtonInverted.setVisible(false);
+            backButtonInverted.setManaged(false);
+        }
+    }
+    
     public void setGameMode(String mode) {
         this.gameMode = mode;
         boolean is1984Mode = mode != null && mode.equals("1984");
@@ -388,6 +563,10 @@ public class GameOverPanel extends StackPane {
         return backButton1984;
     }
     
+    public Button getBackButtonInverted() {
+        return backButtonInverted;
+    }
+    
     private void animateLabel(Label label) {
         if (label != null && label.isVisible()) {
             ScaleTransition pulse = new ScaleTransition(Duration.seconds(1.2), label);
@@ -410,5 +589,5 @@ public class GameOverPanel extends StackPane {
             combined.play();
         }
     }
-    
+
 }
