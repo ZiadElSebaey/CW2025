@@ -4,6 +4,7 @@ import javafx.animation.FadeTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.Timeline;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.util.Duration;
 import javafx.scene.control.Button;
@@ -12,13 +13,15 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
-public class GameOverPanel extends VBox {
+public class GameOverPanel extends StackPane {
 
     private final Button restartButton;
     private final Button mainMenuButton;
     private final Button leaderboardButton;
+    private final Button backButton1984;
     private final Label scoreLabel;
     private final Label highScoreLabel;
     private final Label highScoreHolderLabel;
@@ -36,11 +39,12 @@ public class GameOverPanel extends VBox {
     private String gameMode;
 
     public GameOverPanel() {
-        setAlignment(Pos.CENTER);
-        setSpacing(4);
         setMinWidth(720);
         setPrefWidth(720);
         setMaxWidth(720);
+        setMinHeight(680);
+        setPrefHeight(680);
+        setMaxHeight(680);
         getStyleClass().add("gameover-panel");
 
         gameOverLabel = new Label("GAME OVER");
@@ -106,6 +110,15 @@ public class GameOverPanel extends VBox {
         
         leaderboardButton = new Button("🏆 Leaderboard");
         leaderboardButton.getStyleClass().add("gameover-button");
+        
+        backButton1984 = new Button("←");
+        backButton1984.getStyleClass().add("back-icon-1984");
+        backButton1984.setVisible(false);
+        backButton1984.setManaged(false);
+        backButton1984.setPrefSize(50, 50);
+        backButton1984.setLayoutX(15);
+        backButton1984.setLayoutY(15);
+        backButton1984.setPrefSize(40, 40);
 
         Region spacer = new Region();
         spacer.setMinHeight(20);
@@ -129,6 +142,11 @@ public class GameOverPanel extends VBox {
         mainContainer.getChildren().addAll(topSection, middleSection, buttonSection);
         
         getChildren().add(mainContainer);
+        StackPane.setAlignment(mainContainer, Pos.CENTER);
+        
+        StackPane.setAlignment(backButton1984, Pos.TOP_LEFT);
+        StackPane.setMargin(backButton1984, new javafx.geometry.Insets(15, 15, 0, 0));
+        getChildren().add(backButton1984);
     }
 
     public void showFinalScore(int score, int highScore, boolean isNewHighScore) {
@@ -163,12 +181,13 @@ public class GameOverPanel extends VBox {
         
         boolean isLevelGame = playerName != null && playerName.equals("Level Player");
         boolean isInvertedMode = gameMode != null && gameMode.equals("inverted");
+        boolean is1984Mode = gameMode != null && gameMode.equals("1984");
         
-        if (isLevelGame || isInvertedMode) {
+        if (isLevelGame || isInvertedMode || is1984Mode) {
             highScoreLabel.setVisible(false);
             highScoreHolderLabel.setVisible(false);
             newHighScoreLabel.setVisible(false);
-            if (isInvertedMode) {
+            if (isInvertedMode || is1984Mode) {
                 timePlayedLabel.setVisible(false);
             }
         } else {
@@ -192,13 +211,14 @@ public class GameOverPanel extends VBox {
         
         animateLabel(scoreLabel);
         
-        if (isGuest || isLevelGame || isInvertedMode) {
+        if (isGuest || isLevelGame || isInvertedMode || is1984Mode) {
             enterNameLabel.setVisible(false);
             nameInputBox.setVisible(false);
             savedLabel.setVisible(false);
             errorLabel.setVisible(false);
-            if (isInvertedMode) {
+            if (isInvertedMode || is1984Mode) {
                 leaderboardButton.setVisible(false);
+                leaderboardButton.setManaged(false);
             }
         } else if (playerName != null && !playerName.isEmpty()) {
             LeaderboardManager.addEntry(playerName, score);
@@ -221,8 +241,9 @@ public class GameOverPanel extends VBox {
         String name = nameField.getText().trim();
         if (!name.isEmpty()) {
             boolean isInvertedMode = gameMode != null && gameMode.equals("inverted");
+            boolean is1984Mode = gameMode != null && gameMode.equals("1984");
             
-            if (!isInvertedMode) {
+            if (!isInvertedMode && !is1984Mode) {
                 LeaderboardManager.addEntry(name, currentScore);
                 HighScoreManager.updateHighScore(currentScore, name);
             }
@@ -307,6 +328,64 @@ public class GameOverPanel extends VBox {
     
     public void setGameMode(String mode) {
         this.gameMode = mode;
+        boolean is1984Mode = mode != null && mode.equals("1984");
+        if (is1984Mode) {
+            apply1984Style();
+        }
+    }
+    
+    private void apply1984Style() {
+        getStyleClass().clear();
+        getStyleClass().add("gameover-panel-1984");
+        setBackground(javafx.scene.layout.Background.EMPTY);
+        
+        gameOverLabel.getStyleClass().clear();
+        gameOverLabel.getStyleClass().add("gameover-title-1984");
+        gameOverLabel.setTextFill(javafx.scene.paint.Color.WHITE);
+        gameOverLabel.setFont(javafx.scene.text.Font.font("Courier New", javafx.scene.text.FontWeight.BOLD, 48));
+        
+        scoreLabel.getStyleClass().clear();
+        scoreLabel.getStyleClass().add("gameover-score-1984");
+        scoreLabel.setTextFill(javafx.scene.paint.Color.WHITE);
+        scoreLabel.setFont(javafx.scene.text.Font.font("Courier New", javafx.scene.text.FontWeight.BOLD, 24));
+        
+        restartButton.getStyleClass().clear();
+        restartButton.getStyleClass().add("gameover-button-1984");
+        restartButton.setTextFill(javafx.scene.paint.Color.WHITE);
+        restartButton.setFont(javafx.scene.text.Font.font("Courier New", javafx.scene.text.FontWeight.BOLD, 24));
+        restartButton.setBackground(javafx.scene.layout.Background.EMPTY);
+        
+        mainMenuButton.getStyleClass().clear();
+        mainMenuButton.getStyleClass().add("gameover-button-1984");
+        mainMenuButton.setTextFill(javafx.scene.paint.Color.WHITE);
+        mainMenuButton.setFont(javafx.scene.text.Font.font("Courier New", javafx.scene.text.FontWeight.BOLD, 24));
+        mainMenuButton.setBackground(javafx.scene.layout.Background.EMPTY);
+        
+        leaderboardButton.setVisible(false);
+        leaderboardButton.setManaged(false);
+        
+        backButton1984.setVisible(true);
+        backButton1984.setManaged(true);
+        backButton1984.getStyleClass().clear();
+        backButton1984.getStyleClass().add("back-icon-1984");
+        backButton1984.setTextFill(javafx.scene.paint.Color.WHITE);
+        backButton1984.setFont(javafx.scene.text.Font.font("Courier New", javafx.scene.text.FontWeight.BOLD, 36));
+        backButton1984.setBackground(javafx.scene.layout.Background.EMPTY);
+        StackPane.setAlignment(backButton1984, Pos.TOP_LEFT);
+        StackPane.setMargin(backButton1984, new Insets(15, 0, 0, 15));
+        
+        highScoreLabel.setVisible(false);
+        highScoreHolderLabel.setVisible(false);
+        newHighScoreLabel.setVisible(false);
+        enterNameLabel.setVisible(false);
+        nameInputBox.setVisible(false);
+        savedLabel.setVisible(false);
+        errorLabel.setVisible(false);
+        timePlayedLabel.setVisible(false);
+    }
+    
+    public Button getBackButton1984() {
+        return backButton1984;
     }
     
     private void animateLabel(Label label) {
