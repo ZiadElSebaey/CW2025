@@ -7,8 +7,11 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.animation.FadeTransition;
+import javafx.animation.KeyFrame;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -57,9 +60,19 @@ public class MainMenuController {
 
     @FXML
     private Button backButton;
+    
+    @FXML
+    private StackPane dialogueContainer;
+    
+    @FXML
+    private ImageView dialogueImage;
+    
+    @FXML
+    private Label dialogueText;
 
     private VBox leaderboardContainer;
     private LeaderboardPanel leaderboardPanel;
+    private Timeline dialogueTimeline;
 
     public void setStage(Stage stage) {
         this.stage = stage;
@@ -108,6 +121,50 @@ public class MainMenuController {
         floatUp.play();
 
         setupLeaderboardPanel();
+        showDialogue();
+    }
+    
+    private void showDialogue() {
+        // Cancel any existing dialogue animation
+        hideDialogue();
+        
+        if (dialogueContainer != null) {
+            // Hide initially
+            dialogueContainer.setVisible(false);
+            dialogueContainer.setManaged(false);
+            dialogueContainer.setOpacity(0);
+            
+            // Show after 2 seconds with fade in animation
+            dialogueTimeline = new Timeline(new KeyFrame(Duration.seconds(2), e -> {
+                // Only show if still on main menu (dialogueContainer is still in the scene)
+                if (dialogueContainer != null && dialogueContainer.getScene() != null) {
+                    dialogueContainer.setVisible(true);
+                    dialogueContainer.setManaged(true);
+                    
+                    // Fade in animation
+                    FadeTransition fadeIn = new FadeTransition(Duration.millis(800), dialogueContainer);
+                    fadeIn.setFromValue(0);
+                    fadeIn.setToValue(1);
+                    fadeIn.play();
+                }
+            }));
+            dialogueTimeline.play();
+        }
+    }
+    
+    private void hideDialogue() {
+        // Stop any pending dialogue animation
+        if (dialogueTimeline != null) {
+            dialogueTimeline.stop();
+            dialogueTimeline = null;
+        }
+        
+        // Hide dialogue immediately
+        if (dialogueContainer != null) {
+            dialogueContainer.setVisible(false);
+            dialogueContainer.setManaged(false);
+            dialogueContainer.setOpacity(0);
+        }
     }
 
     private void setupLeaderboardPanel() {
@@ -141,6 +198,9 @@ public class MainMenuController {
         if (!isGuest && playerName == null) {
             return;
         }
+        
+        // Hide dialogue before leaving main menu
+        hideDialogue();
         
         resetMainMenu();
         
@@ -184,6 +244,10 @@ public class MainMenuController {
         titleLabel.setManaged(true);
         creatorPanel.setVisible(true);
         creatorPanel.setManaged(true);
+        // Only show dialogue if we're actually on the main menu scene
+        if (dialogueContainer != null && dialogueContainer.getScene() != null && rootPane.getScene() == dialogueContainer.getScene()) {
+            showDialogue();
+        }
         backButton.setVisible(false);
         backButton.setManaged(false);
     }
@@ -214,6 +278,7 @@ public class MainMenuController {
         titleLabel.setManaged(false);
         creatorPanel.setVisible(false);
         creatorPanel.setManaged(false);
+        hideDialogue();
         backButton.setVisible(true);
         backButton.setManaged(true);
         playSubmenu.setVisible(true);
@@ -222,6 +287,8 @@ public class MainMenuController {
 
     @FXML
     private void onLevelsClicked() {
+        // Hide dialogue before leaving main menu
+        hideDialogue();
         resetMainMenu();
         try {
             URL location = getClass().getClassLoader().getResource("levels.fxml");
@@ -237,6 +304,8 @@ public class MainMenuController {
 
     @FXML
     private void onGamemodesClicked() {
+        // Hide dialogue before leaving main menu
+        hideDialogue();
         resetMainMenu();
         try {
             URL location = getClass().getClassLoader().getResource("gamemodes.fxml");
@@ -258,16 +327,22 @@ public class MainMenuController {
 
     @FXML
     private void onHowToPlayClicked() {
+        // Hide dialogue before leaving main menu
+        hideDialogue();
         loadScene("howToPlay.fxml");
     }
 
     @FXML
     private void onSettingsClicked() {
+        // Hide dialogue before leaving main menu
+        hideDialogue();
         loadScene("settings.fxml");
     }
 
     @FXML
     private void onLeaderboardClicked() {
+        // Hide dialogue when showing leaderboard
+        hideDialogue();
         leaderboardPanel.refreshEntries();
         leaderboardContainer.setVisible(true);
     }

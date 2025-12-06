@@ -61,11 +61,6 @@
             </ImageView>
             <Label text="Alexey Pajitnov" styleClass="creator-name-small"/>
         </VBox>
-        <VBox fx:id="invertedCharactersPanel" alignment="CENTER_LEFT" spacing="30" layoutX="0" layoutY="5" visible="false" managed="false">
-            <ImageView fx:id="vecnaImage" fitWidth="750" fitHeight="850" preserveRatio="true">
-                <image><Image url="@vecna.png"/></image>
-            </ImageView>
-        </VBox>
     </Pane>
     <VBox fx:id="pauseContainer" alignment="CENTER">
         <PausePanel fx:id="pausePanel"/>

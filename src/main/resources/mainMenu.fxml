@@ -42,6 +42,14 @@
         </VBox>
     </VBox>
     <Pane pickOnBounds="false">
+        <StackPane fx:id="dialogueContainer" alignment="CENTER" layoutX="470" layoutY="280" visible="false" managed="false" style="-fx-background-color: transparent;">
+            <ImageView fx:id="dialogueImage" fitWidth="400" fitHeight="140" preserveRatio="true">
+                <image><Image url="@Dialogue.png"/></image>
+            </ImageView>
+            <Label fx:id="dialogueText" text="Long ago,in a room not far from here in moscow i created this game." 
+                   styleClass="dialogue-text-neon" wrapText="true" maxWidth="230" alignment="CENTER" textAlignment="CENTER" 
+                   style="-fx-background-color: transparent;"/>
+        </StackPane>
         <VBox fx:id="creatorPanel" alignment="CENTER" spacing="5" layoutX="550" layoutY="400">
             <ImageView fx:id="creatorImage" fitWidth="220" fitHeight="220" preserveRatio="true">
                 <image><Image url="@AlexeyPajitnov.png"/></image>
