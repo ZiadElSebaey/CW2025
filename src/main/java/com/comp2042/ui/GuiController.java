@@ -134,6 +134,12 @@ public class GuiController implements Initializable {
     @FXML
     private ImageView borderFrame;
     
+    @FXML
+    private VBox invertedCharactersPanel;
+    
+    @FXML
+    private ImageView vecnaImage;
+    
     private Label scoreLabel1984;
     private Label linesLabel1984;
     private Timeline glitchTimeline1984;
@@ -245,6 +251,28 @@ public class GuiController implements Initializable {
                 creatorPanel.setVisible(false);
                 creatorPanel.setManaged(false);
             }
+            if (invertedCharactersPanel != null) {
+                invertedCharactersPanel.setVisible(true);
+                invertedCharactersPanel.setManaged(true);
+                // Position on left side, accounting for the 180-degree rotation
+                // Since the screen is rotated, we need to position from the rotated perspective
+                // Use negative translateX to move it further left
+                invertedCharactersPanel.setLayoutX(0);
+                invertedCharactersPanel.setLayoutY(5);
+                invertedCharactersPanel.setTranslateX(-285);
+                invertedCharactersPanel.getTransforms().removeIf(transform -> transform instanceof Rotate);
+                Platform.runLater(() -> {
+                    double width = invertedCharactersPanel.getBoundsInLocal().getWidth();
+                    double height = invertedCharactersPanel.getBoundsInLocal().getHeight();
+                    if (width > 0 && height > 0) {
+                        Rotate rotate = new Rotate(180, width / 2, height / 2);
+                        invertedCharactersPanel.getTransforms().add(rotate);
+                    } else {
+                        Rotate rotate = new Rotate(180, 300, 300);
+                        invertedCharactersPanel.getTransforms().add(rotate);
+                    }
+                });
+            }
             if (backButton != null) {
                 backButton.setLayoutX(720 - 100);
                 backButton.setLayoutY(680 - 80);
@@ -282,6 +310,11 @@ public class GuiController implements Initializable {
             if (creatorPanel != null) {
                 creatorPanel.setVisible(true);
                 creatorPanel.setManaged(true);
+            }
+            if (invertedCharactersPanel != null) {
+                invertedCharactersPanel.setVisible(false);
+                invertedCharactersPanel.setManaged(false);
+                invertedCharactersPanel.getTransforms().removeIf(transform -> transform instanceof Rotate);
             }
             if (backButton != null) {
                 backButton.setLayoutX(15);
