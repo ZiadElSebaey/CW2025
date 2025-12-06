@@ -26,12 +26,12 @@
                     <Label text="LEVELS" styleClass="play-option-title"/>
                     <Label text="Complete challenges" styleClass="play-option-subtitle" wrapText="true"/>
                 </VBox>
-                <VBox alignment="CENTER" spacing="15" styleClass="play-option-panel" onMouseClicked="#onGamemodesClicked">
-                    <VBox alignment="CENTER" spacing="5">
-                        <Label text="Game" styleClass="play-option-title"/>
-                        <Label text="Modes" styleClass="play-option-title"/>
+                <VBox alignment="CENTER" spacing="15" styleClass="play-option-panel" onMouseClicked="#onGamemodesClicked" pickOnBounds="false">
+                    <VBox alignment="CENTER" spacing="5" pickOnBounds="false" mouseTransparent="true">
+                        <Label text="Game" styleClass="play-option-title" mouseTransparent="true"/>
+                        <Label text="Modes" styleClass="play-option-title" mouseTransparent="true"/>
                     </VBox>
-                    <Label text="Try new modes" styleClass="play-option-subtitle" wrapText="true"/>
+                    <Label text="Try new modes" styleClass="play-option-subtitle" wrapText="true" mouseTransparent="true"/>
                 </VBox>
             </HBox>
             <VBox fx:id="otherButtons" alignment="CENTER" spacing="15">

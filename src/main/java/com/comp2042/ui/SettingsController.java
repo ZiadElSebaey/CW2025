@@ -26,6 +26,9 @@ public class SettingsController {
     @FXML
     private Button soundButton;
 
+    @FXML
+    private Button ghostBlockButton;
+
     private boolean musicOn = true;
     private boolean soundOn = true;
 
@@ -40,8 +43,15 @@ public class SettingsController {
 
     @FXML
     private void initialize() {
+        SettingsManager.ensureDirectoryExists();
+        
         musicButton.setOnAction(_ -> toggleMusic());
         soundButton.setOnAction(_ -> toggleSound());
+        ghostBlockButton.setOnAction(_ -> toggleGhostBlock());
+        
+        // Load current settings
+        boolean ghostEnabled = SettingsManager.isGhostBlockEnabled();
+        ghostBlockButton.setText(ghostEnabled ? "ON" : "OFF");
         
         AnimatedBackground animatedBackground = new AnimatedBackground(720, 680);
         rootPane.getChildren().addFirst(animatedBackground);
@@ -55,6 +65,17 @@ public class SettingsController {
     private void toggleSound() {
         soundOn = !soundOn;
         soundButton.setText(soundOn ? "ON" : "OFF");
+    }
+
+    private void toggleGhostBlock() {
+        boolean newState = !SettingsManager.isGhostBlockEnabled();
+        SettingsManager.setGhostBlockEnabled(newState);
+        ghostBlockButton.setText(newState ? "ON" : "OFF");
+        
+        // Update ghost block visibility in game if controller is available
+        if (guiController != null) {
+            guiController.updateGhostBlockVisibility();
+        }
     }
 
     @FXML
