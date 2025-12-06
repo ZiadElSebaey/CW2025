@@ -909,21 +909,16 @@ public class GuiController implements Initializable {
         
         if (!isPause.get() && eventListener != null) {
             if (isInvertedMode) {
-                // Inverted mode: swap key mappings
                 if (isRotateKey(keyEvent)) {
-                    // UP/W now does DOWN (soft drop)
                     moveDown(userMove(EventType.DOWN));
                     keyEvent.consume();
                 } else if (isDownKey(keyEvent)) {
-                    // DOWN/S now does ROTATE
                     refreshBrick(eventListener.onRotateEvent(userMove(EventType.ROTATE)));
                     keyEvent.consume();
                 } else if (isLeftKey(keyEvent)) {
-                    // LEFT/A now does RIGHT
                     refreshBrick(eventListener.onRightEvent(userMove(EventType.RIGHT)));
                     keyEvent.consume();
                 } else if (isRightKey(keyEvent)) {
-                    // RIGHT/D now does LEFT
                     refreshBrick(eventListener.onLeftEvent(userMove(EventType.LEFT)));
                     keyEvent.consume();
                 } else if (keyEvent.getCode() == KeyCode.SPACE) {
@@ -934,7 +929,6 @@ public class GuiController implements Initializable {
                     keyEvent.consume();
                 }
             } else {
-                // Normal mode: standard key mappings
             if (isLeftKey(keyEvent)) {
                 refreshBrick(eventListener.onLeftEvent(userMove(EventType.LEFT)));
                 keyEvent.consume();
@@ -1021,9 +1015,7 @@ public class GuiController implements Initializable {
 
     private void updateGhostPosition(ViewData brick) {
         boolean is1984Mode = gameMode != null && gameMode.equals("1984");
-        // Check if ghost block is enabled or if in 1984 mode (no ghost in retro mode)
         if (is1984Mode || !SettingsManager.isGhostBlockEnabled()) {
-            // Hide all ghost rectangles
             if (ghostRectangles != null) {
                 for (int i = 0; i < ghostRectangles.length; i++) {
                     for (int j = 0; j < ghostRectangles[i].length; j++) {
@@ -1045,7 +1037,6 @@ public class GuiController implements Initializable {
         ghostPanel.setLayoutX(x);
         ghostPanel.setLayoutY(ghostY);
 
-        // Update ghost block with improved performance and color matching
         for (int i = 0; i < brick.getBrickData().length; i++) {
             for (int j = 0; j < brick.getBrickData()[i].length; j++) {
                 Rectangle ghostRect = ghostRectangles[i][j];
@@ -1054,16 +1045,14 @@ public class GuiController implements Initializable {
                 boolean currentlyVisible = !ghostRect.getFill().equals(Color.TRANSPARENT) && ghostRect.getOpacity() > 0.01;
                 
                 if (shouldShow) {
-                    // Get the actual color of the block and make it ghostly
                     Paint blockColor = getFillColor(colorIndex);
                     if (blockColor instanceof Color) {
                         Color originalColor = (Color) blockColor;
-                        // Create a ghost version with reduced opacity and lighter appearance
                         Color ghostColor = Color.color(
                             originalColor.getRed(),
                             originalColor.getGreen(),
                             originalColor.getBlue(),
-                            0.25 // Reduced opacity for ghost effect
+                            0.25
                         );
                         ghostRect.setFill(ghostColor);
                     } else {
@@ -1073,7 +1062,6 @@ public class GuiController implements Initializable {
                     ghostRect.setArcHeight(RECTANGLE_ARC_SIZE);
                     ghostRect.setArcWidth(RECTANGLE_ARC_SIZE);
                     
-                    // Cleaner border with matching color
                     if (blockColor instanceof Color) {
                         Color originalColor = (Color) blockColor;
                         Color borderColor = Color.color(
@@ -1088,7 +1076,6 @@ public class GuiController implements Initializable {
                     }
                     ghostRect.setStrokeWidth(1.5);
                     
-                    // Smooth fade in only when appearing
                     if (!currentlyVisible) {
                         ghostRect.setOpacity(0.0);
                         FadeTransition fadeIn = new FadeTransition(Duration.millis(100), ghostRect);
@@ -1099,7 +1086,6 @@ public class GuiController implements Initializable {
                         ghostRect.setOpacity(1.0);
                     }
                 } else {
-                    // Smooth fade out when disappearing
                     if (currentlyVisible) {
                         FadeTransition fadeOut = new FadeTransition(Duration.millis(80), ghostRect);
                         fadeOut.setFromValue(ghostRect.getOpacity());
@@ -1121,11 +1107,9 @@ public class GuiController implements Initializable {
     }
     
     public void updateGhostBlockVisibility() {
-        // Update ghost block visibility immediately if we have current data
         if (lastViewData != null) {
             updateGhostPosition(lastViewData);
         } else if (ghostRectangles != null) {
-            // Hide all ghost rectangles if no game is active
             for (int i = 0; i < ghostRectangles.length; i++) {
                 for (int j = 0; j < ghostRectangles[i].length; j++) {
                     ghostRectangles[i][j].setFill(Color.TRANSPARENT);
@@ -1667,7 +1651,6 @@ public class GuiController implements Initializable {
         if (gameMode != null && gameMode.equals("inverted") && gameOverPanel != null) {
             if (gameOverPanel.getBackButtonInverted() != null) {
                 gameOverPanel.getBackButtonInverted().setOnAction(_ -> returnToGamemodesMenu());
-                // Rotate back button 180 degrees
                 Button backBtnInverted = gameOverPanel.getBackButtonInverted();
                 backBtnInverted.getTransforms().removeIf(transform -> transform instanceof Rotate);
                 Platform.runLater(() -> {
@@ -1845,7 +1828,6 @@ public class GuiController implements Initializable {
         if (countdownContainer != null) {
             countdownContainer.setVisible(true);
             
-            // Rotate countdown 180 degrees in inverted mode
             if (gameMode != null && gameMode.equals("inverted")) {
                 countdownContainer.getTransforms().removeIf(transform -> transform instanceof Rotate);
                 Platform.runLater(() -> {
@@ -1860,7 +1842,6 @@ public class GuiController implements Initializable {
                     }
                 });
             } else {
-                // Remove rotation when not in inverted mode
                 countdownContainer.getTransforms().removeIf(transform -> transform instanceof Rotate);
             }
         }
@@ -2078,7 +2059,6 @@ public class GuiController implements Initializable {
         pauseContainer.setTranslateX(translateX);
         pauseContainer.setTranslateY(translateY);
         
-        // Rotate pause menu 180 degrees in inverted mode
         if (gameMode != null && gameMode.equals("inverted") && pauseContainer != null) {
             pauseContainer.getTransforms().removeIf(transform -> transform instanceof Rotate);
             Platform.runLater(() -> {
@@ -2093,7 +2073,6 @@ public class GuiController implements Initializable {
                 }
             });
         } else if (pauseContainer != null) {
-            // Remove rotation when not in inverted mode
             pauseContainer.getTransforms().removeIf(transform -> transform instanceof Rotate);
         }
     }
