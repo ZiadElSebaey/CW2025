@@ -952,7 +952,7 @@ public class GuiController implements Initializable {
                     keyEvent.consume();
                 } else if (keyEvent.getCode() == KeyCode.H) {
                     holdBrick();
-                    keyEvent.consume();
+                keyEvent.consume();
                 }
             }
         }

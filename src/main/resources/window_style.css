@@ -712,23 +712,30 @@
 }
 
 .gamemode-panel {
-    -fx-background-color: linear-gradient(to bottom, rgba(30, 80, 140, 0.95), rgba(20, 50, 100, 0.9));
+    -fx-background-image: url('1984background.png');
+    -fx-background-size: 125% 125%;
+    -fx-background-position: center;
+    -fx-background-repeat: no-repeat;
     -fx-background-radius: 20;
-    -fx-border-color: linear-gradient(to bottom, rgba(100, 200, 255, 0.8), rgba(150, 240, 255, 0.6), rgba(100, 200, 255, 0.8));
-    -fx-border-width: 2;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
     -fx-border-radius: 20;
     -fx-padding: 40 35 40 35;
     -fx-effect: dropshadow(gaussian, rgba(80, 180, 255, 0.4), 15, 0.5, 0, 0);
-    -fx-min-width: 240px;
-    -fx-pref-width: 240px;
-    -fx-min-height: 320px;
-    -fx-pref-height: 320px;
+    -fx-min-width: 280px;
+    -fx-pref-width: 280px;
+    -fx-min-height: 420px;
+    -fx-pref-height: 420px;
     -fx-cursor: hand;
 }
 
 .gamemode-panel:hover {
-    -fx-background-color: linear-gradient(to bottom, rgba(50, 120, 200, 0.98), rgba(30, 80, 150, 0.95));
-    -fx-border-color: linear-gradient(to bottom, rgba(150, 240, 255, 0.9), rgba(200, 255, 255, 0.8), rgba(150, 240, 255, 0.9));
+    -fx-background-image: url('1984background.png');
+    -fx-background-size: 140% 140%;
+    -fx-background-position: center;
+    -fx-background-repeat: no-repeat;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
     -fx-effect: dropshadow(gaussian, rgba(100, 220, 255, 0.6), 20, 0.6, 0, 0);
     -fx-scale-x: 1.05;
     -fx-scale-y: 1.05;
@@ -765,6 +772,42 @@
 .gamemode-panel:hover .gamemode-subtitle {
     -fx-text-fill: #e0f8ff;
     -fx-effect: dropshadow(gaussian, rgba(100, 220, 255, 0.5), 12, 0.5, 0, 0);
+}
+
+.gamemode-panel-inverted {
+    -fx-background-image: url('upsidegamemode.png');
+    -fx-background-size: 125% 125%;
+    -fx-background-position: center;
+    -fx-background-repeat: no-repeat;
+    -fx-background-radius: 20;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-border-radius: 20;
+    -fx-padding: 40 35 40 35;
+    -fx-effect: dropshadow(gaussian, rgba(80, 180, 255, 0.4), 15, 0.5, 0, 0);
+    -fx-min-width: 280px;
+    -fx-pref-width: 280px;
+    -fx-min-height: 420px;
+    -fx-pref-height: 420px;
+    -fx-cursor: hand;
+}
+
+.gamemode-panel-inverted:hover {
+    -fx-background-image: url('upsidegamemode.png');
+    -fx-background-size: 140% 140%;
+    -fx-background-position: center;
+    -fx-background-repeat: no-repeat;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-effect: dropshadow(gaussian, rgba(100, 220, 255, 0.6), 20, 0.6, 0, 0);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+.gamemode-panel-inverted .gamemode-title {
+    -fx-font-size: 32px;
+    -fx-wrap-text: false;
+    -fx-max-width: 250px;
 }
 
 .leaderboard-panel {
