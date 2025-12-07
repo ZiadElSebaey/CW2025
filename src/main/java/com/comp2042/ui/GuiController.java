@@ -60,6 +60,20 @@ public class GuiController implements Initializable {
     private static final int WINDOW_HEIGHT = 680;
     private static final int BACK_BUTTON_OFFSET_X = 100;
     private static final int BACK_BUTTON_OFFSET_Y = 80;
+    private static final double GHOST_COLOR_OPACITY = 0.25;
+    private static final double GHOST_BORDER_OPACITY = 0.4;
+    private static final int GHOST_FADE_IN_DURATION_MS = 100;
+    private static final int GHOST_FADE_OUT_DURATION_MS = 80;
+    private static final double GHOST_STROKE_WIDTH = 1.5;
+    private static final double GHOST_VISIBILITY_THRESHOLD = 0.01;
+    private static final double DEFAULT_GAME_BOARD_WIDTH = 276.0;
+    private static final double DEFAULT_GAME_BOARD_HEIGHT = 556.0;
+    private static final double DEFAULT_ROOT_CENTER_X = 360.0;
+    private static final double DEFAULT_ROOT_CENTER_Y = 340.0;
+    private static final double PAUSE_MENU_OFFSET_X = 5.0;
+    private static final double PAUSE_MENU_OFFSET_Y = -10.0;
+    private static final double PAUSE_MENU_FALLBACK_X = 200.0;
+    private static final double PAUSE_MENU_FALLBACK_Y = 300.0;
 
     @FXML
     private GridPane gamePanel;
@@ -604,8 +618,7 @@ public class GuiController implements Initializable {
     
     private void updateTimerLabel() {
         if (currentLevel != null && timerLabel != null && timerLabel.isVisible()) {
-            long currentPauseTime = (pauseStartTime > 0) ? (System.currentTimeMillis() - pauseStartTime) : 0;
-            long timeElapsed = (System.currentTimeMillis() - levelStartTime - totalPauseDuration - currentPauseTime) / 1000;
+            long timeElapsed = calculateElapsedTime(levelStartTime, totalPauseDuration, pauseStartTime);
             int remainingTime = (int)(currentLevel.getTimeLimit() - timeElapsed);
             
             if (remainingTime <= 0 && isTimedLevel()) {
@@ -652,9 +665,7 @@ public class GuiController implements Initializable {
                 timerLabel.setText("Time: 0:00");
                 return;
             }
-            long currentPauseTime = (freePlayPauseStartTime > 0) ? (System.currentTimeMillis() - freePlayPauseStartTime) : 0;
-            long timeElapsed = (System.currentTimeMillis() - freePlayStartTime - freePlayTotalPauseDuration - currentPauseTime) / 1000;
-            timeElapsed = Math.max(0, timeElapsed);
+            long timeElapsed = Math.max(0, calculateElapsedTime(freePlayStartTime, freePlayTotalPauseDuration, freePlayPauseStartTime));
             int minutes = (int)(timeElapsed / 60);
             int seconds = (int)(timeElapsed % 60);
             String timeStr = String.format("%d:%02d", minutes, seconds);
@@ -676,9 +687,7 @@ public class GuiController implements Initializable {
         if (freePlayStartTime == 0) {
             return 0;
         }
-        long currentPauseTime = (freePlayPauseStartTime > 0) ? (System.currentTimeMillis() - freePlayPauseStartTime) : 0;
-        long elapsed = (System.currentTimeMillis() - freePlayStartTime - freePlayTotalPauseDuration - currentPauseTime) / 1000;
-        return Math.max(0, elapsed);
+        return Math.max(0, calculateElapsedTime(freePlayStartTime, freePlayTotalPauseDuration, freePlayPauseStartTime));
     }
     
     private void updateLevelObjectiveLabel() {
@@ -735,7 +744,7 @@ public class GuiController implements Initializable {
         refreshHighScoreDisplay();
         
         gamePanel.setFocusTraversable(true);
-        gamePanel.requestFocus();
+        resetGamePanelFocus();
         gamePanel.setOnKeyPressed(this::handleKeyPressed);
         gameOverPanel.setVisible(false);
         gameOverContainer.setVisible(false);
@@ -823,7 +832,7 @@ public class GuiController implements Initializable {
         leaderboardContainer.setVisible(false);
         leaderboardPanel.getCloseButton().setOnAction(_ -> {
             leaderboardContainer.setVisible(false);
-            gamePanel.requestFocus();
+            resetGamePanelFocus();
         });
         rootPane.getChildren().add(leaderboardContainer);
     }
@@ -840,17 +849,13 @@ public class GuiController implements Initializable {
     }
 
     private void openSettingsFromPause() {
-        try {
-            URL location = getClass().getClassLoader().getResource("settings.fxml");
-            FXMLLoader fxmlLoader = new FXMLLoader(location);
-            Parent root = fxmlLoader.load();
-            SettingsController settingsController = fxmlLoader.getController();
-            settingsController.setStage(stage);
-            settingsController.setReturnToGame(stage.getScene(), this);
-            Scene scene = new Scene(root, 720, 680);
-            stage.setScene(scene);
-        } catch (IOException ignored) {
-        }
+        navigateToScene("settings.fxml", loader -> {
+            SettingsController settingsController = loader.getController();
+            if (settingsController != null) {
+                settingsController.setStage(stage);
+                settingsController.setReturnToGame(stage.getScene(), this);
+            }
+        });
     }
 
     private void returnToMainMenu() {
@@ -859,16 +864,12 @@ public class GuiController implements Initializable {
         }
         stopTimerUpdate();
         MainMenuController.clearActiveGame();
-        try {
-            URL location = getClass().getClassLoader().getResource("mainMenu.fxml");
-            FXMLLoader fxmlLoader = new FXMLLoader(location);
-            Parent root = fxmlLoader.load();
-            MainMenuController menuController = fxmlLoader.getController();
-            menuController.setStage(stage);
-            Scene scene = new Scene(root, 720, 680);
-            stage.setScene(scene);
-        } catch (IOException ignored) {
-        }
+        navigateToScene("mainMenu.fxml", loader -> {
+            MainMenuController menuController = loader.getController();
+            if (menuController != null) {
+                menuController.setStage(stage);
+            }
+        });
     }
     
     private void returnToPlayMenu() {
@@ -878,17 +879,13 @@ public class GuiController implements Initializable {
         stopTimerUpdate();
         stopFreePlayTimer();
         MainMenuController.clearActiveGame();
-        try {
-            URL location = getClass().getClassLoader().getResource("mainMenu.fxml");
-            FXMLLoader fxmlLoader = new FXMLLoader(location);
-            Parent root = fxmlLoader.load();
-            MainMenuController menuController = fxmlLoader.getController();
-            menuController.setStage(stage);
-            menuController.showPlayMenu();
-            Scene scene = new Scene(root, 720, 680);
-            stage.setScene(scene);
-        } catch (IOException ignored) {
-        }
+        navigateToScene("mainMenu.fxml", loader -> {
+            MainMenuController menuController = loader.getController();
+            if (menuController != null) {
+                menuController.setStage(stage);
+                menuController.showPlayMenu();
+            }
+        });
     }
     private void handleKeyPressed(KeyEvent keyEvent) {
         if (isGameOver.get()) {
@@ -1022,9 +1019,7 @@ public class GuiController implements Initializable {
             if (ghostRectangles != null) {
                 for (int i = 0; i < ghostRectangles.length; i++) {
                     for (int j = 0; j < ghostRectangles[i].length; j++) {
-                        ghostRectangles[i][j].setFill(Color.TRANSPARENT);
-                        ghostRectangles[i][j].setStroke(Color.TRANSPARENT);
-                        ghostRectangles[i][j].setOpacity(0.0);
+                        clearGhostRectangle(ghostRectangles[i][j]);
                     }
                 }
             }
@@ -1045,21 +1040,15 @@ public class GuiController implements Initializable {
                 Rectangle ghostRect = ghostRectangles[i][j];
                 int colorIndex = brick.getBrickData()[i][j];
                 boolean shouldShow = colorIndex != 0;
-                boolean currentlyVisible = !ghostRect.getFill().equals(Color.TRANSPARENT) && ghostRect.getOpacity() > 0.01;
+                boolean currentlyVisible = !ghostRect.getFill().equals(Color.TRANSPARENT) && ghostRect.getOpacity() > GHOST_VISIBILITY_THRESHOLD;
                 
                 if (shouldShow) {
                     Paint blockColor = getFillColor(colorIndex);
                     if (blockColor instanceof Color) {
                         Color originalColor = (Color) blockColor;
-                        Color ghostColor = Color.color(
-                            originalColor.getRed(),
-                            originalColor.getGreen(),
-                            originalColor.getBlue(),
-                            0.25
-                        );
-                        ghostRect.setFill(ghostColor);
+                        ghostRect.setFill(createGhostColor(originalColor, GHOST_COLOR_OPACITY));
                     } else {
-                        ghostRect.setFill(Color.rgb(255, 255, 255, 0.25));
+                        ghostRect.setFill(Color.rgb(255, 255, 255, GHOST_COLOR_OPACITY));
                     }
                     
                     ghostRect.setArcHeight(RECTANGLE_ARC_SIZE);
@@ -1067,21 +1056,15 @@ public class GuiController implements Initializable {
                     
                     if (blockColor instanceof Color) {
                         Color originalColor = (Color) blockColor;
-                        Color borderColor = Color.color(
-                            originalColor.getRed(),
-                            originalColor.getGreen(),
-                            originalColor.getBlue(),
-                            0.4
-                        );
-                        ghostRect.setStroke(borderColor);
+                        ghostRect.setStroke(createGhostColor(originalColor, GHOST_BORDER_OPACITY));
                     } else {
-                        ghostRect.setStroke(Color.rgb(255, 255, 255, 0.4));
+                        ghostRect.setStroke(Color.rgb(255, 255, 255, GHOST_BORDER_OPACITY));
                     }
-                    ghostRect.setStrokeWidth(1.5);
+                    ghostRect.setStrokeWidth(GHOST_STROKE_WIDTH);
                     
                     if (!currentlyVisible) {
                         ghostRect.setOpacity(0.0);
-                        FadeTransition fadeIn = new FadeTransition(Duration.millis(100), ghostRect);
+                        FadeTransition fadeIn = new FadeTransition(Duration.millis(GHOST_FADE_IN_DURATION_MS), ghostRect);
                         fadeIn.setFromValue(0.0);
                         fadeIn.setToValue(1.0);
                         fadeIn.play();
@@ -1090,19 +1073,13 @@ public class GuiController implements Initializable {
                     }
                 } else {
                     if (currentlyVisible) {
-                        FadeTransition fadeOut = new FadeTransition(Duration.millis(80), ghostRect);
+                        FadeTransition fadeOut = new FadeTransition(Duration.millis(GHOST_FADE_OUT_DURATION_MS), ghostRect);
                         fadeOut.setFromValue(ghostRect.getOpacity());
                         fadeOut.setToValue(0.0);
-                        fadeOut.setOnFinished(_ -> {
-                            ghostRect.setFill(Color.TRANSPARENT);
-                            ghostRect.setStroke(Color.TRANSPARENT);
-                            ghostRect.setOpacity(0.0);
-                        });
+                        fadeOut.setOnFinished(_ -> clearGhostRectangle(ghostRect));
                         fadeOut.play();
                     } else {
-                        ghostRect.setFill(Color.TRANSPARENT);
-                        ghostRect.setStroke(Color.TRANSPARENT);
-                        ghostRect.setOpacity(0.0);
+                        clearGhostRectangle(ghostRect);
                     }
                 }
             }
@@ -1115,9 +1092,7 @@ public class GuiController implements Initializable {
         } else if (ghostRectangles != null) {
             for (int i = 0; i < ghostRectangles.length; i++) {
                 for (int j = 0; j < ghostRectangles[i].length; j++) {
-                    ghostRectangles[i][j].setFill(Color.TRANSPARENT);
-                    ghostRectangles[i][j].setStroke(Color.TRANSPARENT);
-                    ghostRectangles[i][j].setOpacity(0.0);
+                    clearGhostRectangle(ghostRectangles[i][j]);
                 }
             }
         }
@@ -1359,7 +1334,7 @@ public class GuiController implements Initializable {
             }
             refreshBrick(downData.getViewData());
         }
-        gamePanel.requestFocus();
+        resetGamePanelFocus();
     }
 
     private void hardDrop() {
@@ -1370,7 +1345,7 @@ public class GuiController implements Initializable {
             }
             refreshBrick(downData.getViewData());
         }
-        gamePanel.requestFocus();
+        resetGamePanelFocus();
     }
 
     private boolean shouldShowScoreNotification(DownData downData) {
@@ -1398,11 +1373,7 @@ public class GuiController implements Initializable {
         scoreLabel.textProperty().bind(scoreProperty.asString("Score: %d"));
         if (is1984Mode() && gamePane != null) {
             if (scoreLabel1984 == null) {
-                scoreLabel1984 = new Label("Score: 0");
-                scoreLabel1984.getStyleClass().add("score-label-1984");
-                scoreLabel1984.setLayoutX(50);
-                scoreLabel1984.setLayoutY(150);
-                gamePane.getChildren().add(scoreLabel1984);
+                scoreLabel1984 = create1984Label("Score: 0", "score-label-1984", 50, 150);
             }
             scoreLabel1984.textProperty().bind(scoreProperty.asString("Score: %d"));
             scoreLabel1984.setVisible(true);
@@ -1421,11 +1392,7 @@ public class GuiController implements Initializable {
         linesLabel.textProperty().bind(linesProperty.asString("Lines: %d"));
         if (is1984Mode() && gamePane != null) {
             if (linesLabel1984 == null) {
-                linesLabel1984 = new Label("Lines: 0");
-                linesLabel1984.getStyleClass().add("lines-label-1984");
-                linesLabel1984.setLayoutX(50);
-                linesLabel1984.setLayoutY(200);
-                gamePane.getChildren().add(linesLabel1984);
+                linesLabel1984 = create1984Label("Lines: 0", "lines-label-1984", 50, 200);
             }
             linesLabel1984.textProperty().bind(linesProperty.asString("Lines: %d"));
             linesLabel1984.setVisible(true);
@@ -1456,8 +1423,7 @@ public class GuiController implements Initializable {
         
         IntegerProperty linesProp = ((com.comp2042.logic.GameController) eventListener).getLinesProperty();
         int totalLines = linesProp != null ? linesProp.get() : 0;
-        long currentPauseTime = (pauseStartTime > 0) ? (System.currentTimeMillis() - pauseStartTime) : 0;
-        long timeElapsed = (System.currentTimeMillis() - levelStartTime - totalPauseDuration - currentPauseTime) / 1000;
+        long timeElapsed = calculateElapsedTime(levelStartTime, totalPauseDuration, pauseStartTime);
         
         boolean objectiveMet = false;
         
@@ -1629,9 +1595,7 @@ public class GuiController implements Initializable {
             highScoreHolder = HighScoreManager.getHighScoreHolder();
             highScoreLabel.setText("High Score: " + highScore);
             if (highScoreHolder != null && !highScoreHolder.isEmpty()) {
-                String capitalizedName = highScoreHolder.substring(0, 1).toUpperCase() + 
-                                        (highScoreHolder.length() > 1 ? highScoreHolder.substring(1).toLowerCase() : "");
-                highScoreHolderLabel.setText("by " + capitalizedName);
+                highScoreHolderLabel.setText("by " + capitalizeName(highScoreHolder));
                 highScoreHolderLabel.setVisible(true);
                 animateHighScoreHolder();
             } else {
@@ -1738,8 +1702,7 @@ public class GuiController implements Initializable {
         
         isGameOver.set(true);
         
-        gamePanel.setFocusTraversable(false);
-        gamePanel.setDisable(true);
+        disableGamePanel();
     }
 
     public void newGame(ActionEvent actionEvent) {
@@ -1849,56 +1812,24 @@ public class GuiController implements Initializable {
     }
     
     public void startNewGame() {
-        gamePane.setVisible(true);
-        gameOverPanel.setVisible(false);
-        gameOverContainer.setVisible(false);
-        pausePanel.setVisible(false);
-        pauseContainer.setVisible(false);
-        if (levelCompleteContainer != null) {
-            levelCompleteContainer.setVisible(false);
-        }
-        if (countdownContainer != null) {
-            countdownContainer.setVisible(false);
-        }
-        isGameOver.set(false);
+        resetGameState();
         setPaused(false);
         
         initializeGameTimersAndDialogue();
-        
-        gamePanel.setFocusTraversable(true);
-        gamePanel.setDisable(false);
 
         if (eventListener != null) {
             ViewData newBrickData = eventListener.createNewGame();
             refreshBrick(newBrickData);
         }
-        gamePanel.requestFocus();
     }
     
     private void startGameInstantly() {
-        gamePane.setVisible(true);
-        gameOverPanel.setVisible(false);
-        gameOverContainer.setVisible(false);
-        pausePanel.setVisible(false);
-        pauseContainer.setVisible(false);
-        if (levelCompleteContainer != null) {
-            levelCompleteContainer.setVisible(false);
-        }
-        if (countdownContainer != null) {
-            countdownContainer.setVisible(false);
-        }
-        
-        isPause.set(false);
-        isGameOver.set(false);
-        gamePanel.setFocusTraversable(true);
-        gamePanel.setDisable(false);
+        resetGameState();
         
         if (eventListener != null) {
             ViewData newBrickData = eventListener.createNewGame();
             refreshBrick(newBrickData);
         }
-        
-        gamePanel.requestFocus();
         
         if (timeLine != null) {
             timeLine.stop();
@@ -1920,24 +1851,12 @@ public class GuiController implements Initializable {
     }
     
     private void returnToGamemodesMenu() {
-        try {
-            if (stage == null) return;
-            URL location = getClass().getClassLoader().getResource("gamemodes.fxml");
-            if (location == null) {
-                return;
-            }
-            FXMLLoader loader = new FXMLLoader(location);
-            Parent root = loader.load();
+        navigateToScene("gamemodes.fxml", loader -> {
             GamemodesController controller = loader.getController();
             if (controller != null) {
                 controller.setStage(stage);
             }
-            Scene scene = new Scene(root, 720, 680);
-            stage.setScene(scene);
-            stage.show();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        });
     }
     
     public void startLevelGame() {
@@ -2013,7 +1932,7 @@ public class GuiController implements Initializable {
             positionPauseMenu();
         }
         
-        gamePanel.requestFocus();
+        resetGamePanelFocus();
     }
 
     public boolean isPaused() {
@@ -2026,30 +1945,30 @@ public class GuiController implements Initializable {
         
         double gameBoardX = gameBoard.getLayoutX();
         double gameBoardY = gameBoard.getLayoutY();
-        double gameBoardWidth = gameBoard.getWidth() > 0 ? gameBoard.getWidth() : 276;
-        double gameBoardHeight = gameBoard.getHeight() > 0 ? gameBoard.getHeight() : 556;
+        double gameBoardWidth = gameBoard.getWidth() > 0 ? gameBoard.getWidth() : DEFAULT_GAME_BOARD_WIDTH;
+        double gameBoardHeight = gameBoard.getHeight() > 0 ? gameBoard.getHeight() : DEFAULT_GAME_BOARD_HEIGHT;
         
         double gameBoardCenterX = gameBoardX + gameBoardWidth / 2;
         double gameBoardCenterY = gameBoardY + gameBoardHeight / 2;
-        double rootCenterX = rootPane.getWidth() > 0 ? rootPane.getWidth() / 2 : 360;
-        double rootCenterY = rootPane.getHeight() > 0 ? rootPane.getHeight() / 2 : 340;
+        double rootCenterX = rootPane.getWidth() > 0 ? rootPane.getWidth() / 2 : DEFAULT_ROOT_CENTER_X;
+        double rootCenterY = rootPane.getHeight() > 0 ? rootPane.getHeight() / 2 : DEFAULT_ROOT_CENTER_Y;
         
-        double translateX = gameBoardCenterX - rootCenterX + 5;
-        double translateY = gameBoardCenterY - rootCenterY - 10;
+        double translateX = gameBoardCenterX - rootCenterX + PAUSE_MENU_OFFSET_X;
+        double translateY = gameBoardCenterY - rootCenterY + PAUSE_MENU_OFFSET_Y;
         
         pauseContainer.setTranslateX(translateX);
         pauseContainer.setTranslateY(translateY);
         
-        if (gameMode != null && gameMode.equals("inverted") && pauseContainer != null) {
+        if (isInvertedMode() && pauseContainer != null) {
             pauseContainer.getTransforms().removeIf(transform -> transform instanceof Rotate);
             Platform.runLater(() -> {
                 double width = pauseContainer.getBoundsInLocal().getWidth();
                 double height = pauseContainer.getBoundsInLocal().getHeight();
                 if (width > 0 && height > 0) {
-                    Rotate rotate = new Rotate(180, width / 2, height / 2);
+                    Rotate rotate = new Rotate(INVERTED_ROTATION_ANGLE, width / 2, height / 2);
                     pauseContainer.getTransforms().add(rotate);
                 } else {
-                    Rotate rotate = new Rotate(180, 200, 300);
+                    Rotate rotate = new Rotate(INVERTED_ROTATION_ANGLE, PAUSE_MENU_FALLBACK_X, PAUSE_MENU_FALLBACK_Y);
                     pauseContainer.getTransforms().add(rotate);
                 }
             });
@@ -2063,15 +1982,14 @@ public class GuiController implements Initializable {
     }
 
     public void requestFocus() {
-        gamePanel.requestFocus();
+        resetGamePanelFocus();
     }
     
     public void refreshHighScoreDisplay() {
         if (currentLevel != null) {
             return;
         }
-        boolean isInvertedMode = gameMode != null && gameMode.equals("inverted");
-        if (isInvertedMode) {
+        if (isInvertedMode()) {
             highScoreLabel.setVisible(false);
             highScoreHolderLabel.setVisible(false);
             return;
@@ -2118,15 +2036,12 @@ public class GuiController implements Initializable {
         stopDialogueTextTimeline();
         
         String currentPlayer = playerName != null && !playerName.isEmpty() ? playerName : "Player";
-        String capitalizedPlayer = currentPlayer.substring(0, 1).toUpperCase() + 
-                                 (currentPlayer.length() > 1 ? currentPlayer.substring(1).toLowerCase() : "");
+        String capitalizedPlayer = capitalizeName(currentPlayer);
         String highScoreHolder = HighScoreManager.getHighScoreHolder();
         
         String message1;
         if (highScoreHolder != null && !highScoreHolder.isEmpty()) {
-            String capitalizedHolder = highScoreHolder.substring(0, 1).toUpperCase() + 
-                                      (highScoreHolder.length() > 1 ? highScoreHolder.substring(1).toLowerCase() : "");
-            message1 = "Come on " + capitalizedPlayer + "! You can beat " + capitalizedHolder + "'s highscore";
+            message1 = "Come on " + capitalizedPlayer + "! You can beat " + capitalizeName(highScoreHolder) + "'s highscore";
         } else {
             message1 = "Come on " + capitalizedPlayer + "! Set a new highscore!";
         }
@@ -2141,32 +2056,7 @@ public class GuiController implements Initializable {
         messages.add(message3);
         messages.add(message4);
         
-        dialogueTextGame.setOpacity(1.0);
-        int randomIndex = (int)(Math.random() * messages.size());
-        dialogueTextGame.setText(messages.get(randomIndex));
-        
-        dialogueTextTimeline = new Timeline(
-            new KeyFrame(Duration.seconds(6.5), e -> {
-                if (dialogueTextGame != null && dialogueTextGame.getScene() != null && currentLevel == null) {
-                    FadeTransition fadeOut = new FadeTransition(Duration.millis(500), dialogueTextGame);
-                    fadeOut.setFromValue(1.0);
-                    fadeOut.setToValue(0.0);
-                    fadeOut.setOnFinished(event -> {
-                        int nextIndex = (int)(Math.random() * messages.size());
-                        String nextMessage = messages.get(nextIndex);
-                        dialogueTextGame.setText(nextMessage);
-                        FadeTransition fadeIn = new FadeTransition(Duration.millis(500), dialogueTextGame);
-                        fadeIn.setFromValue(0.0);
-                        fadeIn.setToValue(1.0);
-                        fadeIn.play();
-                    });
-                    fadeOut.play();
-                }
-            })
-        );
-        
-        dialogueTextTimeline.setCycleCount(Timeline.INDEFINITE);
-        dialogueTextTimeline.play();
+        createDialogueTextTimeline(messages, () -> currentLevel == null);
     }
     
     private void stopDialogueTextTimeline() {
@@ -2194,32 +2084,7 @@ public class GuiController implements Initializable {
         messages.add(message3);
         messages.add(message4);
         
-        dialogueTextGame.setOpacity(1.0);
-        int randomIndex = (int)(Math.random() * messages.size());
-        dialogueTextGame.setText(messages.get(randomIndex));
-        
-        dialogueTextTimeline = new Timeline(
-            new KeyFrame(Duration.seconds(6.5), e -> {
-                if (dialogueTextGame != null && dialogueTextGame.getScene() != null && currentLevel != null) {
-                    FadeTransition fadeOut = new FadeTransition(Duration.millis(500), dialogueTextGame);
-                    fadeOut.setFromValue(1.0);
-                    fadeOut.setToValue(0.0);
-                    fadeOut.setOnFinished(event -> {
-                        int nextIndex = (int)(Math.random() * messages.size());
-                        String nextMessage = messages.get(nextIndex);
-                        dialogueTextGame.setText(nextMessage);
-                        FadeTransition fadeIn = new FadeTransition(Duration.millis(500), dialogueTextGame);
-                        fadeIn.setFromValue(0.0);
-                        fadeIn.setToValue(1.0);
-                        fadeIn.play();
-                    });
-                    fadeOut.play();
-                }
-            })
-        );
-        
-        dialogueTextTimeline.setCycleCount(Timeline.INDEFINITE);
-        dialogueTextTimeline.play();
+        createDialogueTextTimeline(messages, () -> currentLevel != null);
     }
     
     private boolean is1984Mode() {
@@ -2305,6 +2170,139 @@ public class GuiController implements Initializable {
         } else if (currentLevel != null) {
             updateLevelsDialogueText();
         }
+    }
+    
+    private void navigateToScene(String fxmlFile, java.util.function.Consumer<FXMLLoader> controllerSetup) {
+        try {
+            if (stage == null) {
+                return;
+            }
+            URL location = getClass().getClassLoader().getResource(fxmlFile);
+            if (location == null) {
+                return;
+            }
+            FXMLLoader loader = new FXMLLoader(location);
+            Parent root = loader.load();
+            if (controllerSetup != null) {
+                controllerSetup.accept(loader);
+            }
+            Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
+            stage.setScene(scene);
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private Color createGhostColor(Color originalColor, double opacity) {
+        return Color.color(originalColor.getRed(), originalColor.getGreen(), originalColor.getBlue(), opacity);
+    }
+    
+    private void clearGhostRectangle(Rectangle rect) {
+        if (rect != null) {
+            rect.setFill(Color.TRANSPARENT);
+            rect.setStroke(Color.TRANSPARENT);
+            rect.setOpacity(0.0);
+        }
+    }
+    
+    private void resetGamePanelFocus() {
+        if (gamePanel != null) {
+            gamePanel.setFocusTraversable(true);
+            gamePanel.setDisable(false);
+            gamePanel.requestFocus();
+        }
+    }
+    
+    private void disableGamePanel() {
+        if (gamePanel != null) {
+            gamePanel.setFocusTraversable(false);
+            gamePanel.setDisable(true);
+        }
+    }
+    
+    private void resetGameState() {
+        if (gamePane != null) {
+            gamePane.setVisible(true);
+        }
+        if (gameOverPanel != null) {
+            gameOverPanel.setVisible(false);
+        }
+        if (gameOverContainer != null) {
+            gameOverContainer.setVisible(false);
+        }
+        if (pausePanel != null) {
+            pausePanel.setVisible(false);
+        }
+        if (pauseContainer != null) {
+            pauseContainer.setVisible(false);
+        }
+        if (levelCompleteContainer != null) {
+            levelCompleteContainer.setVisible(false);
+        }
+        if (countdownContainer != null) {
+            countdownContainer.setVisible(false);
+        }
+        isPause.set(false);
+        isGameOver.set(false);
+        resetGamePanelFocus();
+    }
+    
+    private Label create1984Label(String text, String styleClass, double layoutX, double layoutY) {
+        Label label = new Label(text);
+        label.getStyleClass().add(styleClass);
+        label.setLayoutX(layoutX);
+        label.setLayoutY(layoutY);
+        if (gamePane != null) {
+            gamePane.getChildren().add(label);
+        }
+        return label;
+    }
+    
+    private long calculateElapsedTime(long startTime, long totalPauseDuration, long pauseStartTime) {
+        long currentPauseTime = (pauseStartTime > 0) ? (System.currentTimeMillis() - pauseStartTime) : 0;
+        return (System.currentTimeMillis() - startTime - totalPauseDuration - currentPauseTime) / 1000;
+    }
+    
+    private String capitalizeName(String name) {
+        if (name == null || name.isEmpty()) {
+            return "";
+        }
+        return name.substring(0, 1).toUpperCase() + 
+               (name.length() > 1 ? name.substring(1).toLowerCase() : "");
+    }
+    
+    private void createDialogueTextTimeline(java.util.List<String> messages, java.util.function.BooleanSupplier shouldContinue) {
+        if (dialogueTextGame == null) {
+            return;
+        }
+        
+        dialogueTextGame.setOpacity(1.0);
+        int randomIndex = (int)(Math.random() * messages.size());
+        dialogueTextGame.setText(messages.get(randomIndex));
+        
+        dialogueTextTimeline = new Timeline(
+            new KeyFrame(Duration.seconds(6.5), e -> {
+                if (dialogueTextGame != null && dialogueTextGame.getScene() != null && shouldContinue.getAsBoolean()) {
+                    FadeTransition fadeOut = new FadeTransition(Duration.millis(500), dialogueTextGame);
+                    fadeOut.setFromValue(1.0);
+                    fadeOut.setToValue(0.0);
+                    fadeOut.setOnFinished(event -> {
+                        int nextIndex = (int)(Math.random() * messages.size());
+                        String nextMessage = messages.get(nextIndex);
+                        dialogueTextGame.setText(nextMessage);
+                        FadeTransition fadeIn = new FadeTransition(Duration.millis(500), dialogueTextGame);
+                        fadeIn.setFromValue(0.0);
+                        fadeIn.setToValue(1.0);
+                        fadeIn.play();
+                    });
+                    fadeOut.play();
+                }
+            })
+        );
+        
+        dialogueTextTimeline.setCycleCount(Timeline.INDEFINITE);
+        dialogueTextTimeline.play();
     }
     
     private void setupRootPaneRotation(boolean isInvertedMode) {
