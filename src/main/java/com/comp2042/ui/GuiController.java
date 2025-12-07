@@ -968,7 +968,7 @@ public class GuiController implements Initializable {
     }
 
 
-    private void refreshBrick(ViewData brick) {
+    public void refreshBrick(ViewData brick) {
         if (!isPause.get()) {
             lastViewData = brick; // Store for ghost block updates
             updateBrickPanelPosition(brick);
@@ -1858,9 +1858,8 @@ public class GuiController implements Initializable {
     }
     
     private HighScoreInfo getHighScoreInfo() {
-        HighScoreInfo highScoreInfo = getHighScoreInfo();
-        int highScore = highScoreInfo.highScore;
-        String highScoreHolder = highScoreInfo.highScoreHolder;
+        int highScore = HighScoreManager.getHighScore();
+        String highScoreHolder = HighScoreManager.getHighScoreHolder();
         return new HighScoreInfo(highScore, highScoreHolder);
     }
     
