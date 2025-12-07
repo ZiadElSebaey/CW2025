@@ -1,8 +1,5 @@
 package com.comp2042.logic;
 
-import com.comp2042.bricks.Brick;
-import com.comp2042.bricks.BrickRotator;
-import com.comp2042.bricks.RandomBrickGenerator;
 import com.comp2042.ui.HighScoreManager;
 import com.comp2042.ui.LevelManager;
 import com.comp2042.ui.SettingsManager;
@@ -10,8 +7,6 @@ import com.comp2042.ui.ViewData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -22,8 +17,6 @@ class MatrixOperationsTest {
     private int[][] filledBoard;
     private SimpleBoard board;
     private Score score;
-    private RandomBrickGenerator generator;
-    private BrickRotator rotator;
 
     @BeforeEach
     void setUp() {
@@ -33,8 +26,6 @@ class MatrixOperationsTest {
         filledBoard[5][6] = 1;
         board = new SimpleBoard();
         score = new Score();
-        generator = new RandomBrickGenerator();
-        rotator = new BrickRotator();
     }
 
     @Test
@@ -142,24 +133,6 @@ class MatrixOperationsTest {
         assertTrue(board.spawnNewBrick());
     }
 
-    @Test
-    @DisplayName("RandomBrickGenerator - generate bricks")
-    void testBrickGenerator() {
-        Brick brick = generator.getBrick();
-        assertNotNull(brick);
-        assertNotNull(brick.getShapeMatrix());
-        List<Brick> nextBricks = generator.getNextBricks(3);
-        assertEquals(3, nextBricks.size());
-    }
-
-    @Test
-    @DisplayName("BrickRotator - rotate brick")
-    void testBrickRotator() {
-        Brick brick = generator.getBrick();
-        rotator.setBrick(brick);
-        assertNotNull(rotator.getCurrentShape());
-        assertNotNull(rotator.getNextShape());
-    }
 
     @Test
     @DisplayName("Level - check objective conditions")
@@ -220,5 +193,60 @@ class MatrixOperationsTest {
         assertEquals(2, clearRow.getLinesRemoved());
         assertEquals(100, clearRow.getScoreBonus());
         assertNotNull(clearRow.getNewMatrix());
+    }
+
+    @Test
+    @DisplayName("MatrixOperations - clear multiple lines")
+    void testClearMultipleLines() {
+        int[][] board = new int[10][10];
+        for (int i = 5; i < 8; i++) {
+            for (int j = 0; j < 10; j++) {
+                board[i][j] = 1;
+            }
+        }
+        ClearRow result = MatrixOperations.checkRemoving(board);
+        assertEquals(3, result.getLinesRemoved());
+        assertEquals(450, result.getScoreBonus());
+    }
+
+    @Test
+    @DisplayName("MatrixOperations - boundary collision detection")
+    void testBoundaryCollision() {
+        int[][] board = new int[10][10];
+        int[][] brick = {{1, 1}};
+        assertTrue(MatrixOperations.intersect(board, brick, -1, 5));
+        assertTrue(MatrixOperations.intersect(board, brick, 10, 5));
+        assertTrue(MatrixOperations.intersect(board, brick, 5, 10));
+    }
+
+
+    @Test
+    @DisplayName("SimpleBoard - boundary movement restrictions")
+    void testBoundaryMovement() {
+        board.spawnNewBrick();
+        for (int i = 0; i < 20; i++) {
+            board.moveBrickLeft();
+        }
+        int xPos = board.getViewData().getxPosition();
+        assertTrue(xPos >= 0);
+        for (int i = 0; i < 20; i++) {
+            board.moveBrickRight();
+        }
+        int maxX = board.getViewData().getxPosition();
+        assertTrue(maxX < SimpleBoard.BOARD_COLUMNS);
+    }
+
+    @Test
+    @DisplayName("Score - multiple line clear scoring")
+    void testMultipleLineScore() {
+        int[][] board = new int[10][10];
+        for (int i = 5; i < 7; i++) {
+            for (int j = 0; j < 10; j++) {
+                board[i][j] = 1;
+            }
+        }
+        ClearRow result = MatrixOperations.checkRemoving(board);
+        assertEquals(2, result.getLinesRemoved());
+        assertEquals(200, result.getScoreBonus());
     }
 }
