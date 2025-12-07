@@ -331,21 +331,18 @@
     -fx-font-family: 'Frozenland';
     -fx-font-size: 34px;
     -fx-text-fill: #e0f8ff;
-    -fx-effect: dropshadow(gaussian, rgba(80, 180, 255, 0.6), 12, 0.4, 0, 0);
 }
 
 .lines-label {
     -fx-font-family: 'Frozenland';
-    -fx-font-size: 34px;
+    -fx-font-size: 38px;
     -fx-text-fill: #80ffb0;
-    -fx-effect: dropshadow(gaussian, rgba(80, 255, 150, 0.6), 12, 0.4, 0, 0);
 }
 
 .highscore-label {
     -fx-font-family: 'Frozenland';
-    -fx-font-size: 24.8px;
+    -fx-font-size: 28px;
     -fx-text-fill: #ffd700;
-    -fx-effect: dropshadow(gaussian, rgba(255, 180, 0, 0.5), 10, 0.4, 0, 0);
     -fx-text-alignment: center;
     -fx-alignment: center;
 }
@@ -425,12 +422,10 @@
 
 .timer-label {
     -fx-font-family: 'Frozenland';
-    -fx-font-size: 32px;
+    -fx-font-size: 36px;
     -fx-text-fill: #ffd700;
     -fx-font-weight: bold;
     -fx-alignment: center;
-    -fx-effect: dropshadow(gaussian, rgba(255, 215, 0, 0.8), 15, 0.6, 0, 0),
-                dropshadow(gaussian, rgba(255, 100, 0, 0.5), 20, 0.4, 0, 0);
 }
 
 .objective-label {
@@ -455,11 +450,12 @@
 .right-panel-container {
     -fx-background-color: rgba(20, 60, 90, 0.5);
     -fx-background-radius: 12;
-    -fx-padding: 15 18 15 18;
+    -fx-padding: 15 20 15 20;
     -fx-border-color: rgba(150, 220, 255, 0.3);
     -fx-border-width: 2;
     -fx-border-radius: 12;
-    -fx-max-width: 180;
+    -fx-max-width: 200;
+    -fx-min-height: 230;
 }
 
 .hold-block-container {
