@@ -259,90 +259,45 @@ public class GuiController implements Initializable {
         if (is1984Mode) {
             setup1984ModeUI();
         } else {
-            if (scoreLabel1984 != null) {
-                scoreLabel1984.setVisible(false);
-            }
-            if (linesLabel1984 != null) {
-                linesLabel1984.setVisible(false);
-            }
-            stopTimelineSafely(glitchTimeline1984);
-            if (filmGrainOverlay != null) {
-                filmGrainOverlay.setVisible(false);
-            }
-            stopTimelineSafely(filmGrainTimeline);
-            stopTimelineSafely(flickerTimeline);
-            if (rootPane != null) {
-                rootPane.setEffect(null);
-                rootPane.setOpacity(1.0);
-            }
+            cleanup1984ModeUI();
         }
     }
     
-    private void startGlitchAnimation1984() {
-        if (glitchTimeline1984 != null) {
-            glitchTimeline1984.stop();
+    private void update1984Labels(double translateX, double opacity) {
+        if (scoreLabel1984 != null) {
+            scoreLabel1984.setTranslateX(translateX);
+            scoreLabel1984.setOpacity(opacity);
         }
+        if (linesLabel1984 != null) {
+            linesLabel1984.setTranslateX(translateX);
+            linesLabel1984.setOpacity(opacity);
+        }
+    }
+    
+    private void reset1984Labels() {
+        update1984Labels(0, 1.0);
+    }
+    
+    private void startGlitchAnimation1984() {
+        stopTimelineSafely(glitchTimeline1984);
         
         glitchTimeline1984 = new Timeline(
-            new KeyFrame(Duration.ZERO, e -> {
-                if (scoreLabel1984 != null) {
-                    scoreLabel1984.setTranslateX(0);
-                    scoreLabel1984.setOpacity(1.0);
-                }
-                if (linesLabel1984 != null) {
-                    linesLabel1984.setTranslateX(0);
-                    linesLabel1984.setOpacity(1.0);
-                }
-            }),
+            new KeyFrame(Duration.ZERO, e -> reset1984Labels()),
             new KeyFrame(Duration.millis(50), e -> {
-                if (scoreLabel1984 != null) {
-                    scoreLabel1984.setTranslateX(Math.random() * 2 - 1);
-                    scoreLabel1984.setOpacity(0.9 + Math.random() * 0.1);
-                }
-                if (linesLabel1984 != null) {
-                    linesLabel1984.setTranslateX(Math.random() * 2 - 1);
-                    linesLabel1984.setOpacity(0.9 + Math.random() * 0.1);
-                }
+                update1984Labels(Math.random() * 2 - 1, 0.9 + Math.random() * 0.1);
             }),
-            new KeyFrame(Duration.millis(100), e -> {
-                if (scoreLabel1984 != null) {
-                    scoreLabel1984.setTranslateX(0);
-                    scoreLabel1984.setOpacity(1.0);
-                }
-                if (linesLabel1984 != null) {
-                    linesLabel1984.setTranslateX(0);
-                    linesLabel1984.setOpacity(1.0);
-                }
-            }),
+            new KeyFrame(Duration.millis(100), e -> reset1984Labels()),
             new KeyFrame(Duration.millis(150), e -> {
-                if (scoreLabel1984 != null) {
-                    scoreLabel1984.setTranslateX(Math.random() * 3 - 1.5);
-                    scoreLabel1984.setOpacity(0.85 + Math.random() * 0.15);
-                }
-                if (linesLabel1984 != null) {
-                    linesLabel1984.setTranslateX(Math.random() * 3 - 1.5);
-                    linesLabel1984.setOpacity(0.85 + Math.random() * 0.15);
-                }
+                update1984Labels(Math.random() * 3 - 1.5, 0.85 + Math.random() * 0.15);
             }),
-            new KeyFrame(Duration.millis(200), e -> {
-                if (scoreLabel1984 != null) {
-                    scoreLabel1984.setTranslateX(0);
-                    scoreLabel1984.setOpacity(1.0);
-                }
-                if (linesLabel1984 != null) {
-                    linesLabel1984.setTranslateX(0);
-                    linesLabel1984.setOpacity(1.0);
-                }
-            })
+            new KeyFrame(Duration.millis(200), e -> reset1984Labels())
         );
         glitchTimeline1984.setCycleCount(Timeline.INDEFINITE);
         glitchTimeline1984.play();
     }
     
     private void startFilmGrainAnimation() {
-        if (filmGrainTimeline != null) {
-            filmGrainTimeline.stop();
-        }
+        stopTimelineSafely(filmGrainTimeline);
         
         filmGrainTimeline = createIndefiniteTimeline(
             new KeyFrame(Duration.millis(50), e -> {
@@ -353,107 +308,59 @@ public class GuiController implements Initializable {
         );
     }
     
-    private void startFlickerAnimation() {
-        if (flickerTimeline != null) {
-            flickerTimeline.stop();
+    private void setRootPaneOpacity(double opacity) {
+        if (rootPane != null) {
+            rootPane.setOpacity(opacity);
         }
+    }
+    
+    private void startFlickerAnimation() {
+        stopTimelineSafely(flickerTimeline);
         
         flickerTimeline = new Timeline(
-            new KeyFrame(Duration.ZERO, e -> {
-                if (rootPane != null) {
-                    rootPane.setOpacity(1.0);
-                }
-            }),
+            new KeyFrame(Duration.ZERO, e -> setRootPaneOpacity(1.0)),
             new KeyFrame(Duration.millis(2000), e -> {
                 if (rootPane != null && Math.random() < 0.1) {
-                    rootPane.setOpacity(0.95 + Math.random() * 0.05);
+                    setRootPaneOpacity(0.95 + Math.random() * 0.05);
                 }
             }),
-            new KeyFrame(Duration.millis(2100), e -> {
-                if (rootPane != null) {
-                    rootPane.setOpacity(1.0);
-                }
-            }),
+            new KeyFrame(Duration.millis(2100), e -> setRootPaneOpacity(1.0)),
             new KeyFrame(Duration.millis(3500), e -> {
                 if (rootPane != null && Math.random() < 0.15) {
-                    rootPane.setOpacity(0.92 + Math.random() * 0.08);
+                    setRootPaneOpacity(0.92 + Math.random() * 0.08);
                 }
             }),
-            new KeyFrame(Duration.millis(3600), e -> {
-                if (rootPane != null) {
-                    rootPane.setOpacity(1.0);
-                }
-            })
+            new KeyFrame(Duration.millis(3600), e -> setRootPaneOpacity(1.0))
         );
         flickerTimeline.setCycleCount(Timeline.INDEFINITE);
         flickerTimeline.play();
     }
     
-    private void startBackgroundFlickerAnimation() {
-        if (backgroundFlickerTimeline != null) {
-            backgroundFlickerTimeline.stop();
+    private void setBackground1984Opacity(double opacity) {
+        if (background1984 != null) {
+            background1984.setOpacity(opacity);
         }
+    }
+    
+    private void startBackgroundFlickerAnimation() {
+        stopTimelineSafely(backgroundFlickerTimeline);
         
         if (background1984 == null) {
             return;
         }
         
         backgroundFlickerTimeline = new Timeline(
-            new KeyFrame(Duration.ZERO, e -> {
-                if (background1984 != null) {
-                    background1984.setOpacity(1.0);
-                }
-            }),
-            new KeyFrame(Duration.millis(50), e -> {
-                if (background1984 != null) {
-                    background1984.setOpacity(0.0);
-                }
-            }),
-            new KeyFrame(Duration.millis(80), e -> {
-                if (background1984 != null) {
-                    background1984.setOpacity(1.0);
-                }
-            }),
-            new KeyFrame(Duration.millis(120), e -> {
-                if (background1984 != null) {
-                    background1984.setOpacity(0.0);
-                }
-            }),
-            new KeyFrame(Duration.millis(150), e -> {
-                if (background1984 != null) {
-                    background1984.setOpacity(0.9);
-                }
-            }),
-            new KeyFrame(Duration.millis(180), e -> {
-                if (background1984 != null) {
-                    background1984.setOpacity(0.0);
-                }
-            }),
-            new KeyFrame(Duration.millis(220), e -> {
-                if (background1984 != null) {
-                    background1984.setOpacity(1.0);
-                }
-            }),
-            new KeyFrame(Duration.millis(280), e -> {
-                if (background1984 != null) {
-                    background1984.setOpacity(0.05);
-                }
-            }),
-            new KeyFrame(Duration.millis(320), e -> {
-                if (background1984 != null) {
-                    background1984.setOpacity(0.8);
-                }
-            }),
-            new KeyFrame(Duration.millis(380), e -> {
-                if (background1984 != null) {
-                    background1984.setOpacity(0.1);
-                }
-            }),
-            new KeyFrame(Duration.millis(450), e -> {
-                if (background1984 != null) {
-                    background1984.setOpacity(0.75);
-                }
-            }),
+            new KeyFrame(Duration.ZERO, e -> setBackground1984Opacity(1.0)),
+            new KeyFrame(Duration.millis(50), e -> setBackground1984Opacity(0.0)),
+            new KeyFrame(Duration.millis(80), e -> setBackground1984Opacity(1.0)),
+            new KeyFrame(Duration.millis(120), e -> setBackground1984Opacity(0.0)),
+            new KeyFrame(Duration.millis(150), e -> setBackground1984Opacity(0.9)),
+            new KeyFrame(Duration.millis(180), e -> setBackground1984Opacity(0.0)),
+            new KeyFrame(Duration.millis(220), e -> setBackground1984Opacity(1.0)),
+            new KeyFrame(Duration.millis(280), e -> setBackground1984Opacity(0.05)),
+            new KeyFrame(Duration.millis(320), e -> setBackground1984Opacity(0.8)),
+            new KeyFrame(Duration.millis(380), e -> setBackground1984Opacity(0.1)),
+            new KeyFrame(Duration.millis(450), e -> setBackground1984Opacity(0.75)),
             new KeyFrame(Duration.seconds(1.5), e -> {
                 if (background1984 != null) {
                     startOngoingFlicker();
@@ -465,40 +372,26 @@ public class GuiController implements Initializable {
     }
     
     private void startOngoingFlicker() {
-        if (backgroundFlickerTimeline != null) {
-            backgroundFlickerTimeline.stop();
-        }
+        stopTimelineSafely(backgroundFlickerTimeline);
         
         if (background1984 == null) {
             return;
         }
         
         backgroundFlickerTimeline = new Timeline(
-            new KeyFrame(Duration.ZERO, e -> {
-                if (background1984 != null) {
-                    background1984.setOpacity(0.75);
-                }
-            }),
+            new KeyFrame(Duration.ZERO, e -> setBackground1984Opacity(0.75)),
             new KeyFrame(Duration.millis(2000), e -> {
                 if (background1984 != null && Math.random() < 0.15) {
-                    background1984.setOpacity(0.5 + Math.random() * 0.3);
+                    setBackground1984Opacity(0.5 + Math.random() * 0.3);
                 }
             }),
-            new KeyFrame(Duration.millis(2100), e -> {
-                if (background1984 != null) {
-                    background1984.setOpacity(0.75);
-                }
-            }),
+            new KeyFrame(Duration.millis(2100), e -> setBackground1984Opacity(0.75)),
             new KeyFrame(Duration.millis(4500), e -> {
                 if (background1984 != null && Math.random() < 0.2) {
-                    background1984.setOpacity(0.4 + Math.random() * 0.4);
+                    setBackground1984Opacity(0.4 + Math.random() * 0.4);
                 }
             }),
-            new KeyFrame(Duration.millis(4600), e -> {
-                if (background1984 != null) {
-                    background1984.setOpacity(0.75);
-                }
-            })
+            new KeyFrame(Duration.millis(4600), e -> setBackground1984Opacity(0.75))
         );
         backgroundFlickerTimeline.setCycleCount(Timeline.INDEFINITE);
         backgroundFlickerTimeline.play();
@@ -507,98 +400,9 @@ public class GuiController implements Initializable {
     public void setLevel(com.comp2042.logic.Level level) {
         this.currentLevel = level;
         if (level != null) {
-            this.dropIntervalMs = level.getDropSpeed();
-            this.tripleClearsCount = 0;
-            this.levelStartTime = System.currentTimeMillis();
-            this.totalPauseDuration = 0;
-            this.pauseStartTime = 0;
-            stopTimerUpdate();
-            highScoreLabel.setVisible(false);
-            highScoreHolderLabel.setVisible(false);
-            updateLevelObjectiveLabel();
-            
-            if (rightPanel != null) {
-                rightPanel.setLayoutX(520);
-                rightPanel.setSpacing(20);
-            }
-            if (nextBlockContainer != null) {
-                nextBlockContainer.setSpacing(5);
-                nextBlockContainer.setStyle("");
-            }
-            if (nextBlockStackPane != null) {
-                nextBlockStackPane.setMinWidth(90);
-                nextBlockStackPane.setMinHeight(90);
-                nextBlockStackPane.setPrefWidth(90);
-                nextBlockStackPane.setPrefHeight(90);
-            }
-            if (nextBlockStackPane2 != null) {
-                nextBlockStackPane2.setMinWidth(90);
-                nextBlockStackPane2.setMinHeight(90);
-                nextBlockStackPane2.setPrefWidth(90);
-                nextBlockStackPane2.setPrefHeight(90);
-            }
-            if (nextBlockStackPane3 != null) {
-                nextBlockStackPane3.setMinWidth(90);
-                nextBlockStackPane3.setMinHeight(90);
-                nextBlockStackPane3.setPrefWidth(90);
-                nextBlockStackPane3.setPrefHeight(90);
-            }
-            
-            if (timerLabel != null) {
-                boolean needsTimer = level.getLevelNumber() == 2 || level.getLevelNumber() == 5;
-                timerLabel.setVisible(needsTimer);
-                if (needsTimer) {
-                    startTimerUpdate();
-                }
-            }
+            setupLevelUI(level);
         } else {
-            this.dropIntervalMs = DEFAULT_DROP_INTERVAL_MS;
-            if (isInvertedMode()) {
-                highScoreLabel.setVisible(false);
-                highScoreHolderLabel.setVisible(false);
-                if (objectivePanel != null) {
-                    objectivePanel.setVisible(false);
-                }
-            } else {
-                highScoreLabel.setVisible(true);
-                HighScoreInfo highScoreInfo = getHighScoreInfo();
-                if (highScoreInfo.highScoreHolder != null && !highScoreInfo.highScoreHolder.isEmpty()) {
-                    highScoreHolderLabel.setVisible(true);
-                }
-                if (objectivePanel != null) {
-                    objectivePanel.setVisible(false);
-                }
-            }
-            updateLevelObjectiveLabel();
-            
-            if (rightPanel != null) {
-                rightPanel.setLayoutX(520);
-                rightPanel.setSpacing(20);
-            }
-            if (nextBlockContainer != null) {
-                nextBlockContainer.setSpacing(5);
-                nextBlockContainer.setStyle("");
-            }
-            if (nextBlockStackPane != null) {
-                nextBlockStackPane.setMinWidth(90);
-                nextBlockStackPane.setMinHeight(90);
-                nextBlockStackPane.setPrefWidth(90);
-                nextBlockStackPane.setPrefHeight(90);
-            }
-            if (nextBlockStackPane2 != null) {
-                nextBlockStackPane2.setMinWidth(90);
-                nextBlockStackPane2.setMinHeight(90);
-                nextBlockStackPane2.setPrefWidth(90);
-                nextBlockStackPane2.setPrefHeight(90);
-            }
-            if (nextBlockStackPane3 != null) {
-                nextBlockStackPane3.setMinWidth(90);
-                nextBlockStackPane3.setMinHeight(90);
-                nextBlockStackPane3.setPrefWidth(90);
-                nextBlockStackPane3.setPrefHeight(90);
-            }
-            stopTimerUpdate();
-            startFreePlayTimer();
+            setupFreePlayUI();
         }
     }
     
@@ -710,8 +514,7 @@ public class GuiController implements Initializable {
         }
     }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    private void setupInitialResources() {
         URL digitalFontUrl = getClass().getClassLoader().getResource("digital.ttf");
         if (digitalFontUrl != null) {
             Font.loadFont(digitalFontUrl.toExternalForm(), 38);
@@ -721,12 +524,9 @@ public class GuiController implements Initializable {
         LevelProgressManager.ensureDirectoryExists();
         LevelProgressManager.initialize();
         SettingsManager.ensureDirectoryExists();
-        
-        refreshHighScoreDisplay();
-        
-        gamePanel.setFocusTraversable(true);
-        resetGamePanelFocus();
-        gamePanel.setOnKeyPressed(this::handleKeyPressed);
+    }
+    
+    private void setupUIVisibility() {
         gameOverPanel.setVisible(false);
         gameOverContainer.setVisible(false);
         pausePanel.setVisible(false);
@@ -736,19 +536,26 @@ public class GuiController implements Initializable {
         }
         if (countdownContainer != null) {
             countdownContainer.setVisible(false);
+        }
     }
-        
-        updateLevelObjectiveLabel();
-
+    
+    private void setupGamePanel() {
+        gamePanel.setFocusTraversable(true);
+        resetGamePanelFocus();
+        gamePanel.setOnKeyPressed(this::handleKeyPressed);
+    }
+    
+    private void setupGameOverButtonHandlers() {
         gameOverPanel.getRestartButton().setOnAction(_ -> newGame(null));
         gameOverPanel.getMainMenuButton().setOnAction(_ -> returnToMainMenu());
         gameOverPanel.getLeaderboardButton().setOnAction(_ -> showLeaderboard());
         
-        boolean is1984ModeInit = gameMode != null && gameMode.equals("1984");
-        if (is1984ModeInit && gameOverPanel.getBackButton1984() != null) {
+        if (is1984Mode() && gameOverPanel.getBackButton1984() != null) {
             gameOverPanel.getBackButton1984().setOnAction(_ -> returnToGamemodesMenu());
         }
-
+    }
+    
+    private void setupPauseButtonHandlers() {
         pausePanel.getResumeButton().setOnAction(_ -> resumeGame());
         pausePanel.getRestartButton().setOnAction(_ -> newGame(null));
         pausePanel.getSettingsButton().setOnAction(_ -> openSettingsFromPause());
@@ -758,30 +565,40 @@ public class GuiController implements Initializable {
         if (is1984Mode() && pausePanel != null) {
             pausePanel.set1984Mode(true);
         }
-
+    }
+    
+    private void setupBackground() {
         if (!is1984Mode()) {
             AnimatedBackground animatedBackground = new AnimatedBackground(720, 680);
             rootPane.getChildren().addFirst(animatedBackground);
         }
-
-        setupLeaderboardPanel();
-        setupHoldBlockAnimation();
-        
+    }
+    
+    private void setupBackButton() {
         if (backButton != null) {
-            boolean is1984ModeCheck = gameMode != null && gameMode.equals("1984");
-            if (is1984ModeCheck) {
-                if (backButton != null) {
-                    backButton.setVisible(true);
-                    backButton.setManaged(true);
-                    backButton.toFront();
-                    backButton.setOnAction(_ -> returnToGamemodesMenu());
-                }
+            if (is1984Mode()) {
+                backButton.setVisible(true);
+                backButton.setManaged(true);
+                backButton.toFront();
+                backButton.setOnAction(_ -> returnToGamemodesMenu());
             } else {
-                if (backButton != null) {
-                    backButton.setOnAction(_ -> returnToPlayMenu());
-                }
+                backButton.setOnAction(_ -> returnToPlayMenu());
             }
         }
+    }
+    
+    public void initialize(URL location, ResourceBundle resources) {
+        setupInitialResources();
+        refreshHighScoreDisplay();
+        setupGamePanel();
+        setupUIVisibility();
+        updateLevelObjectiveLabel();
+        setupGameOverButtonHandlers();
+        setupPauseButtonHandlers();
+        setupBackground();
+        setupLeaderboardPanel();
+        setupHoldBlockAnimation();
+        setupBackButton();
     }
     
     private void setupHoldBlockAnimation() {
@@ -864,7 +681,7 @@ public class GuiController implements Initializable {
     }
     private void handleKeyPressed(KeyEvent keyEvent) {
         if (isGameOver.get()) {
-            keyEvent.consume();
+                keyEvent.consume();
             return;
         }
         
@@ -883,58 +700,15 @@ public class GuiController implements Initializable {
 
 
     public void initGameView(int[][] boardMatrix, ViewData brick) {
-        int brickSize = getBrickSize();
-        displayMatrix = new Rectangle[boardMatrix.length][boardMatrix[0].length];
-        for (int i = HIDDEN_ROWS; i < boardMatrix.length; i++) {
-            for (int j = 0; j < boardMatrix[i].length; j++) {
-                Rectangle rectangle = new Rectangle(brickSize, brickSize);
-                rectangle.setFill(Color.TRANSPARENT);
-                displayMatrix[i][j] = rectangle;
-                gamePanel.add(rectangle, j, i - HIDDEN_ROWS);
-            }
-        }
-
-        rectangles = new Rectangle[brick.getBrickData().length][brick.getBrickData()[0].length];
-        ghostRectangles = new Rectangle[brick.getBrickData().length][brick.getBrickData()[0].length];
-        for (int i = 0; i < brick.getBrickData().length; i++) {
-            for (int j = 0; j < brick.getBrickData()[i].length; j++) {
-                Rectangle rectangle = new Rectangle(brickSize, brickSize);
-                rectangle.setFill(getFillColor(brick.getBrickData()[i][j]));
-                rectangles[i][j] = rectangle;
-                brickPanel.add(rectangle, j, i);
-                
-                Rectangle ghostRect = new Rectangle(brickSize, brickSize);
-                ghostRect.setFill(Color.TRANSPARENT);
-                ghostRectangles[i][j] = ghostRect;
-                ghostPanel.add(ghostRect, j, i);
-            }
-        }
+        initializeGameBoard(boardMatrix);
+        initializeBrickPanels(brick);
         updateBrickPanelPosition(brick);
         updateGhostPosition(brick);
         initNextBlockPanel(brick);
         initHoldBlockPanel(brick);
-        
-        if (dialogueContainerGame != null && !is1984Mode() && !isInvertedMode()) {
-            dialogueContainerGame.setVisible(true);
-            dialogueContainerGame.setManaged(true);
-            dialogueContainerGame.setLayoutX(490);
-            dialogueContainerGame.setLayoutY(390);
-            if (currentLevel == null) {
-                updateFreePlayDialogueText();
-            } else {
-                updateLevelsDialogueText();
-            }
-            Platform.runLater(() -> dialogueContainerGame.toFront());
-        } else if (dialogueContainerGame != null) {
-            dialogueContainerGame.setVisible(false);
-            dialogueContainerGame.setManaged(false);
-        }
+        setupDialogueForGame();
 
-        timeLine = new Timeline(new KeyFrame(
-                Duration.millis(dropIntervalMs),
-                _ -> moveDown(threadMove())
-        ));
-        timeLine.setCycleCount(Timeline.INDEFINITE);
+        timeLine = createGameTimeline(dropIntervalMs);
         timeLine.play();
     }
     private void updateBrickPanelPosition(ViewData brick) {
@@ -949,26 +723,33 @@ public class GuiController implements Initializable {
         brickPanel.setLayoutY(y);
     }
 
-    private void updateGhostPosition(ViewData brick) {
-        if (is1984Mode() || !SettingsManager.isGhostBlockEnabled()) {
-            if (ghostRectangles != null) {
-                for (int i = 0; i < ghostRectangles.length; i++) {
-                    for (int j = 0; j < ghostRectangles[i].length; j++) {
-                        clearGhostRectangle(ghostRectangles[i][j]);
-                    }
+    private void clearAllGhostRectangles() {
+        if (ghostRectangles != null) {
+            for (int i = 0; i < ghostRectangles.length; i++) {
+                for (int j = 0; j < ghostRectangles[i].length; j++) {
+                    clearGhostRectangle(ghostRectangles[i][j]);
                 }
             }
-            return;
         }
-        
+    }
+    
+    private void updateGhostPanelPosition(ViewData brick) {
         int brickSize = getBrickSize();
         double cellSize = ghostPanel.getVgap() + brickSize;
         double x = gameBoard.getLayoutX() + BOARD_PADDING + brick.getxPosition() * cellSize;
         double ghostY = gameBoard.getLayoutY() + BOARD_PADDING
                 + (brick.getGhostY() - HIDDEN_ROWS) * cellSize;
-
         ghostPanel.setLayoutX(x);
         ghostPanel.setLayoutY(ghostY);
+    }
+    
+    private void updateGhostPosition(ViewData brick) {
+        if (is1984Mode() || !SettingsManager.isGhostBlockEnabled()) {
+            clearAllGhostRectangles();
+            return;
+        }
+        
+        updateGhostPanelPosition(brick);
 
         for (int i = 0; i < brick.getBrickData().length; i++) {
             for (int j = 0; j < brick.getBrickData()[i].length; j++) {
@@ -979,44 +760,10 @@ public class GuiController implements Initializable {
                 
                 if (shouldShow) {
                     Paint blockColor = getFillColor(colorIndex);
-                    if (blockColor instanceof Color) {
-                        Color originalColor = (Color) blockColor;
-                        ghostRect.setFill(createGhostColor(originalColor, GHOST_COLOR_OPACITY));
-                    } else {
-                        ghostRect.setFill(Color.rgb(255, 255, 255, GHOST_COLOR_OPACITY));
-                    }
-                    
-                    ghostRect.setArcHeight(RECTANGLE_ARC_SIZE);
-                    ghostRect.setArcWidth(RECTANGLE_ARC_SIZE);
-                    
-                    if (blockColor instanceof Color) {
-                        Color originalColor = (Color) blockColor;
-                        ghostRect.setStroke(createGhostColor(originalColor, GHOST_BORDER_OPACITY));
-                    } else {
-                        ghostRect.setStroke(Color.rgb(255, 255, 255, GHOST_BORDER_OPACITY));
-                    }
-                    ghostRect.setStrokeWidth(GHOST_STROKE_WIDTH);
-                    
-                    if (!currentlyVisible) {
-                        ghostRect.setOpacity(0.0);
-                        FadeTransition fadeIn = new FadeTransition(Duration.millis(GHOST_FADE_IN_DURATION_MS), ghostRect);
-                        fadeIn.setFromValue(0.0);
-                        fadeIn.setToValue(1.0);
-                        fadeIn.play();
-                    } else {
-                        ghostRect.setOpacity(1.0);
-                    }
-                } else {
-                    if (currentlyVisible) {
-                        FadeTransition fadeOut = new FadeTransition(Duration.millis(GHOST_FADE_OUT_DURATION_MS), ghostRect);
-                        fadeOut.setFromValue(ghostRect.getOpacity());
-                        fadeOut.setToValue(0.0);
-                        fadeOut.setOnFinished(_ -> clearGhostRectangle(ghostRect));
-                        fadeOut.play();
-                    } else {
-                        clearGhostRectangle(ghostRect);
-                    }
+                    setupGhostRectangle(ghostRect, colorIndex, blockColor);
                 }
+                
+                handleGhostRectangleVisibility(ghostRect, shouldShow, currentlyVisible);
             }
         }
     }
@@ -1024,12 +771,8 @@ public class GuiController implements Initializable {
     public void updateGhostBlockVisibility() {
         if (lastViewData != null) {
             updateGhostPosition(lastViewData);
-        } else if (ghostRectangles != null) {
-            for (int i = 0; i < ghostRectangles.length; i++) {
-                for (int j = 0; j < ghostRectangles[i].length; j++) {
-                    clearGhostRectangle(ghostRectangles[i][j]);
-                }
-            }
+        } else {
+            clearAllGhostRectangles();
         }
     }
 
@@ -1100,47 +843,54 @@ public class GuiController implements Initializable {
         updateHoldBlock(brick);
     }
     
-    private void updateHoldBlock(ViewData brick) {
-        int[][] holdData = brick.getHoldBrickData();
-        boolean holdChanged = false;
-        
+    private boolean hasHoldDataChanged(int[][] previousHoldData, int[][] holdData) {
         if (previousHoldData == null && holdData != null) {
-            holdChanged = true;
-        } else if (previousHoldData != null && holdData != null) {
+            return true;
+        }
+        if (previousHoldData != null && holdData == null) {
+            return true;
+        }
+        if (previousHoldData != null && holdData != null) {
             if (previousHoldData.length != holdData.length || 
                 (holdData.length > 0 && previousHoldData.length > 0 && 
                  (previousHoldData[0].length != holdData[0].length))) {
-                holdChanged = true;
-            } else {
-                for (int i = 0; i < holdData.length && !holdChanged; i++) {
-                    for (int j = 0; j < holdData[i].length && !holdChanged; j++) {
-                        int prevVal = (i < previousHoldData.length && j < previousHoldData[i].length) ? previousHoldData[i][j] : 0;
-                        int currVal = holdData[i][j];
-                        if (prevVal != currVal) {
-                            holdChanged = true;
-                        }
+                return true;
+            }
+            for (int i = 0; i < holdData.length; i++) {
+                for (int j = 0; j < holdData[i].length; j++) {
+                    int prevVal = (i < previousHoldData.length && j < previousHoldData[i].length) ? previousHoldData[i][j] : 0;
+                    int currVal = holdData[i][j];
+                    if (prevVal != currVal) {
+                        return true;
                     }
                 }
             }
-        } else if (previousHoldData != null && holdData == null) {
-            holdChanged = true;
         }
-        
-        updateRectangleGrid(holdData, holdBlockRectangles);
-        
-        if (holdChanged && holdData != null) {
+        return false;
+    }
+    
+    private void cloneHoldData(int[][] holdData) {
+        if (holdData != null) {
             previousHoldData = new int[holdData.length][];
             for (int i = 0; i < holdData.length; i++) {
                 previousHoldData[i] = holdData[i].clone();
             }
+        } else {
+            previousHoldData = null;
+        }
+    }
+    
+    private void updateHoldBlock(ViewData brick) {
+        int[][] holdData = brick.getHoldBrickData();
+        boolean holdChanged = hasHoldDataChanged(previousHoldData, holdData);
+        
+        updateRectangleGrid(holdData, holdBlockRectangles);
+        
+        if (holdChanged && holdData != null) {
+            cloneHoldData(holdData);
             spinHoldBlock();
         } else if (previousHoldData == null) {
-            previousHoldData = holdData != null ? new int[holdData.length][] : null;
-            if (previousHoldData != null) {
-                for (int i = 0; i < holdData.length; i++) {
-                    previousHoldData[i] = holdData[i].clone();
-                }
-            }
+            cloneHoldData(holdData);
         }
     }
     
@@ -1520,35 +1270,12 @@ public class GuiController implements Initializable {
             actionEvent.consume();
         }
         if (currentLevel != null) {
-            tripleClearsCount = 0;
-            levelStartTime = System.currentTimeMillis();
-            totalPauseDuration = 0;
-            pauseStartTime = 0;
-            stopTimerUpdate();
-            stopFreePlayTimer();
-            updateLevelObjectiveLabel();
-            if (is1984Mode()) {
-                setPlayerName("1984 Player", false);
-                startGameInstantly();
-            } else {
-                startCountdown();
-            }
+            startLevelGameMode();
         } else {
-            stopFreePlayTimer();
             if (isInvertedMode() || is1984Mode()) {
-                if (is1984Mode()) {
-                    setPlayerName("1984 Player", false);
-                } else {
-                    setPlayerName("Inverted Player", false);
-                }
-                updateLevelObjectiveLabel();
-                if (is1984Mode()) {
-                    startGameInstantly();
-                } else {
-                    startCountdown();
-                }
+                startSpecialModeGame();
             } else {
-                requestPlayerNameAndStart();
+                startFreePlayGame();
             }
         }
     }
@@ -1567,7 +1294,7 @@ public class GuiController implements Initializable {
         startCountdown();
     }
     
-    public void startCountdown() {
+    private void setupCountdownUI() {
         gamePane.setVisible(true);
         gameOverPanel.setVisible(false);
         gameOverContainer.setVisible(false);
@@ -1576,49 +1303,46 @@ public class GuiController implements Initializable {
         if (levelCompleteContainer != null) {
             levelCompleteContainer.setVisible(false);
         }
+    }
+    
+    private void setupCountdownRotation() {
         if (countdownContainer != null) {
             countdownContainer.setVisible(true);
-            
-            if (gameMode != null && gameMode.equals("inverted")) {
-                countdownContainer.getTransforms().removeIf(transform -> transform instanceof Rotate);
-                Platform.runLater(() -> {
-                    double width = countdownContainer.getBoundsInLocal().getWidth();
-                    double height = countdownContainer.getBoundsInLocal().getHeight();
-                    if (width > 0 && height > 0) {
-                        Rotate rotate = new Rotate(180, width / 2, height / 2);
-                        countdownContainer.getTransforms().add(rotate);
-                    } else {
-                        Rotate rotate = new Rotate(180, 360, 340);
-                        countdownContainer.getTransforms().add(rotate);
-                    }
-                });
+            if (isInvertedMode()) {
+                applyInvertedRotation(countdownContainer, 360.0, 340.0);
             } else {
-                countdownContainer.getTransforms().removeIf(transform -> transform instanceof Rotate);
+                removeRotateTransforms(countdownContainer);
             }
         }
+    }
+    
+    private void handleCountdownFinished() {
+        if (countdownContainer != null) {
+            countdownContainer.setVisible(false);
+        }
+        if (isTimedLevel()) {
+            if (pauseStartTime > 0) {
+                totalPauseDuration += (System.currentTimeMillis() - pauseStartTime);
+                pauseStartTime = 0;
+            }
+        }
+        startNewGame();
+    }
+    
+    public void startCountdown() {
+        setupCountdownUI();
+        setupCountdownRotation();
         isGameOver.set(false);
         setPaused(true);
         
-        boolean is1984Mode = gameMode != null && gameMode.equals("1984");
         if (countdownPanel != null) {
-            if (is1984Mode) {
+            if (is1984Mode()) {
                 countdownPanel.set1984Mode(true);
             }
-            countdownPanel.startCountdown(() -> {
-                if (countdownContainer != null) {
-                    countdownContainer.setVisible(false);
-                }
-                if (currentLevel != null && (currentLevel.getLevelNumber() == 2 || currentLevel.getLevelNumber() == 5)) {
-                    if (pauseStartTime > 0) {
-                        totalPauseDuration += (System.currentTimeMillis() - pauseStartTime);
-                        pauseStartTime = 0;
-                    }
-                }
-                startNewGame();
-            });
+            countdownPanel.startCountdown(this::handleCountdownFinished);
         } else {
-        startNewGame();
-    }
+            startNewGame();
+        }
     }
     
     public void startNewGame() {
@@ -1684,38 +1408,16 @@ public class GuiController implements Initializable {
             stopTimerUpdate();
             if (currentLevel == null) {
                 stopDialogueTextTimeline();
-            }
-            if (currentLevel != null && (currentLevel.getLevelNumber() == 2 || currentLevel.getLevelNumber() == 5)) {
-                pauseStartTime = System.currentTimeMillis();
-            }
-            if (currentLevel == null) {
-                if (freePlayTimerLine != null) {
-                    freePlayTimerLine.pause();
-                }
-                freePlayPauseStartTime = System.currentTimeMillis();
+                pauseFreePlayTimer();
+            } else {
+                pauseLevelTimer();
             }
         } else {
             timeLine.play();
-            if (currentLevel != null && (currentLevel.getLevelNumber() == 2 || currentLevel.getLevelNumber() == 5)) {
-                if (pauseStartTime > 0) {
-                    totalPauseDuration += System.currentTimeMillis() - pauseStartTime;
-                    pauseStartTime = 0;
-                }
-                startTimerUpdate();
-            }
-            if (currentLevel == null) {
-                if (freePlayPauseStartTime > 0) {
-                    freePlayTotalPauseDuration += (System.currentTimeMillis() - freePlayPauseStartTime);
-                    freePlayPauseStartTime = 0;
-                }
-                if (freePlayTimerLine != null) {
-                    freePlayTimerLine.play();
-                }
-                if (currentLevel == null) {
-                    updateFreePlayDialogueText();
-                } else {
-                    updateLevelsDialogueText();
-                }
+            if (currentLevel != null) {
+                resumeLevelTimer();
+            } else {
+                resumeFreePlayTimer();
             }
         }
     }
@@ -2010,7 +1712,7 @@ public class GuiController implements Initializable {
         if (gamePanel != null) {
             gamePanel.setFocusTraversable(true);
             gamePanel.setDisable(false);
-            gamePanel.requestFocus();
+        gamePanel.requestFocus();
         }
     }
     
@@ -2370,6 +2072,253 @@ public class GuiController implements Initializable {
             newGame(null);
         } else if (keyEvent.getCode() == KeyCode.ESCAPE) {
             pauseGame(null);
+        }
+    }
+    
+    private static final int NEXT_BLOCK_PANE_SIZE = 90;
+    
+    private void configureNextBlockPane(StackPane pane, int size) {
+        if (pane != null) {
+            pane.setMinWidth(size);
+            pane.setMinHeight(size);
+            pane.setPrefWidth(size);
+            pane.setPrefHeight(size);
+        }
+    }
+    
+    private void setupNextBlockPanes() {
+        configureNextBlockPane(nextBlockStackPane, NEXT_BLOCK_PANE_SIZE);
+        configureNextBlockPane(nextBlockStackPane2, NEXT_BLOCK_PANE_SIZE);
+        configureNextBlockPane(nextBlockStackPane3, NEXT_BLOCK_PANE_SIZE);
+    }
+    
+    private void setupLevelUI(com.comp2042.logic.Level level) {
+        this.dropIntervalMs = level.getDropSpeed();
+        this.tripleClearsCount = 0;
+        this.levelStartTime = System.currentTimeMillis();
+        this.totalPauseDuration = 0;
+        this.pauseStartTime = 0;
+        stopTimerUpdate();
+        setNodeVisibility(highScoreLabel, false);
+        setNodeVisibility(highScoreHolderLabel, false);
+        updateLevelObjectiveLabel();
+        
+        if (rightPanel != null) {
+            rightPanel.setLayoutX(520);
+            rightPanel.setSpacing(20);
+        }
+        if (nextBlockContainer != null) {
+            nextBlockContainer.setSpacing(5);
+            nextBlockContainer.setStyle("");
+        }
+        setupNextBlockPanes();
+        
+        if (timerLabel != null) {
+            boolean needsTimer = isTimedLevel();
+            setNodeVisibility(timerLabel, needsTimer);
+            if (needsTimer) {
+                startTimerUpdate();
+            }
+        }
+    }
+    
+    private void setupFreePlayUI() {
+        this.dropIntervalMs = DEFAULT_DROP_INTERVAL_MS;
+        if (isInvertedMode()) {
+            setNodeVisibility(highScoreLabel, false);
+            setNodeVisibility(highScoreHolderLabel, false);
+            setNodeVisibility(objectivePanel, false);
+        } else {
+            setNodeVisibility(highScoreLabel, true);
+            HighScoreInfo highScoreInfo = getHighScoreInfo();
+            if (highScoreInfo.highScoreHolder != null && !highScoreInfo.highScoreHolder.isEmpty()) {
+                setNodeVisibility(highScoreHolderLabel, true);
+            }
+            setNodeVisibility(objectivePanel, false);
+        }
+        updateLevelObjectiveLabel();
+        
+        if (rightPanel != null) {
+            rightPanel.setLayoutX(520);
+            rightPanel.setSpacing(20);
+        }
+        if (nextBlockContainer != null) {
+            nextBlockContainer.setSpacing(5);
+            nextBlockContainer.setStyle("");
+        }
+        setupNextBlockPanes();
+        stopTimerUpdate();
+        startFreePlayTimer();
+    }
+    
+    private void pauseLevelTimer() {
+        if (isTimedLevel()) {
+            pauseStartTime = System.currentTimeMillis();
+        }
+    }
+    
+    private void resumeLevelTimer() {
+        if (isTimedLevel()) {
+            if (pauseStartTime > 0) {
+                totalPauseDuration += System.currentTimeMillis() - pauseStartTime;
+                pauseStartTime = 0;
+            }
+            startTimerUpdate();
+        }
+    }
+    
+    private void pauseFreePlayTimer() {
+        if (freePlayTimerLine != null) {
+            freePlayTimerLine.pause();
+        }
+        freePlayPauseStartTime = System.currentTimeMillis();
+    }
+    
+    private void resumeFreePlayTimer() {
+        if (freePlayPauseStartTime > 0) {
+            freePlayTotalPauseDuration += (System.currentTimeMillis() - freePlayPauseStartTime);
+            freePlayPauseStartTime = 0;
+        }
+        if (freePlayTimerLine != null) {
+            freePlayTimerLine.play();
+        }
+        if (currentLevel == null) {
+            updateFreePlayDialogueText();
+        } else {
+            updateLevelsDialogueText();
+        }
+    }
+    
+    private void initializeGameBoard(int[][] boardMatrix) {
+        int brickSize = getBrickSize();
+        displayMatrix = new Rectangle[boardMatrix.length][boardMatrix[0].length];
+        for (int i = HIDDEN_ROWS; i < boardMatrix.length; i++) {
+            for (int j = 0; j < boardMatrix[i].length; j++) {
+                Rectangle rectangle = new Rectangle(brickSize, brickSize);
+                rectangle.setFill(Color.TRANSPARENT);
+                displayMatrix[i][j] = rectangle;
+                gamePanel.add(rectangle, j, i - HIDDEN_ROWS);
+            }
+        }
+    }
+    
+    private void initializeBrickPanels(ViewData brick) {
+        int brickSize = getBrickSize();
+        rectangles = new Rectangle[brick.getBrickData().length][brick.getBrickData()[0].length];
+        ghostRectangles = new Rectangle[brick.getBrickData().length][brick.getBrickData()[0].length];
+        for (int i = 0; i < brick.getBrickData().length; i++) {
+            for (int j = 0; j < brick.getBrickData()[i].length; j++) {
+                Rectangle rectangle = new Rectangle(brickSize, brickSize);
+                rectangle.setFill(getFillColor(brick.getBrickData()[i][j]));
+                rectangles[i][j] = rectangle;
+                brickPanel.add(rectangle, j, i);
+                
+                Rectangle ghostRect = new Rectangle(brickSize, brickSize);
+                ghostRect.setFill(Color.TRANSPARENT);
+                ghostRectangles[i][j] = ghostRect;
+                ghostPanel.add(ghostRect, j, i);
+            }
+        }
+    }
+    
+    private void setupDialogueForGame() {
+        if (dialogueContainerGame != null && !is1984Mode() && !isInvertedMode()) {
+            setNodeVisibility(dialogueContainerGame, true);
+            dialogueContainerGame.setLayoutX(490);
+            dialogueContainerGame.setLayoutY(390);
+            if (currentLevel == null) {
+                updateFreePlayDialogueText();
+            } else {
+                updateLevelsDialogueText();
+            }
+            Platform.runLater(() -> dialogueContainerGame.toFront());
+        }
+    }
+    
+    private void setupGhostRectangle(Rectangle ghostRect, int colorIndex, Paint blockColor) {
+        if (blockColor instanceof Color) {
+            Color originalColor = (Color) blockColor;
+            ghostRect.setFill(createGhostColor(originalColor, GHOST_COLOR_OPACITY));
+            ghostRect.setStroke(createGhostColor(originalColor, GHOST_BORDER_OPACITY));
+        } else {
+            ghostRect.setFill(Color.rgb(255, 255, 255, GHOST_COLOR_OPACITY));
+            ghostRect.setStroke(Color.rgb(255, 255, 255, GHOST_BORDER_OPACITY));
+        }
+        ghostRect.setArcHeight(RECTANGLE_ARC_SIZE);
+        ghostRect.setArcWidth(RECTANGLE_ARC_SIZE);
+        ghostRect.setStrokeWidth(GHOST_STROKE_WIDTH);
+    }
+    
+    private void handleGhostRectangleVisibility(Rectangle ghostRect, boolean shouldShow, boolean currentlyVisible) {
+        if (shouldShow) {
+            if (!currentlyVisible) {
+                ghostRect.setOpacity(0.0);
+                FadeTransition fadeIn = createFadeTransition(ghostRect, Duration.millis(GHOST_FADE_IN_DURATION_MS), 0.0, 1.0);
+                fadeIn.play();
+            } else {
+                ghostRect.setOpacity(1.0);
+            }
+        } else {
+            if (currentlyVisible) {
+                FadeTransition fadeOut = createFadeTransition(ghostRect, Duration.millis(GHOST_FADE_OUT_DURATION_MS), ghostRect.getOpacity(), 0.0);
+                fadeOut.setOnFinished(_ -> clearGhostRectangle(ghostRect));
+                fadeOut.play();
+            } else {
+                clearGhostRectangle(ghostRect);
+            }
+        }
+    }
+    
+    private void startLevelGameMode() {
+        tripleClearsCount = 0;
+        levelStartTime = System.currentTimeMillis();
+        totalPauseDuration = 0;
+        pauseStartTime = 0;
+        stopTimerUpdate();
+        updateLevelObjectiveLabel();
+        if (is1984Mode()) {
+            setPlayerName("1984 Player", false);
+            startGameInstantly();
+        } else {
+            startCountdown();
+        }
+    }
+    
+    private void startSpecialModeGame() {
+        stopFreePlayTimer();
+        if (is1984Mode()) {
+            setPlayerName("1984 Player", false);
+        } else {
+            setPlayerName("Inverted Player", false);
+        }
+        updateLevelObjectiveLabel();
+        if (is1984Mode()) {
+            startGameInstantly();
+        } else {
+            startCountdown();
+        }
+    }
+    
+    private void startFreePlayGame() {
+        requestPlayerNameAndStart();
+    }
+    
+    private void cleanup1984ModeUI() {
+        if (scoreLabel1984 != null) {
+            scoreLabel1984.setVisible(false);
+        }
+        if (linesLabel1984 != null) {
+            linesLabel1984.setVisible(false);
+        }
+        stopTimelineSafely(glitchTimeline1984);
+        if (filmGrainOverlay != null) {
+            filmGrainOverlay.setVisible(false);
+        }
+        stopTimelineSafely(filmGrainTimeline);
+        stopTimelineSafely(flickerTimeline);
+        if (rootPane != null) {
+            rootPane.setEffect(null);
+            rootPane.setOpacity(1.0);
         }
     }
     
