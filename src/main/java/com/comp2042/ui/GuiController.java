@@ -223,8 +223,8 @@ public class GuiController implements Initializable {
     
     public void setGameMode(String mode) {
         this.gameMode = mode;
-        boolean isInvertedMode = mode != null && mode.equals("inverted");
-        boolean is1984Mode = mode != null && mode.equals("1984");
+        boolean isInvertedMode = isInvertedMode();
+        boolean is1984Mode = is1984Mode();
         
         if (isInvertedMode && rootPane != null) {
             rootPane.getTransforms().removeIf(transform -> transform instanceof Rotate);
@@ -1236,9 +1236,7 @@ public class GuiController implements Initializable {
         initNextBlockPanel(brick);
         initHoldBlockPanel(brick);
         
-        boolean is1984Mode = gameMode != null && gameMode.equals("1984");
-        boolean isInvertedMode = gameMode != null && gameMode.equals("inverted");
-        if (dialogueContainerGame != null && !is1984Mode && !isInvertedMode) {
+        if (dialogueContainerGame != null && !is1984Mode() && !isInvertedMode()) {
             dialogueContainerGame.setVisible(true);
             dialogueContainerGame.setManaged(true);
             dialogueContainerGame.setLayoutX(490);
@@ -1262,10 +1260,9 @@ public class GuiController implements Initializable {
         timeLine.play();
     }
     private void updateBrickPanelPosition(ViewData brick) {
-        boolean is1984Mode = gameMode != null && gameMode.equals("1984");
         int brickSize = getBrickSize();
         double cellSize = brickPanel.getVgap() + brickSize;
-        double padding = is1984Mode ? 0 : BOARD_PADDING;
+        double padding = is1984Mode() ? 0 : BOARD_PADDING;
         double x = gameBoard.getLayoutX() + padding + brick.getxPosition() * cellSize;
         double y = BRICK_PANEL_Y_OFFSET + gameBoard.getLayoutY() + padding
                 + (brick.getyPosition() - HIDDEN_ROWS) * cellSize;
@@ -1383,20 +1380,12 @@ public class GuiController implements Initializable {
 
     private void initNextBlockPanel(ViewData brick) {
         int brickSize = getBrickSize();
-        boolean is1984Mode = gameMode != null && gameMode.equals("1984");
         
         int[][] nextData = brick.getNextBrickData();
         nextBlockRectangles = new Rectangle[nextData.length][nextData[0].length];
         for (int i = 0; i < nextData.length; i++) {
             for (int j = 0; j < nextData[i].length; j++) {
-                Rectangle rect = new Rectangle(brickSize, brickSize);
-                if (is1984Mode) {
-                    rect.setArcHeight(2);
-                    rect.setArcWidth(2);
-                } else {
-                    rect.setArcHeight(RECTANGLE_ARC_SIZE);
-                    rect.setArcWidth(RECTANGLE_ARC_SIZE);
-                }
+                Rectangle rect = createBrickRectangle(brickSize);
                 nextBlockRectangles[i][j] = rect;
                 nextBlockPanel.add(rect, j, i);
             }
@@ -1407,14 +1396,7 @@ public class GuiController implements Initializable {
             nextBlockRectangles2 = new Rectangle[nextData2.length][nextData2[0].length];
             for (int i = 0; i < nextData2.length; i++) {
                 for (int j = 0; j < nextData2[i].length; j++) {
-                    Rectangle rect = new Rectangle(brickSize, brickSize);
-                    if (is1984Mode) {
-                        rect.setArcHeight(2);
-                        rect.setArcWidth(2);
-                    } else {
-                        rect.setArcHeight(RECTANGLE_ARC_SIZE);
-                        rect.setArcWidth(RECTANGLE_ARC_SIZE);
-                    }
+                    Rectangle rect = createBrickRectangle(brickSize);
                     nextBlockRectangles2[i][j] = rect;
                     nextBlockPanel2.add(rect, j, i);
                 }
@@ -1426,14 +1408,7 @@ public class GuiController implements Initializable {
             nextBlockRectangles3 = new Rectangle[nextData3.length][nextData3[0].length];
             for (int i = 0; i < nextData3.length; i++) {
                 for (int j = 0; j < nextData3[i].length; j++) {
-                    Rectangle rect = new Rectangle(brickSize, brickSize);
-                    if (is1984Mode) {
-                        rect.setArcHeight(2);
-                        rect.setArcWidth(2);
-                    } else {
-                        rect.setArcHeight(RECTANGLE_ARC_SIZE);
-                        rect.setArcWidth(RECTANGLE_ARC_SIZE);
-                    }
+                    Rectangle rect = createBrickRectangle(brickSize);
                     nextBlockRectangles3[i][j] = rect;
                     nextBlockPanel3.add(rect, j, i);
                 }
@@ -1486,20 +1461,12 @@ public class GuiController implements Initializable {
     
     private void initHoldBlockPanel(ViewData brick) {
         int brickSize = getBrickSize();
-        boolean is1984Mode = gameMode != null && gameMode.equals("1984");
         int maxSize = 4;
         holdBlockRectangles = new Rectangle[maxSize][maxSize];
         previousHoldData = null;
         for (int i = 0; i < maxSize; i++) {
             for (int j = 0; j < maxSize; j++) {
-                Rectangle rect = new Rectangle(brickSize, brickSize);
-                if (is1984Mode) {
-                    rect.setArcHeight(2);
-                    rect.setArcWidth(2);
-                } else {
-                    rect.setArcHeight(RECTANGLE_ARC_SIZE);
-                    rect.setArcWidth(RECTANGLE_ARC_SIZE);
-                }
+                Rectangle rect = createBrickRectangle(brickSize);
                 rect.setFill(Color.TRANSPARENT);
                 holdBlockRectangles[i][j] = rect;
                 holdBlockPanel.add(rect, j, i);
@@ -2621,5 +2588,25 @@ public class GuiController implements Initializable {
         
         dialogueTextTimeline.setCycleCount(Timeline.INDEFINITE);
         dialogueTextTimeline.play();
+    }
+    
+    private boolean is1984Mode() {
+        return gameMode != null && gameMode.equals("1984");
+    }
+    
+    private boolean isInvertedMode() {
+        return gameMode != null && gameMode.equals("inverted");
+    }
+    
+    private Rectangle createBrickRectangle(double size) {
+        Rectangle rect = new Rectangle(size, size);
+        if (is1984Mode()) {
+            rect.setArcHeight(2);
+            rect.setArcWidth(2);
+        } else {
+            rect.setArcHeight(RECTANGLE_ARC_SIZE);
+            rect.setArcWidth(RECTANGLE_ARC_SIZE);
+        }
+        return rect;
     }
 }
