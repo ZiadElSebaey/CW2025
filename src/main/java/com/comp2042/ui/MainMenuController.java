@@ -7,8 +7,11 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.animation.FadeTransition;
+import javafx.animation.KeyFrame;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -57,9 +60,28 @@ public class MainMenuController {
 
     @FXML
     private Button backButton;
+    
+    @FXML
+    private StackPane dialogueContainer;
+    
+    @FXML
+    private ImageView dialogueImage;
+    
+    @FXML
+    private Label dialogueText;
+    
+    @FXML
+    private HBox dialogueButtons;
+    
+    @FXML
+    private Button acceptButton;
+    
+    @FXML
+    private Button ignoreButton;
 
     private VBox leaderboardContainer;
     private LeaderboardPanel leaderboardPanel;
+    private Timeline dialogueTimeline;
 
     public void setStage(Stage stage) {
         this.stage = stage;
@@ -108,6 +130,241 @@ public class MainMenuController {
         floatUp.play();
 
         setupLeaderboardPanel();
+        showDialogue();
+        
+        // Add click handler to Alexey character
+        if (creatorPanel != null) {
+            creatorPanel.setOnMouseClicked(e -> {
+                // Show dialogue immediately when Alexey is clicked
+                if (dialogueContainer != null && dialogueContainer.getScene() != null) {
+                    showDialogueImmediately();
+                }
+            });
+            creatorPanel.setCursor(javafx.scene.Cursor.HAND);
+        }
+    }
+    
+    private void showDialogue() {
+        // Cancel any existing dialogue animation
+        hideDialogue();
+        
+        if (dialogueContainer != null && dialogueText != null) {
+            // Hide buttons initially
+            if (dialogueButtons != null) {
+                dialogueButtons.setVisible(false);
+                dialogueButtons.setManaged(false);
+                dialogueButtons.setOpacity(0);
+            }
+            
+            // Hide initially
+            dialogueContainer.setVisible(false);
+            dialogueContainer.setManaged(false);
+            dialogueContainer.setOpacity(0);
+            
+            // Set first sentence
+            dialogueText.setText("Long ago, in a room not far from here in moscow… i created this game.");
+            
+            // Show after 3.8 seconds with fade in animation
+            dialogueTimeline = new Timeline(
+                new KeyFrame(Duration.seconds(3.8), e -> {
+                    // Only show if still on main menu (dialogueContainer is still in the scene)
+                    if (dialogueContainer != null && dialogueContainer.getScene() != null) {
+                        dialogueContainer.setVisible(true);
+                        dialogueContainer.setManaged(true);
+                        
+                        // Fade in animation
+                        FadeTransition fadeIn = new FadeTransition(Duration.millis(800), dialogueContainer);
+                        fadeIn.setFromValue(0);
+                        fadeIn.setToValue(1);
+                        fadeIn.play();
+                    }
+                }),
+                // Change to second sentence after 8.2 seconds (3.8 + 4.4 seconds display)
+                new KeyFrame(Duration.seconds(8.2), e -> {
+                    if (dialogueText != null && dialogueContainer != null && dialogueContainer.getScene() != null) {
+                        FadeTransition fadeOut = new FadeTransition(Duration.millis(400), dialogueText);
+                        fadeOut.setFromValue(1);
+                        fadeOut.setToValue(0);
+                        fadeOut.setOnFinished(event -> {
+                            dialogueText.setText("Back then, it was just me, the cold Moscow night, and an idea.");
+                            FadeTransition fadeIn = new FadeTransition(Duration.millis(400), dialogueText);
+                            fadeIn.setFromValue(0);
+                            fadeIn.setToValue(1);
+                            fadeIn.play();
+                        });
+                        fadeOut.play();
+                    }
+                }),
+                // Change to third sentence after 12.6 seconds (8.2 + 4.4 seconds display)
+                new KeyFrame(Duration.seconds(12.6), e -> {
+                    if (dialogueText != null && dialogueContainer != null && dialogueContainer.getScene() != null) {
+                        FadeTransition fadeOut = new FadeTransition(Duration.millis(400), dialogueText);
+                        fadeOut.setFromValue(1);
+                        fadeOut.setToValue(0);
+                        fadeOut.setOnFinished(event -> {
+                            dialogueText.setText("I never imagined that idea would one day reach players all over the world.");
+                            FadeTransition fadeIn = new FadeTransition(Duration.millis(400), dialogueText);
+                            fadeIn.setFromValue(0);
+                            fadeIn.setToValue(1);
+                            fadeIn.play();
+                        });
+                        fadeOut.play();
+                    }
+                }),
+                // Change to fourth sentence after 17 seconds (12.6 + 4.4 seconds display)
+                new KeyFrame(Duration.seconds(17.0), e -> {
+                    if (dialogueText != null && dialogueContainer != null && dialogueContainer.getScene() != null) {
+                        FadeTransition fadeOut = new FadeTransition(Duration.millis(400), dialogueText);
+                        fadeOut.setFromValue(1);
+                        fadeOut.setToValue(0);
+                        fadeOut.setOnFinished(event -> {
+                            dialogueText.setText("If you'd like, I can show you how it all works.");
+                            FadeTransition fadeIn = new FadeTransition(Duration.millis(400), dialogueText);
+                            fadeIn.setFromValue(0);
+                            fadeIn.setToValue(1);
+                            fadeIn.setOnFinished(event2 -> {
+                                // Show buttons after fourth sentence fades in
+                                if (dialogueButtons != null) {
+                                    dialogueButtons.setVisible(true);
+                                    dialogueButtons.setManaged(true);
+                                    dialogueButtons.setOpacity(0);
+                                    FadeTransition buttonsFadeIn = new FadeTransition(Duration.millis(400), dialogueButtons);
+                                    buttonsFadeIn.setFromValue(0);
+                                    buttonsFadeIn.setToValue(1);
+                                    buttonsFadeIn.play();
+                                }
+                            });
+                            fadeIn.play();
+                        });
+                        fadeOut.play();
+                    }
+                })
+            );
+            dialogueTimeline.play();
+        }
+    }
+    
+    private void showDialogueImmediately() {
+        // Cancel any existing dialogue animation
+        hideDialogue();
+        
+        if (dialogueContainer != null && dialogueText != null) {
+            // Hide buttons initially
+            if (dialogueButtons != null) {
+                dialogueButtons.setVisible(false);
+                dialogueButtons.setManaged(false);
+                dialogueButtons.setOpacity(0);
+            }
+            
+            // Set first sentence
+            dialogueText.setText("Long ago, in a room not far from here in moscow… i created this game.");
+            
+            // Show immediately
+            dialogueContainer.setVisible(true);
+            dialogueContainer.setManaged(true);
+            dialogueContainer.setOpacity(1);
+            dialogueText.setOpacity(1);
+            
+            // Start timeline immediately (no delay)
+            dialogueTimeline = new Timeline(
+                // Change to second sentence after 4.4 seconds
+                new KeyFrame(Duration.seconds(4.4), e -> {
+                    if (dialogueText != null && dialogueContainer != null && dialogueContainer.getScene() != null) {
+                        FadeTransition fadeOut = new FadeTransition(Duration.millis(400), dialogueText);
+                        fadeOut.setFromValue(1);
+                        fadeOut.setToValue(0);
+                        fadeOut.setOnFinished(event -> {
+                            dialogueText.setText("Back then, it was just me, the cold Moscow night, and an idea.");
+                            FadeTransition fadeIn = new FadeTransition(Duration.millis(400), dialogueText);
+                            fadeIn.setFromValue(0);
+                            fadeIn.setToValue(1);
+                            fadeIn.play();
+                        });
+                        fadeOut.play();
+                    }
+                }),
+                // Change to third sentence after 8.8 seconds (4.4 + 4.4)
+                new KeyFrame(Duration.seconds(8.8), e -> {
+                    if (dialogueText != null && dialogueContainer != null && dialogueContainer.getScene() != null) {
+                        FadeTransition fadeOut = new FadeTransition(Duration.millis(400), dialogueText);
+                        fadeOut.setFromValue(1);
+                        fadeOut.setToValue(0);
+                        fadeOut.setOnFinished(event -> {
+                            dialogueText.setText("I never imagined that idea would one day reach players all over the world.");
+                            FadeTransition fadeIn = new FadeTransition(Duration.millis(400), dialogueText);
+                            fadeIn.setFromValue(0);
+                            fadeIn.setToValue(1);
+                            fadeIn.play();
+                        });
+                        fadeOut.play();
+                    }
+                }),
+                // Change to fourth sentence after 13.2 seconds (8.8 + 4.4)
+                new KeyFrame(Duration.seconds(13.2), e -> {
+                    if (dialogueText != null && dialogueContainer != null && dialogueContainer.getScene() != null) {
+                        FadeTransition fadeOut = new FadeTransition(Duration.millis(400), dialogueText);
+                        fadeOut.setFromValue(1);
+                        fadeOut.setToValue(0);
+                        fadeOut.setOnFinished(event -> {
+                            dialogueText.setText("If you'd like, I can show you how it all works.");
+                            FadeTransition fadeIn = new FadeTransition(Duration.millis(400), dialogueText);
+                            fadeIn.setFromValue(0);
+                            fadeIn.setToValue(1);
+                            fadeIn.setOnFinished(event2 -> {
+                                // Show buttons after fourth sentence fades in
+                                if (dialogueButtons != null) {
+                                    dialogueButtons.setVisible(true);
+                                    dialogueButtons.setManaged(true);
+                                    dialogueButtons.setOpacity(0);
+                                    FadeTransition buttonsFadeIn = new FadeTransition(Duration.millis(400), dialogueButtons);
+                                    buttonsFadeIn.setFromValue(0);
+                                    buttonsFadeIn.setToValue(1);
+                                    buttonsFadeIn.play();
+                                }
+                            });
+                            fadeIn.play();
+                        });
+                        fadeOut.play();
+                    }
+                })
+            );
+            dialogueTimeline.play();
+        }
+    }
+    
+    private void hideDialogue() {
+        // Stop any pending dialogue animation
+        if (dialogueTimeline != null) {
+            dialogueTimeline.stop();
+            dialogueTimeline = null;
+        }
+        
+        // Hide buttons
+        if (dialogueButtons != null) {
+            dialogueButtons.setVisible(false);
+            dialogueButtons.setManaged(false);
+            dialogueButtons.setOpacity(0);
+        }
+        
+        // Hide dialogue immediately
+        if (dialogueContainer != null) {
+            dialogueContainer.setVisible(false);
+            dialogueContainer.setManaged(false);
+            dialogueContainer.setOpacity(0);
+        }
+    }
+    
+    @FXML
+    private void onAcceptClicked() {
+        // Hide dialogue and navigate to How To Play
+        hideDialogue();
+        onHowToPlayClicked();
+    }
+    
+    @FXML
+    private void onIgnoreClicked() {
+        // Hide dialogue
+        hideDialogue();
     }
 
     private void setupLeaderboardPanel() {
@@ -141,6 +398,9 @@ public class MainMenuController {
         if (!isGuest && playerName == null) {
             return;
         }
+        
+        // Hide dialogue before leaving main menu
+        hideDialogue();
         
         resetMainMenu();
         
@@ -184,6 +444,10 @@ public class MainMenuController {
         titleLabel.setManaged(true);
         creatorPanel.setVisible(true);
         creatorPanel.setManaged(true);
+        // Only show dialogue if we're actually on the main menu scene
+        if (dialogueContainer != null && dialogueContainer.getScene() != null && rootPane.getScene() == dialogueContainer.getScene()) {
+            showDialogue();
+        }
         backButton.setVisible(false);
         backButton.setManaged(false);
     }
@@ -214,6 +478,7 @@ public class MainMenuController {
         titleLabel.setManaged(false);
         creatorPanel.setVisible(false);
         creatorPanel.setManaged(false);
+        hideDialogue();
         backButton.setVisible(true);
         backButton.setManaged(true);
         playSubmenu.setVisible(true);
@@ -222,6 +487,8 @@ public class MainMenuController {
 
     @FXML
     private void onLevelsClicked() {
+        // Hide dialogue before leaving main menu
+        hideDialogue();
         resetMainMenu();
         try {
             URL location = getClass().getClassLoader().getResource("levels.fxml");
@@ -237,6 +504,8 @@ public class MainMenuController {
 
     @FXML
     private void onGamemodesClicked() {
+        // Hide dialogue before leaving main menu
+        hideDialogue();
         resetMainMenu();
         try {
             URL location = getClass().getClassLoader().getResource("gamemodes.fxml");
@@ -258,16 +527,22 @@ public class MainMenuController {
 
     @FXML
     private void onHowToPlayClicked() {
+        // Hide dialogue before leaving main menu
+        hideDialogue();
         loadScene("howToPlay.fxml");
     }
 
     @FXML
     private void onSettingsClicked() {
+        // Hide dialogue before leaving main menu
+        hideDialogue();
         loadScene("settings.fxml");
     }
 
     @FXML
     private void onLeaderboardClicked() {
+        // Hide dialogue when showing leaderboard
+        hideDialogue();
         leaderboardPanel.refreshEntries();
         leaderboardContainer.setVisible(true);
     }

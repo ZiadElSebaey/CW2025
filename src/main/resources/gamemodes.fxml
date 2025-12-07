@@ -15,12 +15,13 @@
         <Label text="GAMEMODES" styleClass="gamemodes-title"/>
         <HBox alignment="CENTER" spacing="40" pickOnBounds="false">
             <VBox fx:id="nineteenEightyFourPanel" alignment="CENTER" spacing="20" styleClass="gamemode-panel" onMouseClicked="#on1984Clicked">
-                <Label text="1984" styleClass="gamemode-title"/>
-                <Label text="Back to the first day" styleClass="gamemode-subtitle" wrapText="true"/>
             </VBox>
-            <VBox fx:id="invertedPanel" alignment="CENTER" spacing="20" styleClass="gamemode-panel" onMouseClicked="#onInvertedClicked">
-                <Label text="INVERTED" styleClass="gamemode-title" wrapText="false"/>
-                <Label text="Every move is reversed" styleClass="gamemode-subtitle" wrapText="true"/>
+            <VBox fx:id="invertedPanel" alignment="CENTER" spacing="20" styleClass="gamemode-panel-inverted" onMouseClicked="#onInvertedClicked">
+                <VBox alignment="CENTER" spacing="0">
+                    <Label text="THE" styleClass="gamemode-title" wrapText="false"/>
+                    <Label text="UPSIDEDOWN" styleClass="gamemode-title" wrapText="false"/>
+                </VBox>
+                <Label text="Reverse the world. Survive the chaos." styleClass="gamemode-subtitle" wrapText="true"/>
             </VBox>
         </HBox>
     </VBox>

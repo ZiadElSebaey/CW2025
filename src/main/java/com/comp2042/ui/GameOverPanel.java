@@ -202,7 +202,7 @@ public class GameOverPanel extends StackPane {
             highScoreLabel.setVisible(false);
             highScoreHolderLabel.setVisible(false);
             newHighScoreLabel.setVisible(false);
-            if (isInvertedMode || is1984Mode) {
+            if (is1984Mode) {
                 timePlayedLabel.setVisible(false);
             }
         } else {
@@ -231,7 +231,7 @@ public class GameOverPanel extends StackPane {
             nameInputBox.setVisible(false);
             savedLabel.setVisible(false);
             errorLabel.setVisible(false);
-            if (isInvertedMode || is1984Mode) {
+            if (isLevelGame || isInvertedMode || is1984Mode) {
                 leaderboardButton.setVisible(false);
                 leaderboardButton.setManaged(false);
             }
@@ -352,6 +352,10 @@ public class GameOverPanel extends StackPane {
         return scoreLabel;
     }
     
+    public Label getTimePlayedLabel() {
+        return timePlayedLabel;
+    }
+    
     public VBox getButtonSection() {
         return buttonSection;
     }
@@ -390,6 +394,12 @@ public class GameOverPanel extends StackPane {
             // Use layoutX for absolute positioning (alternative to translateX)
             // Uncomment the line below and comment translateX if translateX doesn't work
             // scoreLabel.setLayoutX(300);
+        }
+        
+        if (timePlayedLabel != null) {
+            timePlayedLabel.setMaxWidth(Double.MAX_VALUE);
+            timePlayedLabel.setTranslateY(5);
+            timePlayedLabel.setTranslateX(4);
         }
         
         // Change VBox alignment to allow manual positioning
@@ -476,6 +486,12 @@ public class GameOverPanel extends StackPane {
             scoreLabel.setTranslateY(0);
             scoreLabel.setLayoutX(0);
             scoreLabel.setLayoutY(0);
+        }
+        if (timePlayedLabel != null) {
+            timePlayedLabel.setTranslateX(0);
+            timePlayedLabel.setTranslateY(0);
+            timePlayedLabel.setLayoutX(0);
+            timePlayedLabel.setLayoutY(0);
         }
         if (mainMenuButton != null) {
             mainMenuButton.setTranslateX(0);

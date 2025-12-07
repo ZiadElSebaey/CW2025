@@ -118,6 +118,14 @@ public class GuiController implements Initializable {
     @FXML
     private GridPane nextBlockPanel;
     @FXML
+    private StackPane nextBlockStackPane2;
+    @FXML
+    private GridPane nextBlockPanel2;
+    @FXML
+    private StackPane nextBlockStackPane3;
+    @FXML
+    private GridPane nextBlockPanel3;
+    @FXML
     private GridPane holdBlockPanel;
     @FXML
     private VBox holdBlockContainer;
@@ -127,6 +135,15 @@ public class GuiController implements Initializable {
 
     @FXML
     private VBox creatorPanel;
+    
+    @FXML
+    private StackPane dialogueContainerGame;
+    
+    @FXML
+    private ImageView dialogueImageGame;
+    
+    @FXML
+    private Label dialogueTextGame;
 
     @FXML
     private javafx.scene.control.Button backButton;
@@ -134,17 +151,32 @@ public class GuiController implements Initializable {
     @FXML
     private ImageView borderFrame;
     
+    @FXML
+    private ImageView background1984;
+    
+    @FXML
+    private ImageView whiteBox1984;
+    
+    @FXML
+    private StackPane whiteBoxContainer1984;
+    
+    @FXML
+    private Label whiteBoxText1984;
+    
     private Label scoreLabel1984;
     private Label linesLabel1984;
     private Timeline glitchTimeline1984;
     private Rectangle filmGrainOverlay;
     private Timeline filmGrainTimeline;
     private Timeline flickerTimeline;
+    private Timeline backgroundFlickerTimeline;
 
     private Rectangle[][] displayMatrix;
     private VBox leaderboardContainer;
     private LeaderboardPanel leaderboardPanel;
     private Rectangle[][] nextBlockRectangles;
+    private Rectangle[][] nextBlockRectangles2;
+    private Rectangle[][] nextBlockRectangles3;
     private Rectangle[][] holdBlockRectangles;
     private int[][] previousHoldData;
     private IntegerProperty currentScoreProperty;
@@ -170,6 +202,7 @@ public class GuiController implements Initializable {
     private long freePlayPauseStartTime;
     private long freePlayTotalPauseDuration;
     private int dropIntervalMs = DEFAULT_DROP_INTERVAL_MS;
+    private Timeline dialogueTextTimeline;
 
     public void setStage(Stage stage) {
         this.stage = stage;
@@ -208,16 +241,18 @@ public class GuiController implements Initializable {
             if (rightPanel != null) {
                 rightPanel.setVisible(true);
                 rightPanel.setManaged(true);
+                rightPanel.setLayoutX(480);
+                rightPanel.setLayoutY(130);
                 rightPanel.getTransforms().removeIf(transform -> transform instanceof Rotate);
+                Rotate rotate = new Rotate(180, 115, 125);
+                rightPanel.getTransforms().add(rotate);
                 Platform.runLater(() -> {
                     double width = rightPanel.getBoundsInLocal().getWidth();
                     double height = rightPanel.getBoundsInLocal().getHeight();
                     if (width > 0 && height > 0) {
-                        Rotate rotate = new Rotate(180, width / 2, height / 2);
-                        rightPanel.getTransforms().add(rotate);
-                    } else {
-                        Rotate rotate = new Rotate(180, 100, 200);
-                        rightPanel.getTransforms().add(rotate);
+                        rightPanel.getTransforms().removeIf(transform -> transform instanceof Rotate);
+                        Rotate rotate2 = new Rotate(180, width / 2, height / 2);
+                        rightPanel.getTransforms().add(rotate2);
                     }
                 });
             }
@@ -226,8 +261,8 @@ public class GuiController implements Initializable {
                 holdBlockContainer.setManaged(true);
             }
             if (leftPanel != null) {
-                leftPanel.setLayoutX(500);
-                leftPanel.setLayoutY(500 - 66);
+                leftPanel.setLayoutX(0);
+                leftPanel.setLayoutY(100);
                 leftPanel.getTransforms().removeIf(transform -> transform instanceof Rotate);
                 Platform.runLater(() -> {
                     double width = leftPanel.getBoundsInLocal().getWidth();
@@ -244,6 +279,14 @@ public class GuiController implements Initializable {
             if (creatorPanel != null) {
                 creatorPanel.setVisible(false);
                 creatorPanel.setManaged(false);
+            }
+            if (dialogueContainerGame != null) {
+                dialogueContainerGame.setVisible(false);
+                dialogueContainerGame.setManaged(false);
+            }
+            if (whiteBoxContainer1984 != null) {
+                whiteBoxContainer1984.setVisible(false);
+                whiteBoxContainer1984.setManaged(false);
             }
             if (backButton != null) {
                 backButton.setLayoutX(720 - 100);
@@ -262,8 +305,16 @@ public class GuiController implements Initializable {
                 });
             }
         } else {
-            if (objectivePanel != null && currentLevel == null) {
-                objectivePanel.setVisible(true);
+            if (backgroundFlickerTimeline != null) {
+                backgroundFlickerTimeline.stop();
+            }
+            if (background1984 != null) {
+                background1984.setVisible(false);
+                background1984.setManaged(false);
+                background1984.setOpacity(1.0);
+            }
+            if (objectivePanel != null) {
+                objectivePanel.setVisible(false);
             }
             if (rightPanel != null) {
                 rightPanel.setVisible(true);
@@ -274,14 +325,37 @@ public class GuiController implements Initializable {
                 holdBlockContainer.setVisible(true);
                 holdBlockContainer.setManaged(true);
             }
+            if (nextBlockContainer != null) {
+                nextBlockContainer.setVisible(true);
+                nextBlockContainer.setManaged(true);
+            }
             if (leftPanel != null) {
-                leftPanel.setLayoutX(15);
-                leftPanel.setLayoutY(180);
+                leftPanel.setLayoutX(30);
+                leftPanel.setLayoutY(120);
                 leftPanel.getTransforms().removeIf(transform -> transform instanceof Rotate);
             }
             if (creatorPanel != null) {
                 creatorPanel.setVisible(true);
                 creatorPanel.setManaged(true);
+            }
+            if (dialogueContainerGame != null && !is1984Mode && !isInvertedMode) {
+                dialogueContainerGame.setVisible(true);
+                dialogueContainerGame.setManaged(true);
+                dialogueContainerGame.setLayoutX(490);
+                dialogueContainerGame.setLayoutY(390);
+                if (currentLevel == null) {
+                    updateFreePlayDialogueText();
+                } else {
+                    updateLevelsDialogueText();
+                }
+                Platform.runLater(() -> dialogueContainerGame.toFront());
+            } else if (dialogueContainerGame != null) {
+                dialogueContainerGame.setVisible(false);
+                dialogueContainerGame.setManaged(false);
+            }
+            if (whiteBoxContainer1984 != null) {
+                whiteBoxContainer1984.setVisible(false);
+                whiteBoxContainer1984.setManaged(false);
             }
             if (backButton != null) {
                 backButton.setLayoutX(15);
@@ -291,6 +365,14 @@ public class GuiController implements Initializable {
         }
         
         if (is1984Mode) {
+            if (background1984 != null) {
+                background1984.setVisible(true);
+                background1984.setManaged(true);
+                background1984.setOpacity(1.0);
+                rootPane.getChildren().remove(background1984);
+                rootPane.getChildren().add(0, background1984);
+                startBackgroundFlickerAnimation();
+            }
             if (leftPanel != null) {
                 leftPanel.setVisible(false);
                 leftPanel.setManaged(false);
@@ -305,7 +387,7 @@ public class GuiController implements Initializable {
             if (creatorPanel != null) {
                 creatorPanel.setVisible(true);
                 creatorPanel.setManaged(true);
-                creatorPanel.setLayoutX(560);
+                creatorPanel.setLayoutX(590);
                 creatorPanel.setLayoutY(480);
                 javafx.animation.TranslateTransition floatUp = new javafx.animation.TranslateTransition(Duration.seconds(2), creatorPanel);
                 floatUp.setByY(-10);
@@ -313,9 +395,19 @@ public class GuiController implements Initializable {
                 floatUp.setAutoReverse(true);
                 floatUp.play();
             }
+            if (whiteBoxContainer1984 != null) {
+                whiteBoxContainer1984.setVisible(true);
+                whiteBoxContainer1984.setManaged(true);
+                whiteBoxContainer1984.setLayoutX(480);
+                whiteBoxContainer1984.setLayoutY(420);
+                Platform.runLater(() -> whiteBoxContainer1984.toFront());
+            }
             if (backButton != null) {
                 backButton.getStyleClass().clear();
                 backButton.getStyleClass().add("back-icon-1984");
+                backButton.setVisible(true);
+                backButton.setManaged(true);
+                backButton.toFront();
                 backButton.setOnAction(_ -> returnToGamemodesMenu());
             }
             
@@ -369,12 +461,6 @@ public class GuiController implements Initializable {
                 if (gamePanel != null) {
                     gamePanel.getStyleClass().add("gamePanel-1984");
                 }
-                
-                int brickSize = BRICK_SIZE_1984;
-                int columns = 13;
-                int visibleRows = 25;
-                int gap = 1;
-                int padding = 0;
                 
                 double boardWidth = 220; 
                 double boardHeight = 445;  
@@ -533,6 +619,121 @@ public class GuiController implements Initializable {
         flickerTimeline.play();
     }
     
+    private void startBackgroundFlickerAnimation() {
+        if (backgroundFlickerTimeline != null) {
+            backgroundFlickerTimeline.stop();
+        }
+        
+        if (background1984 == null) {
+            return;
+        }
+        
+        backgroundFlickerTimeline = new Timeline(
+            new KeyFrame(Duration.ZERO, e -> {
+                if (background1984 != null) {
+                    background1984.setOpacity(1.0);
+                }
+            }),
+            new KeyFrame(Duration.millis(50), e -> {
+                if (background1984 != null) {
+                    background1984.setOpacity(0.0);
+                }
+            }),
+            new KeyFrame(Duration.millis(80), e -> {
+                if (background1984 != null) {
+                    background1984.setOpacity(1.0);
+                }
+            }),
+            new KeyFrame(Duration.millis(120), e -> {
+                if (background1984 != null) {
+                    background1984.setOpacity(0.0);
+                }
+            }),
+            new KeyFrame(Duration.millis(150), e -> {
+                if (background1984 != null) {
+                    background1984.setOpacity(0.9);
+                }
+            }),
+            new KeyFrame(Duration.millis(180), e -> {
+                if (background1984 != null) {
+                    background1984.setOpacity(0.0);
+                }
+            }),
+            new KeyFrame(Duration.millis(220), e -> {
+                if (background1984 != null) {
+                    background1984.setOpacity(1.0);
+                }
+            }),
+            new KeyFrame(Duration.millis(280), e -> {
+                if (background1984 != null) {
+                    background1984.setOpacity(0.05);
+                }
+            }),
+            new KeyFrame(Duration.millis(320), e -> {
+                if (background1984 != null) {
+                    background1984.setOpacity(0.8);
+                }
+            }),
+            new KeyFrame(Duration.millis(380), e -> {
+                if (background1984 != null) {
+                    background1984.setOpacity(0.1);
+                }
+            }),
+            new KeyFrame(Duration.millis(450), e -> {
+                if (background1984 != null) {
+                    background1984.setOpacity(0.75);
+                }
+            }),
+            new KeyFrame(Duration.seconds(1.5), e -> {
+                if (background1984 != null) {
+                    startOngoingFlicker();
+                }
+            })
+        );
+        backgroundFlickerTimeline.setCycleCount(1);
+        backgroundFlickerTimeline.play();
+    }
+    
+    private void startOngoingFlicker() {
+        if (backgroundFlickerTimeline != null) {
+            backgroundFlickerTimeline.stop();
+        }
+        
+        if (background1984 == null) {
+            return;
+        }
+        
+        backgroundFlickerTimeline = new Timeline(
+            new KeyFrame(Duration.ZERO, e -> {
+                if (background1984 != null) {
+                    background1984.setOpacity(0.75);
+                }
+            }),
+            new KeyFrame(Duration.millis(2000), e -> {
+                if (background1984 != null && Math.random() < 0.15) {
+                    background1984.setOpacity(0.5 + Math.random() * 0.3);
+                }
+            }),
+            new KeyFrame(Duration.millis(2100), e -> {
+                if (background1984 != null) {
+                    background1984.setOpacity(0.75);
+                }
+            }),
+            new KeyFrame(Duration.millis(4500), e -> {
+                if (background1984 != null && Math.random() < 0.2) {
+                    background1984.setOpacity(0.4 + Math.random() * 0.4);
+                }
+            }),
+            new KeyFrame(Duration.millis(4600), e -> {
+                if (background1984 != null) {
+                    background1984.setOpacity(0.75);
+                }
+            })
+        );
+        backgroundFlickerTimeline.setCycleCount(Timeline.INDEFINITE);
+        backgroundFlickerTimeline.play();
+    }
+    
     public void setLevel(com.comp2042.logic.Level level) {
         this.currentLevel = level;
         if (level != null) {
@@ -547,11 +748,11 @@ public class GuiController implements Initializable {
             updateLevelObjectiveLabel();
             
             if (rightPanel != null) {
-                rightPanel.setLayoutX(500);
+                rightPanel.setLayoutX(520);
                 rightPanel.setSpacing(20);
             }
             if (nextBlockContainer != null) {
-                nextBlockContainer.setSpacing(15);
+                nextBlockContainer.setSpacing(5);
                 nextBlockContainer.setStyle("");
             }
             if (nextBlockStackPane != null) {
@@ -559,6 +760,18 @@ public class GuiController implements Initializable {
                 nextBlockStackPane.setMinHeight(90);
                 nextBlockStackPane.setPrefWidth(90);
                 nextBlockStackPane.setPrefHeight(90);
+            }
+            if (nextBlockStackPane2 != null) {
+                nextBlockStackPane2.setMinWidth(90);
+                nextBlockStackPane2.setMinHeight(90);
+                nextBlockStackPane2.setPrefWidth(90);
+                nextBlockStackPane2.setPrefHeight(90);
+            }
+            if (nextBlockStackPane3 != null) {
+                nextBlockStackPane3.setMinWidth(90);
+                nextBlockStackPane3.setMinHeight(90);
+                nextBlockStackPane3.setPrefWidth(90);
+                nextBlockStackPane3.setPrefHeight(90);
             }
             
             if (timerLabel != null) {
@@ -583,17 +796,17 @@ public class GuiController implements Initializable {
                     highScoreHolderLabel.setVisible(true);
                 }
                 if (objectivePanel != null) {
-                    objectivePanel.setVisible(true);
+                    objectivePanel.setVisible(false);
                 }
             }
             updateLevelObjectiveLabel();
             
             if (rightPanel != null) {
-                rightPanel.setLayoutX(500);
+                rightPanel.setLayoutX(520);
                 rightPanel.setSpacing(20);
             }
             if (nextBlockContainer != null) {
-                nextBlockContainer.setSpacing(15);
+                nextBlockContainer.setSpacing(5);
                 nextBlockContainer.setStyle("");
             }
             if (nextBlockStackPane != null) {
@@ -601,6 +814,18 @@ public class GuiController implements Initializable {
                 nextBlockStackPane.setMinHeight(90);
                 nextBlockStackPane.setPrefWidth(90);
                 nextBlockStackPane.setPrefHeight(90);
+            }
+            if (nextBlockStackPane2 != null) {
+                nextBlockStackPane2.setMinWidth(90);
+                nextBlockStackPane2.setMinHeight(90);
+                nextBlockStackPane2.setPrefWidth(90);
+                nextBlockStackPane2.setPrefHeight(90);
+            }
+            if (nextBlockStackPane3 != null) {
+                nextBlockStackPane3.setMinWidth(90);
+                nextBlockStackPane3.setMinHeight(90);
+                nextBlockStackPane3.setPrefWidth(90);
+                nextBlockStackPane3.setPrefHeight(90);
             }
             stopTimerUpdate();
             startFreePlayTimer();
@@ -625,6 +850,16 @@ public class GuiController implements Initializable {
             long currentPauseTime = (pauseStartTime > 0) ? (System.currentTimeMillis() - pauseStartTime) : 0;
             long timeElapsed = (System.currentTimeMillis() - levelStartTime - totalPauseDuration - currentPauseTime) / 1000;
             int remainingTime = (int)(currentLevel.getTimeLimit() - timeElapsed);
+            
+            if (remainingTime <= 0 && (currentLevel.getLevelNumber() == 2 || currentLevel.getLevelNumber() == 5)) {
+                if (timeLine != null) {
+                    timeLine.stop();
+                }
+                stopTimerUpdate();
+                gameOver();
+                return;
+            }
+            
             int minutes = Math.max(0, remainingTime) / 60;
             int seconds = Math.max(0, remainingTime) % 60;
             String timeStr = String.format("%d:%02d", minutes, seconds);
@@ -641,7 +876,8 @@ public class GuiController implements Initializable {
     
     private void startFreePlayTimer() {
         stopFreePlayTimer();
-        if (currentLevel == null && (gameMode == null || !gameMode.equals("inverted"))) {
+        boolean isInvertedMode = gameMode != null && gameMode.equals("inverted");
+        if (currentLevel == null && !isInvertedMode) {
             freePlayStartTime = System.currentTimeMillis();
             freePlayTotalPauseDuration = 0;
             freePlayPauseStartTime = 0;
@@ -659,8 +895,8 @@ public class GuiController implements Initializable {
     }
     
     private void updateFreePlayTimer() {
-        if (currentLevel == null && timerLabel != null && 
-            (gameMode == null || !gameMode.equals("inverted"))) {
+        boolean isInvertedMode = gameMode != null && gameMode.equals("inverted");
+        if (currentLevel == null && !isInvertedMode && timerLabel != null) {
             if (freePlayStartTime == 0) {
                 timerLabel.setText("Time: 0:00");
                 return;
@@ -683,7 +919,7 @@ public class GuiController implements Initializable {
     }
     
     private long getFreePlayElapsedTime() {
-        if (currentLevel != null || (gameMode != null && gameMode.equals("inverted"))) {
+        if (currentLevel != null) {
             return 0;
         }
         if (freePlayStartTime == 0) {
@@ -796,9 +1032,16 @@ public class GuiController implements Initializable {
         if (backButton != null) {
             boolean is1984ModeCheck = gameMode != null && gameMode.equals("1984");
             if (is1984ModeCheck) {
-                backButton.setOnAction(_ -> returnToGamemodesMenu());
+                if (backButton != null) {
+                    backButton.setVisible(true);
+                    backButton.setManaged(true);
+                    backButton.toFront();
+                    backButton.setOnAction(_ -> returnToGamemodesMenu());
+                }
             } else {
-                backButton.setOnAction(_ -> returnToPlayMenu());
+                if (backButton != null) {
+                    backButton.setOnAction(_ -> returnToPlayMenu());
+                }
             }
         }
     }
@@ -909,21 +1152,16 @@ public class GuiController implements Initializable {
         
         if (!isPause.get() && eventListener != null) {
             if (isInvertedMode) {
-                // Inverted mode: swap key mappings
                 if (isRotateKey(keyEvent)) {
-                    // UP/W now does DOWN (soft drop)
                     moveDown(userMove(EventType.DOWN));
                     keyEvent.consume();
                 } else if (isDownKey(keyEvent)) {
-                    // DOWN/S now does ROTATE
                     refreshBrick(eventListener.onRotateEvent(userMove(EventType.ROTATE)));
                     keyEvent.consume();
                 } else if (isLeftKey(keyEvent)) {
-                    // LEFT/A now does RIGHT
                     refreshBrick(eventListener.onRightEvent(userMove(EventType.RIGHT)));
                     keyEvent.consume();
                 } else if (isRightKey(keyEvent)) {
-                    // RIGHT/D now does LEFT
                     refreshBrick(eventListener.onLeftEvent(userMove(EventType.LEFT)));
                     keyEvent.consume();
                 } else if (keyEvent.getCode() == KeyCode.SPACE) {
@@ -934,7 +1172,6 @@ public class GuiController implements Initializable {
                     keyEvent.consume();
                 }
             } else {
-                // Normal mode: standard key mappings
             if (isLeftKey(keyEvent)) {
                 refreshBrick(eventListener.onLeftEvent(userMove(EventType.LEFT)));
                 keyEvent.consume();
@@ -952,7 +1189,7 @@ public class GuiController implements Initializable {
                     keyEvent.consume();
                 } else if (keyEvent.getCode() == KeyCode.H) {
                     holdBrick();
-                    keyEvent.consume();
+                keyEvent.consume();
                 }
             }
         }
@@ -998,6 +1235,24 @@ public class GuiController implements Initializable {
         updateGhostPosition(brick);
         initNextBlockPanel(brick);
         initHoldBlockPanel(brick);
+        
+        boolean is1984Mode = gameMode != null && gameMode.equals("1984");
+        boolean isInvertedMode = gameMode != null && gameMode.equals("inverted");
+        if (dialogueContainerGame != null && !is1984Mode && !isInvertedMode) {
+            dialogueContainerGame.setVisible(true);
+            dialogueContainerGame.setManaged(true);
+            dialogueContainerGame.setLayoutX(490);
+            dialogueContainerGame.setLayoutY(390);
+            if (currentLevel == null) {
+                updateFreePlayDialogueText();
+            } else {
+                updateLevelsDialogueText();
+            }
+            Platform.runLater(() -> dialogueContainerGame.toFront());
+        } else if (dialogueContainerGame != null) {
+            dialogueContainerGame.setVisible(false);
+            dialogueContainerGame.setManaged(false);
+        }
 
         timeLine = new Timeline(new KeyFrame(
                 Duration.millis(dropIntervalMs),
@@ -1021,9 +1276,7 @@ public class GuiController implements Initializable {
 
     private void updateGhostPosition(ViewData brick) {
         boolean is1984Mode = gameMode != null && gameMode.equals("1984");
-        // Check if ghost block is enabled or if in 1984 mode (no ghost in retro mode)
         if (is1984Mode || !SettingsManager.isGhostBlockEnabled()) {
-            // Hide all ghost rectangles
             if (ghostRectangles != null) {
                 for (int i = 0; i < ghostRectangles.length; i++) {
                     for (int j = 0; j < ghostRectangles[i].length; j++) {
@@ -1045,7 +1298,6 @@ public class GuiController implements Initializable {
         ghostPanel.setLayoutX(x);
         ghostPanel.setLayoutY(ghostY);
 
-        // Update ghost block with improved performance and color matching
         for (int i = 0; i < brick.getBrickData().length; i++) {
             for (int j = 0; j < brick.getBrickData()[i].length; j++) {
                 Rectangle ghostRect = ghostRectangles[i][j];
@@ -1054,16 +1306,14 @@ public class GuiController implements Initializable {
                 boolean currentlyVisible = !ghostRect.getFill().equals(Color.TRANSPARENT) && ghostRect.getOpacity() > 0.01;
                 
                 if (shouldShow) {
-                    // Get the actual color of the block and make it ghostly
                     Paint blockColor = getFillColor(colorIndex);
                     if (blockColor instanceof Color) {
                         Color originalColor = (Color) blockColor;
-                        // Create a ghost version with reduced opacity and lighter appearance
                         Color ghostColor = Color.color(
                             originalColor.getRed(),
                             originalColor.getGreen(),
                             originalColor.getBlue(),
-                            0.25 // Reduced opacity for ghost effect
+                            0.25
                         );
                         ghostRect.setFill(ghostColor);
                     } else {
@@ -1073,7 +1323,6 @@ public class GuiController implements Initializable {
                     ghostRect.setArcHeight(RECTANGLE_ARC_SIZE);
                     ghostRect.setArcWidth(RECTANGLE_ARC_SIZE);
                     
-                    // Cleaner border with matching color
                     if (blockColor instanceof Color) {
                         Color originalColor = (Color) blockColor;
                         Color borderColor = Color.color(
@@ -1088,7 +1337,6 @@ public class GuiController implements Initializable {
                     }
                     ghostRect.setStrokeWidth(1.5);
                     
-                    // Smooth fade in only when appearing
                     if (!currentlyVisible) {
                         ghostRect.setOpacity(0.0);
                         FadeTransition fadeIn = new FadeTransition(Duration.millis(100), ghostRect);
@@ -1099,7 +1347,6 @@ public class GuiController implements Initializable {
                         ghostRect.setOpacity(1.0);
                     }
                 } else {
-                    // Smooth fade out when disappearing
                     if (currentlyVisible) {
                         FadeTransition fadeOut = new FadeTransition(Duration.millis(80), ghostRect);
                         fadeOut.setFromValue(ghostRect.getOpacity());
@@ -1121,11 +1368,9 @@ public class GuiController implements Initializable {
     }
     
     public void updateGhostBlockVisibility() {
-        // Update ghost block visibility immediately if we have current data
         if (lastViewData != null) {
             updateGhostPosition(lastViewData);
         } else if (ghostRectangles != null) {
-            // Hide all ghost rectangles if no game is active
             for (int i = 0; i < ghostRectangles.length; i++) {
                 for (int j = 0; j < ghostRectangles[i].length; j++) {
                     ghostRectangles[i][j].setFill(Color.TRANSPARENT);
@@ -1139,6 +1384,7 @@ public class GuiController implements Initializable {
     private void initNextBlockPanel(ViewData brick) {
         int brickSize = getBrickSize();
         boolean is1984Mode = gameMode != null && gameMode.equals("1984");
+        
         int[][] nextData = brick.getNextBrickData();
         nextBlockRectangles = new Rectangle[nextData.length][nextData[0].length];
         for (int i = 0; i < nextData.length; i++) {
@@ -1155,17 +1401,84 @@ public class GuiController implements Initializable {
                 nextBlockPanel.add(rect, j, i);
             }
         }
+        
+        int[][] nextData2 = brick.getNextBrickData2();
+        if (nextData2 != null && nextBlockPanel2 != null) {
+            nextBlockRectangles2 = new Rectangle[nextData2.length][nextData2[0].length];
+            for (int i = 0; i < nextData2.length; i++) {
+                for (int j = 0; j < nextData2[i].length; j++) {
+                    Rectangle rect = new Rectangle(brickSize, brickSize);
+                    if (is1984Mode) {
+                        rect.setArcHeight(2);
+                        rect.setArcWidth(2);
+                    } else {
+                        rect.setArcHeight(RECTANGLE_ARC_SIZE);
+                        rect.setArcWidth(RECTANGLE_ARC_SIZE);
+                    }
+                    nextBlockRectangles2[i][j] = rect;
+                    nextBlockPanel2.add(rect, j, i);
+                }
+            }
+        }
+        
+        int[][] nextData3 = brick.getNextBrickData3();
+        if (nextData3 != null && nextBlockPanel3 != null) {
+            nextBlockRectangles3 = new Rectangle[nextData3.length][nextData3[0].length];
+            for (int i = 0; i < nextData3.length; i++) {
+                for (int j = 0; j < nextData3[i].length; j++) {
+                    Rectangle rect = new Rectangle(brickSize, brickSize);
+                    if (is1984Mode) {
+                        rect.setArcHeight(2);
+                        rect.setArcWidth(2);
+                    } else {
+                        rect.setArcHeight(RECTANGLE_ARC_SIZE);
+                        rect.setArcWidth(RECTANGLE_ARC_SIZE);
+                    }
+                    nextBlockRectangles3[i][j] = rect;
+                    nextBlockPanel3.add(rect, j, i);
+                }
+            }
+        }
+        
         updateNextBlock(brick);
     }
 
     private void updateNextBlock(ViewData brick) {
         int[][] nextData = brick.getNextBrickData();
-        for (int i = 0; i < nextData.length; i++) {
-            for (int j = 0; j < nextData[i].length; j++) {
-                if (nextData[i][j] != 0) {
-                    nextBlockRectangles[i][j].setFill(getFillColor(nextData[i][j]));
-                } else {
-                    nextBlockRectangles[i][j].setFill(Color.TRANSPARENT);
+        if (nextBlockRectangles != null) {
+            for (int i = 0; i < nextData.length; i++) {
+                for (int j = 0; j < nextData[i].length; j++) {
+                    if (nextData[i][j] != 0) {
+                        nextBlockRectangles[i][j].setFill(getFillColor(nextData[i][j]));
+                    } else {
+                        nextBlockRectangles[i][j].setFill(Color.TRANSPARENT);
+                    }
+                }
+            }
+        }
+        
+        int[][] nextData2 = brick.getNextBrickData2();
+        if (nextData2 != null && nextBlockRectangles2 != null) {
+            for (int i = 0; i < nextData2.length; i++) {
+                for (int j = 0; j < nextData2[i].length; j++) {
+                    if (nextData2[i][j] != 0) {
+                        nextBlockRectangles2[i][j].setFill(getFillColor(nextData2[i][j]));
+                    } else {
+                        nextBlockRectangles2[i][j].setFill(Color.TRANSPARENT);
+                    }
+                }
+            }
+        }
+        
+        int[][] nextData3 = brick.getNextBrickData3();
+        if (nextData3 != null && nextBlockRectangles3 != null) {
+            for (int i = 0; i < nextData3.length; i++) {
+                for (int j = 0; j < nextData3[i].length; j++) {
+                    if (nextData3[i][j] != 0) {
+                        nextBlockRectangles3[i][j].setFill(getFillColor(nextData3[i][j]));
+                    } else {
+                        nextBlockRectangles3[i][j].setFill(Color.TRANSPARENT);
+                    }
                 }
             }
         }
@@ -1397,6 +1710,23 @@ public class GuiController implements Initializable {
     private void showScoreNotification(int scoreBonus) {
         NotificationPanel notificationPanel = new NotificationPanel("+" + scoreBonus);
         groupNotification.getChildren().add(notificationPanel);
+        
+        boolean isInvertedMode = gameMode != null && gameMode.equals("inverted");
+        if (isInvertedMode) {
+            notificationPanel.getTransforms().removeIf(transform -> transform instanceof Rotate);
+            Platform.runLater(() -> {
+                double width = notificationPanel.getBoundsInLocal().getWidth();
+                double height = notificationPanel.getBoundsInLocal().getHeight();
+                if (width > 0 && height > 0) {
+                    Rotate rotate = new Rotate(180, width / 2, height / 2);
+                    notificationPanel.getTransforms().add(rotate);
+                } else {
+                    Rotate rotate = new Rotate(180, 110, 100);
+                    notificationPanel.getTransforms().add(rotate);
+                }
+            });
+        }
+        
         notificationPanel.showScore(groupNotification.getChildren());
     }
 
@@ -1616,6 +1946,7 @@ public class GuiController implements Initializable {
     }
 
     public void gameOver() {
+        stopDialogueTextTimeline();
         setPaused(true);
         gamePane.setVisible(false);
         
@@ -1629,7 +1960,7 @@ public class GuiController implements Initializable {
         }
         
         long timePlayed = 0;
-        if (currentLevel == null && !isInvertedMode && !is1984Mode) {
+        if (currentLevel == null && !isInvertedMode) {
             stopFreePlayTimer();
             timePlayed = getFreePlayElapsedTime();
         }
@@ -1657,6 +1988,11 @@ public class GuiController implements Initializable {
         gameOverPanel.setGameMode(gameMode);
         gameOverPanel.showFinalScore(finalScore, highScore, isNewHighScore, playerName, isGuest, timePlayed);
         
+        if (currentLevel != null && gameOverPanel.getLeaderboardButton() != null) {
+            gameOverPanel.getLeaderboardButton().setVisible(false);
+            gameOverPanel.getLeaderboardButton().setManaged(false);
+        }
+        
         if (is1984Mode && gameOverPanel.getBackButton1984() != null) {
             gameOverPanel.getBackButton1984().setOnAction(_ -> returnToGamemodesMenu());
         }
@@ -1667,7 +2003,6 @@ public class GuiController implements Initializable {
         if (gameMode != null && gameMode.equals("inverted") && gameOverPanel != null) {
             if (gameOverPanel.getBackButtonInverted() != null) {
                 gameOverPanel.getBackButtonInverted().setOnAction(_ -> returnToGamemodesMenu());
-                // Rotate back button 180 degrees
                 Button backBtnInverted = gameOverPanel.getBackButtonInverted();
                 backBtnInverted.getTransforms().removeIf(transform -> transform instanceof Rotate);
                 Platform.runLater(() -> {
@@ -1687,6 +2022,22 @@ public class GuiController implements Initializable {
             Button mainMenuBtn = gameOverPanel.getMainMenuButton();
             Label gameOverLbl = gameOverPanel.getGameOverLabel();
             Label scoreLbl = gameOverPanel.getScoreLabel();
+            Label timeLbl = gameOverPanel.getTimePlayedLabel();
+            
+            if (timeLbl != null && timeLbl.isVisible()) {
+                timeLbl.getTransforms().removeIf(transform -> transform instanceof Rotate);
+                Platform.runLater(() -> {
+                    double width = timeLbl.getBoundsInLocal().getWidth();
+                    double height = timeLbl.getBoundsInLocal().getHeight();
+                    if (width > 0 && height > 0) {
+                        Rotate rotate = new Rotate(180, width / 2, height / 2);
+                        timeLbl.getTransforms().add(rotate);
+                    } else {
+                        Rotate rotate = new Rotate(180, 180, 15);
+                        timeLbl.getTransforms().add(rotate);
+                    }
+                });
+            }
             
             if (restartBtn != null) {
                 restartBtn.getTransforms().removeIf(transform -> transform instanceof Rotate);
@@ -1845,7 +2196,6 @@ public class GuiController implements Initializable {
         if (countdownContainer != null) {
             countdownContainer.setVisible(true);
             
-            // Rotate countdown 180 degrees in inverted mode
             if (gameMode != null && gameMode.equals("inverted")) {
                 countdownContainer.getTransforms().removeIf(transform -> transform instanceof Rotate);
                 Platform.runLater(() -> {
@@ -1860,7 +2210,6 @@ public class GuiController implements Initializable {
                     }
                 });
             } else {
-                // Remove rotation when not in inverted mode
                 countdownContainer.getTransforms().removeIf(transform -> transform instanceof Rotate);
             }
         }
@@ -1912,6 +2261,9 @@ public class GuiController implements Initializable {
             startTimerUpdate();
         } else if (currentLevel == null && (gameMode == null || !gameMode.equals("inverted"))) {
             startFreePlayTimer();
+            updateFreePlayDialogueText();
+        } else if (currentLevel != null) {
+            updateLevelsDialogueText();
         }
         
         gamePanel.setFocusTraversable(true);
@@ -1955,6 +2307,9 @@ public class GuiController implements Initializable {
         
         if (currentLevel == null && (gameMode == null || (!gameMode.equals("inverted") && !gameMode.equals("1984")))) {
             startFreePlayTimer();
+            updateFreePlayDialogueText();
+        } else if (currentLevel != null) {
+            updateLevelsDialogueText();
         }
         
         timeLine = new Timeline(new KeyFrame(
@@ -2004,10 +2359,13 @@ public class GuiController implements Initializable {
         if (paused) {
             timeLine.stop();
             stopTimerUpdate();
+            if (currentLevel == null) {
+                stopDialogueTextTimeline();
+            }
             if (currentLevel != null && (currentLevel.getLevelNumber() == 2 || currentLevel.getLevelNumber() == 5)) {
                 pauseStartTime = System.currentTimeMillis();
             }
-            if (currentLevel == null && (gameMode == null || !gameMode.equals("inverted"))) {
+            if (currentLevel == null) {
                 if (freePlayTimerLine != null) {
                     freePlayTimerLine.pause();
                 }
@@ -2022,13 +2380,18 @@ public class GuiController implements Initializable {
                 }
                 startTimerUpdate();
             }
-            if (currentLevel == null && (gameMode == null || !gameMode.equals("inverted"))) {
+            if (currentLevel == null) {
                 if (freePlayPauseStartTime > 0) {
                     freePlayTotalPauseDuration += (System.currentTimeMillis() - freePlayPauseStartTime);
                     freePlayPauseStartTime = 0;
                 }
                 if (freePlayTimerLine != null) {
                     freePlayTimerLine.play();
+                }
+                if (currentLevel == null) {
+                    updateFreePlayDialogueText();
+                } else {
+                    updateLevelsDialogueText();
                 }
             }
         }
@@ -2078,7 +2441,6 @@ public class GuiController implements Initializable {
         pauseContainer.setTranslateX(translateX);
         pauseContainer.setTranslateY(translateY);
         
-        // Rotate pause menu 180 degrees in inverted mode
         if (gameMode != null && gameMode.equals("inverted") && pauseContainer != null) {
             pauseContainer.getTransforms().removeIf(transform -> transform instanceof Rotate);
             Platform.runLater(() -> {
@@ -2093,7 +2455,6 @@ public class GuiController implements Initializable {
                 }
             });
         } else if (pauseContainer != null) {
-            // Remove rotation when not in inverted mode
             pauseContainer.getTransforms().removeIf(transform -> transform instanceof Rotate);
         }
     }
@@ -2148,5 +2509,117 @@ public class GuiController implements Initializable {
             glow.setAutoReverse(true);
             glow.play();
         }
+    }
+    
+    private void updateFreePlayDialogueText() {
+        if (dialogueTextGame == null || currentLevel != null) {
+            return;
+        }
+        
+        stopDialogueTextTimeline();
+        
+        String currentPlayer = playerName != null && !playerName.isEmpty() ? playerName : "Player";
+        String capitalizedPlayer = currentPlayer.substring(0, 1).toUpperCase() + 
+                                 (currentPlayer.length() > 1 ? currentPlayer.substring(1).toLowerCase() : "");
+        String highScoreHolder = HighScoreManager.getHighScoreHolder();
+        
+        String message1;
+        if (highScoreHolder != null && !highScoreHolder.isEmpty()) {
+            String capitalizedHolder = highScoreHolder.substring(0, 1).toUpperCase() + 
+                                      (highScoreHolder.length() > 1 ? highScoreHolder.substring(1).toLowerCase() : "");
+            message1 = "Come on " + capitalizedPlayer + "! You can beat " + capitalizedHolder + "'s highscore";
+        } else {
+            message1 = "Come on " + capitalizedPlayer + "! Set a new highscore!";
+        }
+        
+        String message2 = "Keep going!! I Believe in you " + capitalizedPlayer;
+        String message3 = "Prove them wrong " + capitalizedPlayer;
+        String message4 = "I created the game.. YOU MASTER IT";
+        
+        java.util.List<String> messages = new java.util.ArrayList<>();
+        messages.add(message1);
+        messages.add(message2);
+        messages.add(message3);
+        messages.add(message4);
+        
+        dialogueTextGame.setOpacity(1.0);
+        int randomIndex = (int)(Math.random() * messages.size());
+        dialogueTextGame.setText(messages.get(randomIndex));
+        
+        dialogueTextTimeline = new Timeline(
+            new KeyFrame(Duration.seconds(6.5), e -> {
+                if (dialogueTextGame != null && dialogueTextGame.getScene() != null && currentLevel == null) {
+                    FadeTransition fadeOut = new FadeTransition(Duration.millis(500), dialogueTextGame);
+                    fadeOut.setFromValue(1.0);
+                    fadeOut.setToValue(0.0);
+                    fadeOut.setOnFinished(event -> {
+                        int nextIndex = (int)(Math.random() * messages.size());
+                        String nextMessage = messages.get(nextIndex);
+                        dialogueTextGame.setText(nextMessage);
+                        FadeTransition fadeIn = new FadeTransition(Duration.millis(500), dialogueTextGame);
+                        fadeIn.setFromValue(0.0);
+                        fadeIn.setToValue(1.0);
+                        fadeIn.play();
+                    });
+                    fadeOut.play();
+                }
+            })
+        );
+        
+        dialogueTextTimeline.setCycleCount(Timeline.INDEFINITE);
+        dialogueTextTimeline.play();
+    }
+    
+    private void stopDialogueTextTimeline() {
+        if (dialogueTextTimeline != null) {
+            dialogueTextTimeline.stop();
+            dialogueTextTimeline = null;
+        }
+    }
+    
+    private void updateLevelsDialogueText() {
+        if (dialogueTextGame == null || currentLevel == null) {
+            return;
+        }
+        
+        stopDialogueTextTimeline();
+        
+        String message1 = "You can do this";
+        String message2 = "cant wait to travel to the next level with you!!";
+        String message3 = "I know it may be tough but i believe in you!!";
+        String message4 = "Im so proud of you!!";
+        
+        java.util.List<String> messages = new java.util.ArrayList<>();
+        messages.add(message1);
+        messages.add(message2);
+        messages.add(message3);
+        messages.add(message4);
+        
+        dialogueTextGame.setOpacity(1.0);
+        int randomIndex = (int)(Math.random() * messages.size());
+        dialogueTextGame.setText(messages.get(randomIndex));
+        
+        dialogueTextTimeline = new Timeline(
+            new KeyFrame(Duration.seconds(6.5), e -> {
+                if (dialogueTextGame != null && dialogueTextGame.getScene() != null && currentLevel != null) {
+                    FadeTransition fadeOut = new FadeTransition(Duration.millis(500), dialogueTextGame);
+                    fadeOut.setFromValue(1.0);
+                    fadeOut.setToValue(0.0);
+                    fadeOut.setOnFinished(event -> {
+                        int nextIndex = (int)(Math.random() * messages.size());
+                        String nextMessage = messages.get(nextIndex);
+                        dialogueTextGame.setText(nextMessage);
+                        FadeTransition fadeIn = new FadeTransition(Duration.millis(500), dialogueTextGame);
+                        fadeIn.setFromValue(0.0);
+                        fadeIn.setToValue(1.0);
+                        fadeIn.play();
+                    });
+                    fadeOut.play();
+                }
+            })
+        );
+        
+        dialogueTextTimeline.setCycleCount(Timeline.INDEFINITE);
+        dialogueTextTimeline.play();
     }
 }

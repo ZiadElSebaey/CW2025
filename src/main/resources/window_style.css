@@ -224,15 +224,15 @@
 .control-label {
     -fx-font-family: 'Frozenland';
     -fx-font-size: 20px;
-    -fx-text-fill: #d0f0ff;
-    -fx-effect: dropshadow(gaussian, rgba(100, 200, 255, 0.4), 6, 0.3, 0, 0);
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.4), 6, 0.3, 0, 0);
 }
 
 .control-key {
     -fx-font-family: 'Frozenland';
     -fx-font-size: 20px;
-    -fx-text-fill: #ffffff;
-    -fx-effect: dropshadow(gaussian, rgba(120, 210, 255, 0.5), 8, 0.4, 0, 0);
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.5), 8, 0.4, 0, 0);
 }
 
 .settings-label {
@@ -310,6 +310,14 @@
     -fx-effect: dropshadow(gaussian, rgba(100, 180, 220, 0.2), 10, 0.15, 0, 0);
 }
 
+.subsection-title {
+    -fx-font-family: 'Frozenland';
+    -fx-font-size: 20px;
+    -fx-text-fill: #00ffff;
+    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.6), 8, 0.4, 0, 0);
+    -fx-padding: 10 0 5 0;
+}
+
 .section-title {
     -fx-font-family: 'Frozenland';
     -fx-font-size: 70px;
@@ -323,21 +331,18 @@
     -fx-font-family: 'Frozenland';
     -fx-font-size: 34px;
     -fx-text-fill: #e0f8ff;
-    -fx-effect: dropshadow(gaussian, rgba(80, 180, 255, 0.6), 12, 0.4, 0, 0);
 }
 
 .lines-label {
     -fx-font-family: 'Frozenland';
-    -fx-font-size: 34px;
+    -fx-font-size: 38px;
     -fx-text-fill: #80ffb0;
-    -fx-effect: dropshadow(gaussian, rgba(80, 255, 150, 0.6), 12, 0.4, 0, 0);
 }
 
 .highscore-label {
     -fx-font-family: 'Frozenland';
-    -fx-font-size: 24.8px;
+    -fx-font-size: 28px;
     -fx-text-fill: #ffd700;
-    -fx-effect: dropshadow(gaussian, rgba(255, 180, 0, 0.5), 10, 0.4, 0, 0);
     -fx-text-alignment: center;
     -fx-alignment: center;
 }
@@ -417,12 +422,10 @@
 
 .timer-label {
     -fx-font-family: 'Frozenland';
-    -fx-font-size: 32px;
+    -fx-font-size: 36px;
     -fx-text-fill: #ffd700;
     -fx-font-weight: bold;
     -fx-alignment: center;
-    -fx-effect: dropshadow(gaussian, rgba(255, 215, 0, 0.8), 15, 0.6, 0, 0),
-                dropshadow(gaussian, rgba(255, 100, 0, 0.5), 20, 0.4, 0, 0);
 }
 
 .objective-label {
@@ -447,11 +450,12 @@
 .right-panel-container {
     -fx-background-color: rgba(20, 60, 90, 0.5);
     -fx-background-radius: 12;
-    -fx-padding: 15 18 15 18;
+    -fx-padding: 15 20 15 20;
     -fx-border-color: rgba(150, 220, 255, 0.3);
     -fx-border-width: 2;
     -fx-border-radius: 12;
-    -fx-max-width: 180;
+    -fx-max-width: 200;
+    -fx-min-height: 230;
 }
 
 .hold-block-container {
@@ -516,6 +520,43 @@
     -fx-font-size: 14px;
     -fx-text-fill: #e0f8ff;
     -fx-effect: dropshadow(gaussian, rgba(80, 180, 255, 0.5), 6, 0.3, 0, 0);
+}
+
+.dialogue-text {
+    -fx-font-family: 'Frozenland';
+    -fx-font-size: 14px;
+    -fx-text-fill: white;
+    -fx-background-color: transparent;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.6), 2, 0.5, 0, 0);
+}
+
+.dialogue-text-neon {
+    -fx-font-family: 'Frozenland';
+    -fx-font-size: 21px;
+    -fx-text-fill: #00ffff;
+    -fx-background-color: transparent;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+}
+
+.dialogue-button {
+    -fx-font-family: 'Frozenland';
+    -fx-font-size: 14px;
+    -fx-text-fill: #00ffff;
+    -fx-background-color: rgba(0, 255, 255, 0.1);
+    -fx-background-radius: 5px;
+    -fx-border-color: #00ffff;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-padding: 5px 15px;
+    -fx-cursor: hand;
+}
+
+.dialogue-button:hover {
+    -fx-background-color: rgba(0, 255, 255, 0.2);
+    -fx-border-color: #00ccff;
 }
 
 .creator-title-small {
@@ -712,23 +753,30 @@
 }
 
 .gamemode-panel {
-    -fx-background-color: linear-gradient(to bottom, rgba(30, 80, 140, 0.95), rgba(20, 50, 100, 0.9));
+    -fx-background-image: url('1984background.png');
+    -fx-background-size: 125% 125%;
+    -fx-background-position: center;
+    -fx-background-repeat: no-repeat;
     -fx-background-radius: 20;
-    -fx-border-color: linear-gradient(to bottom, rgba(100, 200, 255, 0.8), rgba(150, 240, 255, 0.6), rgba(100, 200, 255, 0.8));
-    -fx-border-width: 2;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
     -fx-border-radius: 20;
     -fx-padding: 40 35 40 35;
     -fx-effect: dropshadow(gaussian, rgba(80, 180, 255, 0.4), 15, 0.5, 0, 0);
-    -fx-min-width: 240px;
-    -fx-pref-width: 240px;
-    -fx-min-height: 320px;
-    -fx-pref-height: 320px;
+    -fx-min-width: 280px;
+    -fx-pref-width: 280px;
+    -fx-min-height: 420px;
+    -fx-pref-height: 420px;
     -fx-cursor: hand;
 }
 
 .gamemode-panel:hover {
-    -fx-background-color: linear-gradient(to bottom, rgba(50, 120, 200, 0.98), rgba(30, 80, 150, 0.95));
-    -fx-border-color: linear-gradient(to bottom, rgba(150, 240, 255, 0.9), rgba(200, 255, 255, 0.8), rgba(150, 240, 255, 0.9));
+    -fx-background-image: url('1984background.png');
+    -fx-background-size: 140% 140%;
+    -fx-background-position: center;
+    -fx-background-repeat: no-repeat;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
     -fx-effect: dropshadow(gaussian, rgba(100, 220, 255, 0.6), 20, 0.6, 0, 0);
     -fx-scale-x: 1.05;
     -fx-scale-y: 1.05;
@@ -765,6 +813,42 @@
 .gamemode-panel:hover .gamemode-subtitle {
     -fx-text-fill: #e0f8ff;
     -fx-effect: dropshadow(gaussian, rgba(100, 220, 255, 0.5), 12, 0.5, 0, 0);
+}
+
+.gamemode-panel-inverted {
+    -fx-background-image: url('upsidegamemode.png');
+    -fx-background-size: 125% 125%;
+    -fx-background-position: center;
+    -fx-background-repeat: no-repeat;
+    -fx-background-radius: 20;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-border-radius: 20;
+    -fx-padding: 40 35 40 35;
+    -fx-effect: dropshadow(gaussian, rgba(80, 180, 255, 0.4), 15, 0.5, 0, 0);
+    -fx-min-width: 280px;
+    -fx-pref-width: 280px;
+    -fx-min-height: 420px;
+    -fx-pref-height: 420px;
+    -fx-cursor: hand;
+}
+
+.gamemode-panel-inverted:hover {
+    -fx-background-image: url('upsidegamemode.png');
+    -fx-background-size: 140% 140%;
+    -fx-background-position: center;
+    -fx-background-repeat: no-repeat;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-effect: dropshadow(gaussian, rgba(100, 220, 255, 0.6), 20, 0.6, 0, 0);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+.gamemode-panel-inverted .gamemode-title {
+    -fx-font-size: 32px;
+    -fx-wrap-text: false;
+    -fx-max-width: 250px;
 }
 
 .leaderboard-panel {
@@ -875,4 +959,96 @@
     -fx-font-weight: bold;
     -fx-text-fill: white;
     -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.3), 2, 0.0, 0, 0);
+}
+
+.arrow-button {
+    -fx-font-family: 'Frozenland';
+    -fx-font-size: 40px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-background-color: rgba(0, 0, 0, 0.3);
+    -fx-background-radius: 50;
+    -fx-border-color: rgba(255, 255, 255, 0.5);
+    -fx-border-width: 2;
+    -fx-border-radius: 50;
+    -fx-pref-width: 60;
+    -fx-pref-height: 60;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.6), 10, 0.5, 0, 0);
+}
+
+.arrow-button:hover {
+    -fx-background-color: rgba(0, 0, 0, 0.5);
+    -fx-border-color: rgba(255, 255, 255, 0.8);
+    -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.8), 15, 0.6, 0, 0);
+}
+
+.arrow-button-small {
+    -fx-font-family: 'Frozenland';
+    -fx-font-size: 30px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-background-color: rgba(0, 0, 0, 0.3);
+    -fx-background-radius: 50;
+    -fx-border-color: rgba(255, 255, 255, 0.5);
+    -fx-border-width: 2;
+    -fx-border-radius: 50;
+    -fx-pref-width: 45;
+    -fx-pref-height: 45;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.6), 10, 0.5, 0, 0);
+}
+
+.arrow-button-small:hover {
+    -fx-background-color: rgba(0, 0, 0, 0.5);
+    -fx-border-color: rgba(255, 255, 255, 0.8);
+    -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.8), 15, 0.6, 0, 0);
+}
+
+.arrow-button-golden {
+    -fx-font-family: 'Frozenland';
+    -fx-font-size: 50px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #FFD700;
+    -fx-background-color: transparent;
+    -fx-background-radius: 0;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-border-radius: 0;
+    -fx-pref-width: 80;
+    -fx-pref-height: 80;
+    -fx-min-width: 80;
+    -fx-min-height: 80;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(255, 215, 0, 0.8), 10, 0.5, 0, 0);
+    -fx-opacity: 1.0;
+}
+
+.arrow-button-golden:hover {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: #FFED4E;
+    -fx-effect: dropshadow(gaussian, rgba(255, 215, 0, 1.0), 15, 0.6, 0, 0);
+}
+
+.back-button-black {
+    -fx-font-family: 'Frozenland';
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: transparent;
+    -fx-background-color: #000000;
+    -fx-background-radius: 5;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-border-radius: 5;
+    -fx-pref-width: 25;
+    -fx-pref-height: 15;
+    -fx-cursor: hand;
+    -fx-padding: 0;
+}
+
+.back-button-black:hover {
+    -fx-background-color: #000000;
+    -fx-border-color: transparent;
+    -fx-text-fill: transparent;
 }
