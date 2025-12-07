@@ -1,2 +1,5 @@
 2025-12-08 – GuiController.java – Extracted helper methods is1984Mode(), isInvertedMode(), and createBrickRectangle() to reduce code duplication in mode checking and rectangle creation logic – single responsibility, encapsulation, basic maintenance
+2025-12-08 – GuiController.java – Replaced remaining inline mode checks with helper method calls throughout the class (15+ instances) for consistency and maintainability – single responsibility, basic maintenance
+2025-12-08 – GuiController.java – Extracted applyInvertedRotation() helper method and INVERTED_ROTATION_ANGLE constant to eliminate duplicated rotation logic (8+ instances) – single responsibility, basic maintenance, encapsulation
+2025-12-08 – GuiController.java – Extracted updateRectangleGrid() helper method to eliminate duplicated rectangle update logic in updateNextBlock() and updateHoldBlock() (4+ instances), and added animation constants (HOLD_SCALE_UP, HOLD_SCALE_DURATION_UP_MS, HOLD_SCALE_DURATION_DOWN_MS) to replace magic numbers – single responsibility, basic maintenance, encapsulation
 

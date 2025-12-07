@@ -52,6 +52,10 @@ public class GuiController implements Initializable {
     private static final int HIDDEN_ROWS = 2;
     private static final int BOARD_PADDING = 8;
     private static final int RECTANGLE_ARC_SIZE = 9;
+    private static final double INVERTED_ROTATION_ANGLE = 180.0;
+    private static final double HOLD_SCALE_UP = 1.15;
+    private static final int HOLD_SCALE_DURATION_UP_MS = 200;
+    private static final int HOLD_SCALE_DURATION_DOWN_MS = 300;
 
     @FXML
     private GridPane gamePanel;
@@ -228,7 +232,7 @@ public class GuiController implements Initializable {
         
         if (isInvertedMode && rootPane != null) {
             rootPane.getTransforms().removeIf(transform -> transform instanceof Rotate);
-            Rotate rotate = new Rotate(180, 360, 340);
+            Rotate rotate = new Rotate(INVERTED_ROTATION_ANGLE, 360, 340);
             rootPane.getTransforms().add(rotate);
         } else if (rootPane != null) {
             rootPane.getTransforms().removeIf(transform -> transform instanceof Rotate);
@@ -243,18 +247,7 @@ public class GuiController implements Initializable {
                 rightPanel.setManaged(true);
                 rightPanel.setLayoutX(480);
                 rightPanel.setLayoutY(130);
-                rightPanel.getTransforms().removeIf(transform -> transform instanceof Rotate);
-                Rotate rotate = new Rotate(180, 115, 125);
-                rightPanel.getTransforms().add(rotate);
-                Platform.runLater(() -> {
-                    double width = rightPanel.getBoundsInLocal().getWidth();
-                    double height = rightPanel.getBoundsInLocal().getHeight();
-                    if (width > 0 && height > 0) {
-                        rightPanel.getTransforms().removeIf(transform -> transform instanceof Rotate);
-                        Rotate rotate2 = new Rotate(180, width / 2, height / 2);
-                        rightPanel.getTransforms().add(rotate2);
-                    }
-                });
+                applyInvertedRotation(rightPanel, 115.0, 125.0);
             }
             if (holdBlockContainer != null) {
                 holdBlockContainer.setVisible(true);
@@ -263,18 +256,7 @@ public class GuiController implements Initializable {
             if (leftPanel != null) {
                 leftPanel.setLayoutX(0);
                 leftPanel.setLayoutY(100);
-                leftPanel.getTransforms().removeIf(transform -> transform instanceof Rotate);
-                Platform.runLater(() -> {
-                    double width = leftPanel.getBoundsInLocal().getWidth();
-                    double height = leftPanel.getBoundsInLocal().getHeight();
-                    if (width > 0 && height > 0) {
-                        Rotate rotate = new Rotate(180, width / 2, height / 2);
-                        leftPanel.getTransforms().add(rotate);
-                    } else {
-                        Rotate rotate = new Rotate(180, 75, 150);
-                        leftPanel.getTransforms().add(rotate);
-                    }
-                });
+                applyInvertedRotation(leftPanel, 75.0, 150.0);
             }
             if (creatorPanel != null) {
                 creatorPanel.setVisible(false);
@@ -291,18 +273,7 @@ public class GuiController implements Initializable {
             if (backButton != null) {
                 backButton.setLayoutX(720 - 100);
                 backButton.setLayoutY(680 - 80);
-                backButton.getTransforms().removeIf(transform -> transform instanceof Rotate);
-                Platform.runLater(() -> {
-                    double width = backButton.getBoundsInLocal().getWidth();
-                    double height = backButton.getBoundsInLocal().getHeight();
-                    if (width > 0 && height > 0) {
-                        Rotate rotate = new Rotate(180, width / 2, height / 2);
-                        backButton.getTransforms().add(rotate);
-                    } else {
-                        Rotate rotate = new Rotate(180, 20, 20);
-                        backButton.getTransforms().add(rotate);
-                    }
-                });
+                applyInvertedRotation(backButton, 20.0, 20.0);
             }
         } else {
             if (backgroundFlickerTimeline != null) {
@@ -783,8 +754,7 @@ public class GuiController implements Initializable {
             }
         } else {
             this.dropIntervalMs = DEFAULT_DROP_INTERVAL_MS;
-            boolean isInvertedMode = gameMode != null && gameMode.equals("inverted");
-            if (isInvertedMode) {
+            if (isInvertedMode()) {
                 highScoreLabel.setVisible(false);
                 highScoreHolderLabel.setVisible(false);
                 if (objectivePanel != null) {
@@ -876,8 +846,7 @@ public class GuiController implements Initializable {
     
     private void startFreePlayTimer() {
         stopFreePlayTimer();
-        boolean isInvertedMode = gameMode != null && gameMode.equals("inverted");
-        if (currentLevel == null && !isInvertedMode) {
+        if (currentLevel == null && !isInvertedMode()) {
             freePlayStartTime = System.currentTimeMillis();
             freePlayTotalPauseDuration = 0;
             freePlayPauseStartTime = 0;
@@ -895,8 +864,7 @@ public class GuiController implements Initializable {
     }
     
     private void updateFreePlayTimer() {
-        boolean isInvertedMode = gameMode != null && gameMode.equals("inverted");
-        if (currentLevel == null && !isInvertedMode && timerLabel != null) {
+        if (currentLevel == null && !isInvertedMode() && timerLabel != null) {
             if (freePlayStartTime == 0) {
                 timerLabel.setText("Time: 0:00");
                 return;
@@ -932,10 +900,8 @@ public class GuiController implements Initializable {
     
     private void updateLevelObjectiveLabel() {
         if (objectiveLabel != null) {
-            boolean isInvertedMode = gameMode != null && gameMode.equals("inverted");
-            
             if (currentLevel == null) {
-                if (isInvertedMode) {
+                if (isInvertedMode()) {
                     objectiveLabel.setVisible(false);
                 } else {
                     String playerDisplayName = "";
@@ -1016,12 +982,11 @@ public class GuiController implements Initializable {
         pausePanel.getLeaderboardButton().setOnAction(_ -> showLeaderboard());
         pausePanel.getMainMenuButton().setOnAction(_ -> returnToMainMenu());
         
-        boolean is1984Mode = gameMode != null && gameMode.equals("1984");
-        if (is1984Mode && pausePanel != null) {
+        if (is1984Mode() && pausePanel != null) {
             pausePanel.set1984Mode(true);
         }
 
-        if (!is1984Mode) {
+        if (!is1984Mode()) {
             AnimatedBackground animatedBackground = new AnimatedBackground(720, 680);
             rootPane.getChildren().addFirst(animatedBackground);
         }
@@ -1148,10 +1113,8 @@ public class GuiController implements Initializable {
             return;
         }
         
-        boolean isInvertedMode = gameMode != null && gameMode.equals("inverted");
-        
         if (!isPause.get() && eventListener != null) {
-            if (isInvertedMode) {
+            if (isInvertedMode()) {
                 if (isRotateKey(keyEvent)) {
                     moveDown(userMove(EventType.DOWN));
                     keyEvent.consume();
@@ -1272,8 +1235,7 @@ public class GuiController implements Initializable {
     }
 
     private void updateGhostPosition(ViewData brick) {
-        boolean is1984Mode = gameMode != null && gameMode.equals("1984");
-        if (is1984Mode || !SettingsManager.isGhostBlockEnabled()) {
+        if (is1984Mode() || !SettingsManager.isGhostBlockEnabled()) {
             if (ghostRectangles != null) {
                 for (int i = 0; i < ghostRectangles.length; i++) {
                     for (int j = 0; j < ghostRectangles[i].length; j++) {
@@ -1420,42 +1382,18 @@ public class GuiController implements Initializable {
 
     private void updateNextBlock(ViewData brick) {
         int[][] nextData = brick.getNextBrickData();
-        if (nextBlockRectangles != null) {
-            for (int i = 0; i < nextData.length; i++) {
-                for (int j = 0; j < nextData[i].length; j++) {
-                    if (nextData[i][j] != 0) {
-                        nextBlockRectangles[i][j].setFill(getFillColor(nextData[i][j]));
-                    } else {
-                        nextBlockRectangles[i][j].setFill(Color.TRANSPARENT);
-                    }
-                }
-            }
+        if (nextData != null && nextBlockRectangles != null) {
+            updateRectangleGrid(nextData, nextBlockRectangles);
         }
         
         int[][] nextData2 = brick.getNextBrickData2();
         if (nextData2 != null && nextBlockRectangles2 != null) {
-            for (int i = 0; i < nextData2.length; i++) {
-                for (int j = 0; j < nextData2[i].length; j++) {
-                    if (nextData2[i][j] != 0) {
-                        nextBlockRectangles2[i][j].setFill(getFillColor(nextData2[i][j]));
-                    } else {
-                        nextBlockRectangles2[i][j].setFill(Color.TRANSPARENT);
-                    }
-                }
-            }
+            updateRectangleGrid(nextData2, nextBlockRectangles2);
         }
         
         int[][] nextData3 = brick.getNextBrickData3();
         if (nextData3 != null && nextBlockRectangles3 != null) {
-            for (int i = 0; i < nextData3.length; i++) {
-                for (int j = 0; j < nextData3[i].length; j++) {
-                    if (nextData3[i][j] != 0) {
-                        nextBlockRectangles3[i][j].setFill(getFillColor(nextData3[i][j]));
-                    } else {
-                        nextBlockRectangles3[i][j].setFill(Color.TRANSPARENT);
-                    }
-                }
-            }
+            updateRectangleGrid(nextData3, nextBlockRectangles3);
         }
     }
     
@@ -1501,15 +1439,7 @@ public class GuiController implements Initializable {
             holdChanged = true;
         }
         
-        for (int i = 0; i < holdBlockRectangles.length; i++) {
-            for (int j = 0; j < holdBlockRectangles[i].length; j++) {
-                if (holdData != null && i < holdData.length && j < holdData[i].length && holdData[i][j] != 0) {
-                    holdBlockRectangles[i][j].setFill(getFillColor(holdData[i][j]));
-                } else {
-                    holdBlockRectangles[i][j].setFill(Color.TRANSPARENT);
-                }
-            }
-        }
+        updateRectangleGrid(holdData, holdBlockRectangles);
         
         if (holdChanged && holdData != null) {
             previousHoldData = new int[holdData.length][];
@@ -1542,17 +1472,17 @@ public class GuiController implements Initializable {
             holdBlockContainer.setTranslateX(0);
             holdBlockContainer.setTranslateY(0);
             
-            ScaleTransition scaleUp = new ScaleTransition(Duration.millis(200), holdBlockContainer);
+            ScaleTransition scaleUp = new ScaleTransition(Duration.millis(HOLD_SCALE_DURATION_UP_MS), holdBlockContainer);
             scaleUp.setFromX(1.0);
             scaleUp.setFromY(1.0);
-            scaleUp.setToX(1.15);
-            scaleUp.setToY(1.15);
+            scaleUp.setToX(HOLD_SCALE_UP);
+            scaleUp.setToY(HOLD_SCALE_UP);
             scaleUp.setCycleCount(1);
             scaleUp.setInterpolator(javafx.animation.Interpolator.EASE_OUT);
             
-            ScaleTransition scaleDown = new ScaleTransition(Duration.millis(300), holdBlockContainer);
-            scaleDown.setFromX(1.15);
-            scaleDown.setFromY(1.15);
+            ScaleTransition scaleDown = new ScaleTransition(Duration.millis(HOLD_SCALE_DURATION_DOWN_MS), holdBlockContainer);
+            scaleDown.setFromX(HOLD_SCALE_UP);
+            scaleDown.setFromY(HOLD_SCALE_UP);
             scaleDown.setToX(1.0);
             scaleDown.setToY(1.0);
             scaleDown.setCycleCount(1);
@@ -1587,9 +1517,7 @@ public class GuiController implements Initializable {
         return new MoveEvent(EventType.DOWN, EventSource.THREAD);
     }
     private Paint getFillColor(int i) {
-        boolean is1984Mode = gameMode != null && gameMode.equals("1984");
-        
-        if (is1984Mode && i != 0) {
+        if (is1984Mode() && i != 0) {
             return Color.WHITE;
         }
         
@@ -1607,8 +1535,7 @@ public class GuiController implements Initializable {
     }
     
     private int getBrickSize() {
-        boolean is1984Mode = gameMode != null && gameMode.equals("1984");
-        return is1984Mode ? BRICK_SIZE_1984 : BRICK_SIZE;
+        return is1984Mode() ? BRICK_SIZE_1984 : BRICK_SIZE;
     }
 
 
@@ -1637,8 +1564,7 @@ public class GuiController implements Initializable {
 
     private void setRectangleData(int colorIndex, Rectangle rectangle) {
         rectangle.setFill(getFillColor(colorIndex));
-        boolean is1984Mode = gameMode != null && gameMode.equals("1984");
-        if (is1984Mode) {
+        if (is1984Mode()) {
             rectangle.setArcHeight(2);
             rectangle.setArcWidth(2);
         } else {
@@ -1680,18 +1606,7 @@ public class GuiController implements Initializable {
         
         boolean isInvertedMode = gameMode != null && gameMode.equals("inverted");
         if (isInvertedMode) {
-            notificationPanel.getTransforms().removeIf(transform -> transform instanceof Rotate);
-            Platform.runLater(() -> {
-                double width = notificationPanel.getBoundsInLocal().getWidth();
-                double height = notificationPanel.getBoundsInLocal().getHeight();
-                if (width > 0 && height > 0) {
-                    Rotate rotate = new Rotate(180, width / 2, height / 2);
-                    notificationPanel.getTransforms().add(rotate);
-                } else {
-                    Rotate rotate = new Rotate(180, 110, 100);
-                    notificationPanel.getTransforms().add(rotate);
-                }
-            });
+            applyInvertedRotation(notificationPanel, 110.0, 100.0);
         }
         
         notificationPanel.showScore(groupNotification.getChildren());
@@ -1704,8 +1619,7 @@ public class GuiController implements Initializable {
     public void bindScore(IntegerProperty scoreProperty) {
         this.currentScoreProperty = scoreProperty;
         scoreLabel.textProperty().bind(scoreProperty.asString("Score: %d"));
-        boolean is1984Mode = gameMode != null && gameMode.equals("1984");
-        if (is1984Mode && gamePane != null) {
+        if (is1984Mode() && gamePane != null) {
             if (scoreLabel1984 == null) {
                 scoreLabel1984 = new Label("Score: 0");
                 scoreLabel1984.getStyleClass().add("score-label-1984");
@@ -1728,8 +1642,7 @@ public class GuiController implements Initializable {
 
     public void bindLines(IntegerProperty linesProperty) {
         linesLabel.textProperty().bind(linesProperty.asString("Lines: %d"));
-        boolean is1984Mode = gameMode != null && gameMode.equals("1984");
-        if (is1984Mode && gamePane != null) {
+        if (is1984Mode() && gamePane != null) {
             if (linesLabel1984 == null) {
                 linesLabel1984 = new Label("Lines: 0");
                 linesLabel1984.getStyleClass().add("lines-label-1984");
@@ -1971,18 +1884,7 @@ public class GuiController implements Initializable {
             if (gameOverPanel.getBackButtonInverted() != null) {
                 gameOverPanel.getBackButtonInverted().setOnAction(_ -> returnToGamemodesMenu());
                 Button backBtnInverted = gameOverPanel.getBackButtonInverted();
-                backBtnInverted.getTransforms().removeIf(transform -> transform instanceof Rotate);
-                Platform.runLater(() -> {
-                    double width = backBtnInverted.getBoundsInLocal().getWidth();
-                    double height = backBtnInverted.getBoundsInLocal().getHeight();
-                    if (width > 0 && height > 0) {
-                        Rotate rotate = new Rotate(180, width / 2, height / 2);
-                        backBtnInverted.getTransforms().add(rotate);
-                    } else {
-                        Rotate rotate = new Rotate(180, 25, 25);
-                        backBtnInverted.getTransforms().add(rotate);
-                    }
-                });
+                applyInvertedRotation(backBtnInverted, 25.0, 25.0);
             }
             gameOverPanel.applyInvertedLayout();
             Button restartBtn = gameOverPanel.getRestartButton();
@@ -1992,48 +1894,15 @@ public class GuiController implements Initializable {
             Label timeLbl = gameOverPanel.getTimePlayedLabel();
             
             if (timeLbl != null && timeLbl.isVisible()) {
-                timeLbl.getTransforms().removeIf(transform -> transform instanceof Rotate);
-                Platform.runLater(() -> {
-                    double width = timeLbl.getBoundsInLocal().getWidth();
-                    double height = timeLbl.getBoundsInLocal().getHeight();
-                    if (width > 0 && height > 0) {
-                        Rotate rotate = new Rotate(180, width / 2, height / 2);
-                        timeLbl.getTransforms().add(rotate);
-                    } else {
-                        Rotate rotate = new Rotate(180, 180, 15);
-                        timeLbl.getTransforms().add(rotate);
-                    }
-                });
+                applyInvertedRotation(timeLbl, 180.0, 15.0);
             }
             
             if (restartBtn != null) {
-                restartBtn.getTransforms().removeIf(transform -> transform instanceof Rotate);
-                Platform.runLater(() -> {
-                    double width = restartBtn.getBoundsInLocal().getWidth();
-                    double height = restartBtn.getBoundsInLocal().getHeight();
-                    if (width > 0 && height > 0) {
-                        Rotate rotate = new Rotate(180, width / 2, height / 2);
-                        restartBtn.getTransforms().add(rotate);
-                    } else {
-                        Rotate rotate = new Rotate(180, 120, 30);
-                        restartBtn.getTransforms().add(rotate);
-                    }
-                });
+                applyInvertedRotation(restartBtn, 120.0, 30.0);
             }
             
             if (mainMenuBtn != null) {
-                mainMenuBtn.getTransforms().removeIf(transform -> transform instanceof Rotate);
-                Platform.runLater(() -> {
-                    double width = mainMenuBtn.getBoundsInLocal().getWidth();
-                    double height = mainMenuBtn.getBoundsInLocal().getHeight();
-                    if (width > 0 && height > 0) {
-                        Rotate rotate = new Rotate(180, width / 2, height / 2);
-                        mainMenuBtn.getTransforms().add(rotate);
-                    } else {
-                        Rotate rotate = new Rotate(180, 120, 30);
-                        mainMenuBtn.getTransforms().add(rotate);
-                    }
-                });
+                applyInvertedRotation(mainMenuBtn, 120.0, 30.0);
             }
             
             if (gameOverLbl != null) {
@@ -2042,10 +1911,10 @@ public class GuiController implements Initializable {
                     double width = gameOverLbl.getBoundsInLocal().getWidth();
                     double height = gameOverLbl.getBoundsInLocal().getHeight();
                     if (width > 0 && height > 0) {
-                        Rotate rotate = new Rotate(180, width / 2, height / 2);
+                        Rotate rotate = new Rotate(INVERTED_ROTATION_ANGLE, width / 2, height / 2);
                         gameOverLbl.getTransforms().add(rotate);
                     } else {
-                        Rotate rotate = new Rotate(180, 360, 55);
+                        Rotate rotate = new Rotate(INVERTED_ROTATION_ANGLE, 360, 55);
                         gameOverLbl.getTransforms().add(rotate);
                     }
                 });
@@ -2057,7 +1926,7 @@ public class GuiController implements Initializable {
                     double width = scoreLbl.getBoundsInLocal().getWidth();
                     double height = scoreLbl.getBoundsInLocal().getHeight();
                     if (width > 0 && height > 0) {
-                        Rotate rotate = new Rotate(180, width / 2, height / 2);
+                        Rotate rotate = new Rotate(INVERTED_ROTATION_ANGLE, width / 2, height / 2);
                         scoreLbl.getTransforms().add(rotate);
                     } else {
                         Rotate rotate = new Rotate(180, 360, 30);
@@ -2100,8 +1969,6 @@ public class GuiController implements Initializable {
         if (actionEvent != null) {
             actionEvent.consume();
         }
-        boolean is1984Mode = gameMode != null && gameMode.equals("1984");
-        
         if (currentLevel != null) {
             tripleClearsCount = 0;
             levelStartTime = System.currentTimeMillis();
@@ -2110,7 +1977,7 @@ public class GuiController implements Initializable {
             stopTimerUpdate();
             stopFreePlayTimer();
             updateLevelObjectiveLabel();
-            if (is1984Mode) {
+            if (is1984Mode()) {
                 setPlayerName("1984 Player", false);
                 startGameInstantly();
             } else {
@@ -2118,15 +1985,14 @@ public class GuiController implements Initializable {
             }
         } else {
             stopFreePlayTimer();
-            boolean isInvertedMode = gameMode != null && gameMode.equals("inverted");
-            if (isInvertedMode || is1984Mode) {
-                if (is1984Mode) {
+            if (isInvertedMode() || is1984Mode()) {
+                if (is1984Mode()) {
                     setPlayerName("1984 Player", false);
                 } else {
                     setPlayerName("Inverted Player", false);
                 }
                 updateLevelObjectiveLabel();
-                if (is1984Mode) {
+                if (is1984Mode()) {
                     startGameInstantly();
                 } else {
                     startCountdown();
@@ -2608,5 +2474,38 @@ public class GuiController implements Initializable {
             rect.setArcWidth(RECTANGLE_ARC_SIZE);
         }
         return rect;
+    }
+    
+    private void applyInvertedRotation(javafx.scene.Node node, double fallbackX, double fallbackY) {
+        if (node == null) {
+            return;
+        }
+        node.getTransforms().removeIf(transform -> transform instanceof Rotate);
+        Platform.runLater(() -> {
+            double width = node.getBoundsInLocal().getWidth();
+            double height = node.getBoundsInLocal().getHeight();
+            if (width > 0 && height > 0) {
+                Rotate rotate = new Rotate(INVERTED_ROTATION_ANGLE, width / 2, height / 2);
+                node.getTransforms().add(rotate);
+            } else {
+                Rotate rotate = new Rotate(INVERTED_ROTATION_ANGLE, fallbackX, fallbackY);
+                node.getTransforms().add(rotate);
+            }
+        });
+    }
+    
+    private void updateRectangleGrid(int[][] data, Rectangle[][] rectangles) {
+        if (data == null || rectangles == null) {
+            return;
+        }
+        for (int i = 0; i < rectangles.length && i < data.length; i++) {
+            for (int j = 0; j < rectangles[i].length && j < data[i].length; j++) {
+                if (data[i][j] != 0) {
+                    rectangles[i][j].setFill(getFillColor(data[i][j]));
+                } else {
+                    rectangles[i][j].setFill(Color.TRANSPARENT);
+                }
+            }
+        }
     }
 }
