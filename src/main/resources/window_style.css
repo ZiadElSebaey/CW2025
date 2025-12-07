@@ -1019,10 +1019,13 @@
     -fx-border-color: transparent;
     -fx-border-width: 0;
     -fx-border-radius: 0;
-    -fx-pref-width: 60;
-    -fx-pref-height: 60;
+    -fx-pref-width: 80;
+    -fx-pref-height: 80;
+    -fx-min-width: 80;
+    -fx-min-height: 80;
     -fx-cursor: hand;
     -fx-effect: dropshadow(gaussian, rgba(255, 215, 0, 0.8), 10, 0.5, 0, 0);
+    -fx-opacity: 1.0;
 }
 
 .arrow-button-golden:hover {
