@@ -249,4 +249,229 @@ class MatrixOperationsTest {
         assertEquals(2, result.getLinesRemoved());
         assertEquals(200, result.getScoreBonus());
     }
+
+    @Test
+    @DisplayName("MatrixOperations - clear 4 lines Tetris")
+    void testClearFourLines() {
+        int[][] board = new int[10][10];
+        for (int i = 5; i < 9; i++) {
+            for (int j = 0; j < 10; j++) {
+                board[i][j] = 1;
+            }
+        }
+        ClearRow result = MatrixOperations.checkRemoving(board);
+        assertEquals(4, result.getLinesRemoved());
+        assertEquals(800, result.getScoreBonus());
+    }
+
+    @Test
+    @DisplayName("MatrixOperations - deep copy list")
+    void testDeepCopyList() {
+        java.util.List<int[][]> original = new java.util.ArrayList<>();
+        original.add(new int[][]{{1, 2}, {3, 4}});
+        original.add(new int[][]{{5, 6}, {7, 8}});
+        java.util.List<int[][]> copy = MatrixOperations.deepCopyList(original);
+        copy.get(0)[0][0] = 99;
+        assertEquals(1, original.get(0)[0][0]);
+        assertEquals(99, copy.get(0)[0][0]);
+    }
+
+    @Test
+    @DisplayName("SimpleBoard - ghost Y calculation")
+    void testGhostY() {
+        board.spawnNewBrick();
+        int ghostY = board.getGhostY();
+        int currentY = board.getViewData().getyPosition();
+        assertTrue(ghostY >= currentY);
+    }
+
+    @Test
+    @DisplayName("SimpleBoard - rotation collision detection")
+    void testRotationCollision() {
+        board.spawnNewBrick();
+        int[][] matrix = board.getBoardMatrix();
+        ViewData viewData = board.getViewData();
+        int y = viewData.getyPosition();
+        for (int j = 0; j < SimpleBoard.BOARD_COLUMNS; j++) {
+            if (y + 1 < matrix.length) {
+                matrix[y + 1][j] = 1;
+            }
+        }
+        assertFalse(board.rotateBrick());
+    }
+
+    @Test
+    @DisplayName("SimpleBoard - newGame resets state")
+    void testNewGame() {
+        board.spawnNewBrick();
+        board.moveBrickDown();
+        board.moveBrickRight();
+        board.getScore().add(100);
+        board.newGame();
+        assertEquals(0, board.getScore().getValue());
+        ViewData viewData = board.getViewData();
+        assertEquals(5, viewData.getxPosition());
+        assertEquals(2, viewData.getyPosition());
+    }
+
+    @Test
+    @DisplayName("SimpleBoard - merge brick to background")
+    void testMergeBrickToBackground() {
+        board.spawnNewBrick();
+        int[][] matrixBefore = MatrixOperations.copy(board.getBoardMatrix());
+        board.mergeBrickToBackground();
+        int[][] matrixAfter = board.getBoardMatrix();
+        boolean changed = false;
+        for (int i = 0; i < matrixBefore.length; i++) {
+            for (int j = 0; j < matrixBefore[i].length; j++) {
+                if (matrixBefore[i][j] != matrixAfter[i][j]) {
+                    changed = true;
+                    break;
+                }
+            }
+        }
+        assertTrue(changed);
+    }
+
+    @Test
+    @DisplayName("MatrixOperations - merge empty brick")
+    void testMergeEmptyBrick() {
+        int[][] board = new int[10][10];
+        int[][] emptyBrick = {{0, 0}, {0, 0}};
+        int[][] result = MatrixOperations.merge(board, emptyBrick, 5, 5);
+        for (int i = 0; i < board.length; i++) {
+            assertArrayEquals(board[i], result[i]);
+        }
+    }
+
+    @Test
+    @DisplayName("Score - large score values")
+    void testLargeScore() {
+        score.add(1000000);
+        assertEquals(1000000, score.getValue());
+        score.add(500000);
+        assertEquals(1500000, score.getValue());
+    }
+
+    @Test
+    @DisplayName("ViewData - immutability")
+    void testViewDataImmutability() {
+        board.spawnNewBrick();
+        ViewData viewData = board.getViewData();
+        int[][] brickData1 = viewData.getBrickData();
+        int[][] brickData2 = viewData.getBrickData();
+        assertNotSame(brickData1, brickData2);
+        brickData1[0][0] = 99;
+        int[][] brickData3 = viewData.getBrickData();
+        assertNotEquals(99, brickData3[0][0]);
+    }
+
+    @Test
+    @DisplayName("NextShapeInfo - immutability")
+    void testNextShapeInfoImmutability() {
+        com.comp2042.bricks.BrickRotator rotator = new com.comp2042.bricks.BrickRotator();
+        rotator.setBrick(new com.comp2042.bricks.RandomBrickGenerator().getBrick());
+        com.comp2042.logic.NextShapeInfo shapeInfo = rotator.getNextShape();
+        int[][] shape1 = shapeInfo.getShape();
+        int[][] shape2 = shapeInfo.getShape();
+        assertNotSame(shape1, shape2);
+        if (shape1.length > 0 && shape1[0].length > 0) {
+            shape1[0][0] = 99;
+            int[][] shape3 = shapeInfo.getShape();
+            assertNotEquals(99, shape3[0][0]);
+        }
+    }
+
+    @Test
+    @DisplayName("MatrixOperations - merge at board edges")
+    void testMergeAtEdges() {
+        int[][] board = new int[10][10];
+        int[][] brick = {{1}};
+        int[][] result1 = MatrixOperations.merge(board, brick, 0, 0);
+        assertEquals(1, result1[0][0]);
+        int[][] result2 = MatrixOperations.merge(board, brick, 9, 9);
+        assertEquals(1, result2[9][9]);
+    }
+
+    @Test
+    @DisplayName("SimpleBoard - multiple consecutive merges")
+    void testMultipleMerges() {
+        board.spawnNewBrick();
+        board.mergeBrickToBackground();
+        int[][] afterFirst = MatrixOperations.copy(board.getBoardMatrix());
+        board.spawnNewBrick();
+        board.mergeBrickToBackground();
+        int[][] afterSecond = board.getBoardMatrix();
+        boolean different = false;
+        for (int i = 0; i < afterFirst.length; i++) {
+            for (int j = 0; j < afterFirst[i].length; j++) {
+                if (afterFirst[i][j] != afterSecond[i][j]) {
+                    different = true;
+                    break;
+                }
+            }
+        }
+        assertTrue(different);
+    }
+
+    @Test
+    @DisplayName("SimpleBoard - clear multiple rows consecutively")
+    void testClearMultipleRowsConsecutively() {
+        int[][] matrix = board.getBoardMatrix();
+        for (int i = SimpleBoard.BOARD_ROWS - 1; i >= SimpleBoard.BOARD_ROWS - 3; i--) {
+            for (int j = 0; j < SimpleBoard.BOARD_COLUMNS; j++) {
+                matrix[i][j] = 1;
+            }
+        }
+        ClearRow result = board.clearRows();
+        assertEquals(3, result.getLinesRemoved());
+        assertEquals(450, result.getScoreBonus());
+    }
+
+    @Test
+    @DisplayName("Score - reset after adding")
+    void testScoreReset() {
+        score.add(100);
+        score.addLines(5);
+        score.reset();
+        assertEquals(0, score.getValue());
+        assertEquals(0, score.linesProperty().get());
+    }
+
+    @Test
+    @DisplayName("SimpleBoard - hard drop with obstacles")
+    void testHardDropWithObstacles() {
+        board.spawnNewBrick();
+        int[][] matrix = board.getBoardMatrix();
+        for (int j = 0; j < SimpleBoard.BOARD_COLUMNS; j++) {
+            matrix[SimpleBoard.BOARD_ROWS - 5][j] = 1;
+        }
+        int distance = board.hardDrop();
+        assertTrue(distance > 0);
+        assertTrue(distance < SimpleBoard.BOARD_ROWS);
+    }
+
+    @Test
+    @DisplayName("MatrixOperations - merge with overlapping blocks")
+    void testMergeWithOverlap() {
+        int[][] board = new int[10][10];
+        board[5][5] = 2;
+        int[][] brick = {{1}};
+        int[][] result = MatrixOperations.merge(board, brick, 5, 5);
+        assertEquals(1, result[5][5]);
+    }
+
+    @Test
+    @DisplayName("SimpleBoard - getGhostY with obstacles")
+    void testGhostYWithObstacles() {
+        board.spawnNewBrick();
+        int[][] matrix = board.getBoardMatrix();
+        for (int j = 0; j < SimpleBoard.BOARD_COLUMNS; j++) {
+            matrix[SimpleBoard.BOARD_ROWS - 3][j] = 1;
+        }
+        int ghostY = board.getGhostY();
+        ViewData viewData = board.getViewData();
+        assertTrue(ghostY >= viewData.getyPosition());
+        assertTrue(ghostY <= SimpleBoard.BOARD_ROWS - 3);
+    }
 }
