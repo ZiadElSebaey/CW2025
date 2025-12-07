@@ -1696,6 +1696,7 @@ public class GuiController implements Initializable {
         }
     }
     
+    
     private Color createGhostColor(Color originalColor, double opacity) {
         return Color.color(originalColor.getRed(), originalColor.getGreen(), originalColor.getBlue(), opacity);
     }

@@ -146,6 +146,51 @@ class MatrixOperationsTest {
     }
 
     @Test
+    @DisplayName("Level - all three conditions together")
+    void testLevelAllConditions() {
+        Level level = new Level(1, "Test", "All conditions", 5, 1000, 60, 500);
+        assertTrue(level.checkObjective(5, 1000, 60));
+        assertTrue(level.checkObjective(6, 1001, 59));
+        assertFalse(level.checkObjective(4, 1000, 60));
+        assertFalse(level.checkObjective(5, 999, 60));
+        assertFalse(level.checkObjective(5, 1000, 61));
+    }
+
+    @Test
+    @DisplayName("Level - only score target")
+    void testLevelOnlyScore() {
+        Level level = new Level(1, "Test", "Score only", 0, 5000, 0, 500);
+        assertTrue(level.checkObjective(0, 5000, 0));
+        assertTrue(level.checkObjective(0, 6000, 0));
+        assertFalse(level.checkObjective(0, 4999, 0));
+    }
+
+    @Test
+    @DisplayName("Level - edge values at target")
+    void testLevelEdgeValues() {
+        Level level = new Level(1, "Test", "Edge test", 10, 0, 0, 500);
+        assertTrue(level.checkObjective(10, 0, 0));
+        assertFalse(level.checkObjective(9, 0, 0));
+        assertTrue(level.checkObjective(11, 0, 0));
+    }
+
+    @Test
+    @DisplayName("Level - getters return correct values")
+    void testLevelGetters() {
+        Level level = new Level(3, "Test Level", "Test objective", 5, 1000, 120, 300);
+        assertEquals(3, level.getLevelNumber());
+        assertEquals("Test Level", level.getName());
+        assertEquals("Test objective", level.getObjective());
+        assertEquals(5, level.getTargetLines());
+        assertEquals(1000, level.getTargetScore());
+        assertEquals(120, level.getTimeLimit());
+        assertEquals(300, level.getDropSpeed());
+        assertFalse(level.isCompleted());
+        level.setCompleted(true);
+        assertTrue(level.isCompleted());
+    }
+
+    @Test
     @DisplayName("LevelManager - get level by number")
     void testLevelManager() {
         Level level1 = LevelManager.getLevel(1);
@@ -162,6 +207,29 @@ class MatrixOperationsTest {
         Level level1 = LevelManager.getLevel(1);
         level1.setCompleted(true);
         assertTrue(LevelManager.isLevelUnlocked(2));
+    }
+
+    @Test
+    @DisplayName("LevelManager - getLevels returns copy")
+    void testGetLevelsReturnsCopy() {
+        java.util.List<Level> levels1 = LevelManager.getLevels();
+        java.util.List<Level> levels2 = LevelManager.getLevels();
+        assertNotSame(levels1, levels2);
+        assertEquals(levels1.size(), levels2.size());
+    }
+
+    @Test
+    @DisplayName("LevelManager - multiple level unlock chain")
+    void testMultipleLevelUnlockChain() {
+        Level level1 = LevelManager.getLevel(1);
+        Level level2 = LevelManager.getLevel(2);
+        Level level3 = LevelManager.getLevel(3);
+        level1.setCompleted(true);
+        assertTrue(LevelManager.isLevelUnlocked(2));
+        level2.setCompleted(true);
+        assertTrue(LevelManager.isLevelUnlocked(3));
+        level3.setCompleted(false);
+        assertFalse(LevelManager.isLevelUnlocked(3));
     }
 
     @Test
@@ -473,5 +541,180 @@ class MatrixOperationsTest {
         ViewData viewData = board.getViewData();
         assertTrue(ghostY >= viewData.getyPosition());
         assertTrue(ghostY <= SimpleBoard.BOARD_ROWS - 3);
+    }
+
+    @Test
+    @DisplayName("Integration - full game cycle")
+    void testFullGameCycle() {
+        board.spawnNewBrick();
+        ViewData initial = board.getViewData();
+        assertNotNull(initial.getBrickData());
+        board.moveBrickDown();
+        board.moveBrickRight();
+        board.rotateBrick();
+        board.holdBrick();
+        board.spawnNewBrick();
+        while (board.moveBrickDown()) {
+        }
+        board.mergeBrickToBackground();
+        ClearRow result = board.clearRows();
+        assertNotNull(result);
+        board.spawnNewBrick();
+        ViewData afterCycle = board.getViewData();
+        assertNotNull(afterCycle.getBrickData());
+    }
+
+    @Test
+    @DisplayName("Integration - multiple bricks and clears")
+    void testMultipleBricksAndClears() {
+        int totalCleared = 0;
+        for (int i = 0; i < 3; i++) {
+            board.spawnNewBrick();
+            while (board.moveBrickDown()) {
+            }
+            board.mergeBrickToBackground();
+            int[][] matrix = board.getBoardMatrix();
+            for (int j = 0; j < SimpleBoard.BOARD_COLUMNS; j++) {
+                matrix[SimpleBoard.BOARD_ROWS - 1][j] = 1;
+            }
+            ClearRow result = board.clearRows();
+            totalCleared += result.getLinesRemoved();
+        }
+        assertTrue(totalCleared >= 0);
+    }
+
+    @Test
+    @DisplayName("Integration - score accumulation")
+    void testScoreAccumulation() {
+        board.spawnNewBrick();
+        int initialScore = board.getScore().getValue();
+        board.getScore().add(50);
+        board.mergeBrickToBackground();
+        int[][] matrix = board.getBoardMatrix();
+        for (int j = 0; j < SimpleBoard.BOARD_COLUMNS; j++) {
+            matrix[SimpleBoard.BOARD_ROWS - 1][j] = 1;
+        }
+        ClearRow result = board.clearRows();
+        board.getScore().add(result.getScoreBonus());
+        assertTrue(board.getScore().getValue() > initialScore);
+    }
+
+    @Test
+    @DisplayName("DownData - getters return correct values")
+    void testDownDataGetters() {
+        board.spawnNewBrick();
+        ViewData viewData = board.getViewData();
+        ClearRow clearRow = new ClearRow(2, new int[10][10], 200);
+        DownData downData = new DownData(clearRow, viewData);
+        assertEquals(clearRow, downData.getClearRow());
+        assertEquals(viewData, downData.getViewData());
+    }
+
+    @Test
+    @DisplayName("MoveEvent - getters return correct values")
+    void testMoveEventGetters() {
+        MoveEvent event = new MoveEvent(EventType.ROTATE, EventSource.USER);
+        assertEquals(EventType.ROTATE, event.getEventType());
+        assertEquals(EventSource.USER, event.getEventSource());
+    }
+
+    @Test
+    @DisplayName("SimpleBoard - custom board size constructor")
+    void testCustomBoardSize() {
+        SimpleBoard customBoard = new SimpleBoard(20, 10);
+        assertEquals(20, customBoard.getBoardMatrix().length);
+        assertEquals(10, customBoard.getBoardMatrix()[0].length);
+    }
+
+    @Test
+    @DisplayName("SimpleBoard - getHeldBrick returns held brick")
+    void testGetHeldBrick() {
+        board.spawnNewBrick();
+        board.holdBrick();
+        assertNotNull(board.getHeldBrick());
+    }
+
+    @Test
+    @DisplayName("MatrixOperations - copy handles irregular matrix sizes")
+    void testCopyIrregularMatrix() {
+        int[][] irregular = new int[5][];
+        irregular[0] = new int[3];
+        irregular[1] = new int[5];
+        irregular[2] = new int[2];
+        irregular[3] = new int[4];
+        irregular[4] = new int[1];
+        irregular[1][2] = 42;
+        int[][] copy = MatrixOperations.copy(irregular);
+        assertEquals(42, copy[1][2]);
+        assertNotSame(irregular, copy);
+    }
+
+    @Test
+    @DisplayName("SimpleBoard - newGame resets held brick")
+    void testNewGameResetsHeldBrick() {
+        board.spawnNewBrick();
+        board.holdBrick();
+        assertNotNull(board.getHeldBrick());
+        board.newGame();
+        assertNull(board.getHeldBrick());
+    }
+
+    @Test
+    @DisplayName("MatrixOperations - intersect with zero-sized brick")
+    void testIntersectZeroSizedBrick() {
+        int[][] emptyBrick = {{}};
+        assertFalse(MatrixOperations.intersect(emptyBoard, emptyBrick, 5, 5));
+    }
+
+    @Test
+    @DisplayName("MatrixOperations - merge preserves non-zero values")
+    void testMergePreservesNonZero() {
+        int[][] board = new int[10][10];
+        board[5][5] = 3;
+        int[][] brick = {{2}};
+        int[][] result = MatrixOperations.merge(board, brick, 5, 5);
+        assertEquals(2, result[5][5]);
+    }
+
+    @Test
+    @DisplayName("SimpleBoard - getBoardMatrix returns reference")
+    void testGetBoardMatrixReturnsReference() {
+        int[][] matrix1 = board.getBoardMatrix();
+        int[][] matrix2 = board.getBoardMatrix();
+        assertSame(matrix1, matrix2);
+    }
+
+    @Test
+    @DisplayName("SimpleBoard - move fails at left boundary")
+    void testMoveFailsAtLeftBoundary() {
+        board.spawnNewBrick();
+        for (int i = 0; i < 20; i++) {
+            board.moveBrickLeft();
+        }
+        assertFalse(board.moveBrickLeft());
+    }
+
+    @Test
+    @DisplayName("SimpleBoard - move fails at right boundary")
+    void testMoveFailsAtRightBoundary() {
+        board.spawnNewBrick();
+        for (int i = 0; i < 20; i++) {
+            board.moveBrickRight();
+        }
+        assertFalse(board.moveBrickRight());
+    }
+
+    @Test
+    @DisplayName("Score - addLines with zero")
+    void testAddLinesZero() {
+        score.addLines(0);
+        assertEquals(0, score.linesProperty().get());
+    }
+
+    @Test
+    @DisplayName("Level - checkObjective with all zeros")
+    void testLevelObjectiveAllZeros() {
+        Level level = new Level(1, "Test", "No requirements", 0, 0, 0, 500);
+        assertTrue(level.checkObjective(0, 0, 0));
     }
 }

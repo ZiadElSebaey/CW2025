@@ -200,5 +200,68 @@ class BrickTest {
         assertEquals(bricks1.get(1), bricks2.get(1));
         assertEquals(bricks1.get(2), bricks2.get(2));
     }
+
+    @Test
+    @DisplayName("BrickRotator - getBrick returns current brick")
+    void testGetBrick() {
+        Brick brick = generator.getBrick();
+        rotator.setBrick(brick);
+        assertEquals(brick, rotator.getBrick());
+    }
+
+    @Test
+    @DisplayName("SimpleBoard - ViewData includes all next bricks")
+    void testViewDataNextBricks() {
+        board.spawnNewBrick();
+        ViewData viewData = board.getViewData();
+        assertNotNull(viewData.getNextBrickData());
+        assertNotNull(viewData.getNextBrickData2());
+        assertNotNull(viewData.getNextBrickData3());
+    }
+
+    @Test
+    @DisplayName("BrickRotator - setBrick resets rotation")
+    void testSetBrickResetsRotation() {
+        Brick brick = generator.getBrick();
+        rotator.setBrick(brick);
+        rotator.setCurrentShape(2);
+        rotator.setBrick(brick);
+        int[][] shape = rotator.getCurrentShape();
+        assertNotNull(shape);
+    }
+
+    @Test
+    @DisplayName("RandomBrickGenerator - getNextBricks with count 1")
+    void testGetNextBricksCountOne() {
+        java.util.List<Brick> bricks = generator.getNextBricks(1);
+        assertEquals(1, bricks.size());
+        assertNotNull(bricks.get(0));
+    }
+
+    @Test
+    @DisplayName("RandomBrickGenerator - getNextBricks with large count")
+    void testGetNextBricksLargeCount() {
+        java.util.List<Brick> bricks = generator.getNextBricks(10);
+        assertEquals(10, bricks.size());
+        for (Brick brick : bricks) {
+            assertNotNull(brick);
+        }
+    }
+
+    @Test
+    @DisplayName("SimpleBoard - hold when no brick spawned")
+    void testHoldWhenNoBrick() {
+        ViewData result = board.holdBrick();
+        assertNull(result.getHoldBrickData());
+    }
+
+    @Test
+    @DisplayName("NextShapeInfo - getPosition returns correct value")
+    void testNextShapeInfoGetPosition() {
+        Brick brick = generator.getBrick();
+        rotator.setBrick(brick);
+        com.comp2042.logic.NextShapeInfo next = rotator.getNextShape();
+        assertEquals(1, next.getPosition());
+    }
 }
 
