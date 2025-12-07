@@ -231,7 +231,7 @@ public class GameOverPanel extends StackPane {
             nameInputBox.setVisible(false);
             savedLabel.setVisible(false);
             errorLabel.setVisible(false);
-            if (isInvertedMode || is1984Mode) {
+            if (isLevelGame || isInvertedMode || is1984Mode) {
                 leaderboardButton.setVisible(false);
                 leaderboardButton.setManaged(false);
             }

@@ -135,6 +135,15 @@ public class GuiController implements Initializable {
 
     @FXML
     private VBox creatorPanel;
+    
+    @FXML
+    private StackPane dialogueContainerGame;
+    
+    @FXML
+    private ImageView dialogueImageGame;
+    
+    @FXML
+    private Label dialogueTextGame;
 
     @FXML
     private javafx.scene.control.Button backButton;
@@ -144,6 +153,15 @@ public class GuiController implements Initializable {
     
     @FXML
     private ImageView background1984;
+    
+    @FXML
+    private ImageView whiteBox1984;
+    
+    @FXML
+    private StackPane whiteBoxContainer1984;
+    
+    @FXML
+    private Label whiteBoxText1984;
     
     private Label scoreLabel1984;
     private Label linesLabel1984;
@@ -184,6 +202,7 @@ public class GuiController implements Initializable {
     private long freePlayPauseStartTime;
     private long freePlayTotalPauseDuration;
     private int dropIntervalMs = DEFAULT_DROP_INTERVAL_MS;
+    private Timeline dialogueTextTimeline;
 
     public void setStage(Stage stage) {
         this.stage = stage;
@@ -261,6 +280,14 @@ public class GuiController implements Initializable {
                 creatorPanel.setVisible(false);
                 creatorPanel.setManaged(false);
             }
+            if (dialogueContainerGame != null) {
+                dialogueContainerGame.setVisible(false);
+                dialogueContainerGame.setManaged(false);
+            }
+            if (whiteBoxContainer1984 != null) {
+                whiteBoxContainer1984.setVisible(false);
+                whiteBoxContainer1984.setManaged(false);
+            }
             if (backButton != null) {
                 backButton.setLayoutX(720 - 100);
                 backButton.setLayoutY(680 - 80);
@@ -311,6 +338,25 @@ public class GuiController implements Initializable {
                 creatorPanel.setVisible(true);
                 creatorPanel.setManaged(true);
             }
+            if (dialogueContainerGame != null && !is1984Mode && !isInvertedMode) {
+                dialogueContainerGame.setVisible(true);
+                dialogueContainerGame.setManaged(true);
+                dialogueContainerGame.setLayoutX(490);
+                dialogueContainerGame.setLayoutY(390);
+                if (currentLevel == null) {
+                    updateFreePlayDialogueText();
+                } else {
+                    updateLevelsDialogueText();
+                }
+                Platform.runLater(() -> dialogueContainerGame.toFront());
+            } else if (dialogueContainerGame != null) {
+                dialogueContainerGame.setVisible(false);
+                dialogueContainerGame.setManaged(false);
+            }
+            if (whiteBoxContainer1984 != null) {
+                whiteBoxContainer1984.setVisible(false);
+                whiteBoxContainer1984.setManaged(false);
+            }
             if (backButton != null) {
                 backButton.setLayoutX(15);
                 backButton.setLayoutY(15);
@@ -341,13 +387,20 @@ public class GuiController implements Initializable {
             if (creatorPanel != null) {
                 creatorPanel.setVisible(true);
                 creatorPanel.setManaged(true);
-                creatorPanel.setLayoutX(560);
+                creatorPanel.setLayoutX(590);
                 creatorPanel.setLayoutY(480);
                 javafx.animation.TranslateTransition floatUp = new javafx.animation.TranslateTransition(Duration.seconds(2), creatorPanel);
                 floatUp.setByY(-10);
                 floatUp.setCycleCount(Timeline.INDEFINITE);
                 floatUp.setAutoReverse(true);
                 floatUp.play();
+            }
+            if (whiteBoxContainer1984 != null) {
+                whiteBoxContainer1984.setVisible(true);
+                whiteBoxContainer1984.setManaged(true);
+                whiteBoxContainer1984.setLayoutX(480);
+                whiteBoxContainer1984.setLayoutY(420);
+                Platform.runLater(() -> whiteBoxContainer1984.toFront());
             }
             if (backButton != null) {
                 backButton.getStyleClass().clear();
@@ -797,6 +850,16 @@ public class GuiController implements Initializable {
             long currentPauseTime = (pauseStartTime > 0) ? (System.currentTimeMillis() - pauseStartTime) : 0;
             long timeElapsed = (System.currentTimeMillis() - levelStartTime - totalPauseDuration - currentPauseTime) / 1000;
             int remainingTime = (int)(currentLevel.getTimeLimit() - timeElapsed);
+            
+            if (remainingTime <= 0 && (currentLevel.getLevelNumber() == 2 || currentLevel.getLevelNumber() == 5)) {
+                if (timeLine != null) {
+                    timeLine.stop();
+                }
+                stopTimerUpdate();
+                gameOver();
+                return;
+            }
+            
             int minutes = Math.max(0, remainingTime) / 60;
             int seconds = Math.max(0, remainingTime) % 60;
             String timeStr = String.format("%d:%02d", minutes, seconds);
@@ -1172,6 +1235,24 @@ public class GuiController implements Initializable {
         updateGhostPosition(brick);
         initNextBlockPanel(brick);
         initHoldBlockPanel(brick);
+        
+        boolean is1984Mode = gameMode != null && gameMode.equals("1984");
+        boolean isInvertedMode = gameMode != null && gameMode.equals("inverted");
+        if (dialogueContainerGame != null && !is1984Mode && !isInvertedMode) {
+            dialogueContainerGame.setVisible(true);
+            dialogueContainerGame.setManaged(true);
+            dialogueContainerGame.setLayoutX(490);
+            dialogueContainerGame.setLayoutY(390);
+            if (currentLevel == null) {
+                updateFreePlayDialogueText();
+            } else {
+                updateLevelsDialogueText();
+            }
+            Platform.runLater(() -> dialogueContainerGame.toFront());
+        } else if (dialogueContainerGame != null) {
+            dialogueContainerGame.setVisible(false);
+            dialogueContainerGame.setManaged(false);
+        }
 
         timeLine = new Timeline(new KeyFrame(
                 Duration.millis(dropIntervalMs),
@@ -1865,6 +1946,7 @@ public class GuiController implements Initializable {
     }
 
     public void gameOver() {
+        stopDialogueTextTimeline();
         setPaused(true);
         gamePane.setVisible(false);
         
@@ -1905,6 +1987,11 @@ public class GuiController implements Initializable {
         
         gameOverPanel.setGameMode(gameMode);
         gameOverPanel.showFinalScore(finalScore, highScore, isNewHighScore, playerName, isGuest, timePlayed);
+        
+        if (currentLevel != null && gameOverPanel.getLeaderboardButton() != null) {
+            gameOverPanel.getLeaderboardButton().setVisible(false);
+            gameOverPanel.getLeaderboardButton().setManaged(false);
+        }
         
         if (is1984Mode && gameOverPanel.getBackButton1984() != null) {
             gameOverPanel.getBackButton1984().setOnAction(_ -> returnToGamemodesMenu());
@@ -2174,6 +2261,9 @@ public class GuiController implements Initializable {
             startTimerUpdate();
         } else if (currentLevel == null && (gameMode == null || !gameMode.equals("inverted"))) {
             startFreePlayTimer();
+            updateFreePlayDialogueText();
+        } else if (currentLevel != null) {
+            updateLevelsDialogueText();
         }
         
         gamePanel.setFocusTraversable(true);
@@ -2217,6 +2307,9 @@ public class GuiController implements Initializable {
         
         if (currentLevel == null && (gameMode == null || (!gameMode.equals("inverted") && !gameMode.equals("1984")))) {
             startFreePlayTimer();
+            updateFreePlayDialogueText();
+        } else if (currentLevel != null) {
+            updateLevelsDialogueText();
         }
         
         timeLine = new Timeline(new KeyFrame(
@@ -2266,6 +2359,9 @@ public class GuiController implements Initializable {
         if (paused) {
             timeLine.stop();
             stopTimerUpdate();
+            if (currentLevel == null) {
+                stopDialogueTextTimeline();
+            }
             if (currentLevel != null && (currentLevel.getLevelNumber() == 2 || currentLevel.getLevelNumber() == 5)) {
                 pauseStartTime = System.currentTimeMillis();
             }
@@ -2291,6 +2387,11 @@ public class GuiController implements Initializable {
                 }
                 if (freePlayTimerLine != null) {
                     freePlayTimerLine.play();
+                }
+                if (currentLevel == null) {
+                    updateFreePlayDialogueText();
+                } else {
+                    updateLevelsDialogueText();
                 }
             }
         }
@@ -2408,5 +2509,117 @@ public class GuiController implements Initializable {
             glow.setAutoReverse(true);
             glow.play();
         }
+    }
+    
+    private void updateFreePlayDialogueText() {
+        if (dialogueTextGame == null || currentLevel != null) {
+            return;
+        }
+        
+        stopDialogueTextTimeline();
+        
+        String currentPlayer = playerName != null && !playerName.isEmpty() ? playerName : "Player";
+        String capitalizedPlayer = currentPlayer.substring(0, 1).toUpperCase() + 
+                                 (currentPlayer.length() > 1 ? currentPlayer.substring(1).toLowerCase() : "");
+        String highScoreHolder = HighScoreManager.getHighScoreHolder();
+        
+        String message1;
+        if (highScoreHolder != null && !highScoreHolder.isEmpty()) {
+            String capitalizedHolder = highScoreHolder.substring(0, 1).toUpperCase() + 
+                                      (highScoreHolder.length() > 1 ? highScoreHolder.substring(1).toLowerCase() : "");
+            message1 = "Come on " + capitalizedPlayer + "! You can beat " + capitalizedHolder + "'s highscore";
+        } else {
+            message1 = "Come on " + capitalizedPlayer + "! Set a new highscore!";
+        }
+        
+        String message2 = "Keep going!! I Believe in you " + capitalizedPlayer;
+        String message3 = "Prove them wrong " + capitalizedPlayer;
+        String message4 = "I created the game.. YOU MASTER IT";
+        
+        java.util.List<String> messages = new java.util.ArrayList<>();
+        messages.add(message1);
+        messages.add(message2);
+        messages.add(message3);
+        messages.add(message4);
+        
+        dialogueTextGame.setOpacity(1.0);
+        int randomIndex = (int)(Math.random() * messages.size());
+        dialogueTextGame.setText(messages.get(randomIndex));
+        
+        dialogueTextTimeline = new Timeline(
+            new KeyFrame(Duration.seconds(6.5), e -> {
+                if (dialogueTextGame != null && dialogueTextGame.getScene() != null && currentLevel == null) {
+                    FadeTransition fadeOut = new FadeTransition(Duration.millis(500), dialogueTextGame);
+                    fadeOut.setFromValue(1.0);
+                    fadeOut.setToValue(0.0);
+                    fadeOut.setOnFinished(event -> {
+                        int nextIndex = (int)(Math.random() * messages.size());
+                        String nextMessage = messages.get(nextIndex);
+                        dialogueTextGame.setText(nextMessage);
+                        FadeTransition fadeIn = new FadeTransition(Duration.millis(500), dialogueTextGame);
+                        fadeIn.setFromValue(0.0);
+                        fadeIn.setToValue(1.0);
+                        fadeIn.play();
+                    });
+                    fadeOut.play();
+                }
+            })
+        );
+        
+        dialogueTextTimeline.setCycleCount(Timeline.INDEFINITE);
+        dialogueTextTimeline.play();
+    }
+    
+    private void stopDialogueTextTimeline() {
+        if (dialogueTextTimeline != null) {
+            dialogueTextTimeline.stop();
+            dialogueTextTimeline = null;
+        }
+    }
+    
+    private void updateLevelsDialogueText() {
+        if (dialogueTextGame == null || currentLevel == null) {
+            return;
+        }
+        
+        stopDialogueTextTimeline();
+        
+        String message1 = "You can do this";
+        String message2 = "cant wait to travel to the next level with you!!";
+        String message3 = "I know it may be tough but i believe in you!!";
+        String message4 = "Im so proud of you!!";
+        
+        java.util.List<String> messages = new java.util.ArrayList<>();
+        messages.add(message1);
+        messages.add(message2);
+        messages.add(message3);
+        messages.add(message4);
+        
+        dialogueTextGame.setOpacity(1.0);
+        int randomIndex = (int)(Math.random() * messages.size());
+        dialogueTextGame.setText(messages.get(randomIndex));
+        
+        dialogueTextTimeline = new Timeline(
+            new KeyFrame(Duration.seconds(6.5), e -> {
+                if (dialogueTextGame != null && dialogueTextGame.getScene() != null && currentLevel != null) {
+                    FadeTransition fadeOut = new FadeTransition(Duration.millis(500), dialogueTextGame);
+                    fadeOut.setFromValue(1.0);
+                    fadeOut.setToValue(0.0);
+                    fadeOut.setOnFinished(event -> {
+                        int nextIndex = (int)(Math.random() * messages.size());
+                        String nextMessage = messages.get(nextIndex);
+                        dialogueTextGame.setText(nextMessage);
+                        FadeTransition fadeIn = new FadeTransition(Duration.millis(500), dialogueTextGame);
+                        fadeIn.setFromValue(0.0);
+                        fadeIn.setToValue(1.0);
+                        fadeIn.play();
+                    });
+                    fadeOut.play();
+                }
+            })
+        );
+        
+        dialogueTextTimeline.setCycleCount(Timeline.INDEFINITE);
+        dialogueTextTimeline.play();
     }
 }

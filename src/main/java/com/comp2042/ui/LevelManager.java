@@ -9,7 +9,7 @@ public class LevelManager {
     
     static {
         levels.add(new Level(1, "First Steps", "Clear 5 lines", 5, 0, 0, 500));
-        levels.add(new Level(2, "Speed Up", "Clear 10 lines within 2 minutes", 10, 0, 120, 400));
+        levels.add(new Level(2, "Speed Up", "Clear 8 lines within 2 minutes", 8, 0, 120, 400));
         levels.add(new Level(3, "Line Master", "Clear 3 lines at once 2 times", 0, 0, 0, 350));
         levels.add(new Level(4, "Score Challenge", "Reach 5000 points", 0, 5000, 0, 300));
         levels.add(new Level(5, "Rush Mode", "Clear 15 lines within 90 seconds", 15, 0, 90, 250));
