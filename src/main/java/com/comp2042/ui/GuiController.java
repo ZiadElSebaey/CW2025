@@ -344,15 +344,13 @@ public class GuiController implements Initializable {
             filmGrainTimeline.stop();
         }
         
-        filmGrainTimeline = new Timeline(
+        filmGrainTimeline = createIndefiniteTimeline(
             new KeyFrame(Duration.millis(50), e -> {
                 if (filmGrainOverlay != null) {
                     filmGrainOverlay.setOpacity(0.02 + Math.random() * 0.04);
                 }
             })
         );
-        filmGrainTimeline.setCycleCount(Timeline.INDEFINITE);
-        filmGrainTimeline.play();
     }
     
     private void startFlickerAnimation() {
@@ -563,7 +561,8 @@ public class GuiController implements Initializable {
                 }
             } else {
                 highScoreLabel.setVisible(true);
-                if (HighScoreManager.getHighScoreHolder() != null && !HighScoreManager.getHighScoreHolder().isEmpty()) {
+                HighScoreInfo highScoreInfo = getHighScoreInfo();
+                if (highScoreInfo.highScoreHolder != null && !highScoreInfo.highScoreHolder.isEmpty()) {
                     highScoreHolderLabel.setVisible(true);
                 }
                 if (objectivePanel != null) {
@@ -607,12 +606,9 @@ public class GuiController implements Initializable {
         stopTimerUpdate();
         if (isTimedLevel()) {
             updateTimerLabel();
-            timerUpdateLine = new Timeline(new KeyFrame(
-                Duration.seconds(1),
-                _ -> updateTimerLabel()
-            ));
-            timerUpdateLine.setCycleCount(Timeline.INDEFINITE);
-            timerUpdateLine.play();
+            timerUpdateLine = createIndefiniteTimeline(
+                new KeyFrame(Duration.seconds(1), _ -> updateTimerLabel())
+            );
         }
     }
     
@@ -628,10 +624,7 @@ public class GuiController implements Initializable {
                 return;
             }
             
-            int minutes = Math.max(0, remainingTime) / 60;
-            int seconds = Math.max(0, remainingTime) % 60;
-            String timeStr = String.format("%d:%02d", minutes, seconds);
-            timerLabel.setText("Time: " + timeStr);
+            timerLabel.setText(formatTimeWithPrefix(Math.max(0, remainingTime)));
         }
     }
 
@@ -666,10 +659,7 @@ public class GuiController implements Initializable {
                 return;
             }
             long timeElapsed = Math.max(0, calculateElapsedTime(freePlayStartTime, freePlayTotalPauseDuration, freePlayPauseStartTime));
-            int minutes = (int)(timeElapsed / 60);
-            int seconds = (int)(timeElapsed % 60);
-            String timeStr = String.format("%d:%02d", minutes, seconds);
-            timerLabel.setText("Time: " + timeStr);
+            timerLabel.setText(formatTimeWithPrefix(timeElapsed));
         }
     }
     
@@ -696,21 +686,12 @@ public class GuiController implements Initializable {
                 if (isInvertedMode()) {
                     objectiveLabel.setVisible(false);
                 } else {
-                    String playerDisplayName = "";
-                    if (playerName != null && !playerName.isEmpty()) {
-                        String capitalizedName = playerName.substring(0, 1).toUpperCase() + 
-                                                (playerName.length() > 1 ? playerName.substring(1).toLowerCase() : "");
-                        playerDisplayName = capitalizedName;
-                    } else {
-                        playerDisplayName = "Player";
-                    }
+                    String playerDisplayName = (playerName != null && !playerName.isEmpty()) ? capitalizeName(playerName) : "Player";
                     
                     String highScoreHolder = HighScoreManager.getHighScoreHolder();
                     String message = "Keep Going " + playerDisplayName + "!";
                     if (highScoreHolder != null && !highScoreHolder.isEmpty()) {
-                        String capitalizedHolder = highScoreHolder.substring(0, 1).toUpperCase() + 
-                                                  (highScoreHolder.length() > 1 ? highScoreHolder.substring(1).toLowerCase() : "");
-                        message += " You can beat " + capitalizedHolder + "'s Highscore!!!";
+                        message += " You can beat " + capitalizeName(highScoreHolder) + "'s Highscore!!!";
                     } else {
                         message += " Set a new Highscore!!!";
                     }
@@ -805,19 +786,13 @@ public class GuiController implements Initializable {
     
     private void setupHoldBlockAnimation() {
         if (holdBlockContainer != null) {
-            ScaleTransition pulse = new ScaleTransition(Duration.seconds(3.0), holdBlockContainer);
-            pulse.setFromX(1.0);
-            pulse.setFromY(1.0);
-            pulse.setToX(1.02);
-            pulse.setToY(1.02);
+            ScaleTransition pulse = createScaleTransition(holdBlockContainer, Duration.seconds(3.0), 1.0, 1.0, 1.02, 1.02);
             pulse.setCycleCount(Timeline.INDEFINITE);
             pulse.setAutoReverse(true);
             pulse.setInterpolator(javafx.animation.Interpolator.EASE_BOTH);
             pulse.play();
             
-            FadeTransition glow = new FadeTransition(Duration.seconds(3.0), holdBlockContainer);
-            glow.setFromValue(0.95);
-            glow.setToValue(1.0);
+            FadeTransition glow = createFadeTransition(holdBlockContainer, Duration.seconds(3.0), 0.95, 1.0);
             glow.setCycleCount(Timeline.INDEFINITE);
             glow.setAutoReverse(true);
             glow.setInterpolator(javafx.animation.Interpolator.EASE_BOTH);
@@ -895,54 +870,14 @@ public class GuiController implements Initializable {
         
         if (!isPause.get() && eventListener != null) {
             if (isInvertedMode()) {
-                if (isRotateKey(keyEvent)) {
-                    moveDown(userMove(EventType.DOWN));
-                    keyEvent.consume();
-                } else if (isDownKey(keyEvent)) {
-                    refreshBrick(eventListener.onRotateEvent(userMove(EventType.ROTATE)));
-                    keyEvent.consume();
-                } else if (isLeftKey(keyEvent)) {
-                    refreshBrick(eventListener.onRightEvent(userMove(EventType.RIGHT)));
-                    keyEvent.consume();
-                } else if (isRightKey(keyEvent)) {
-                    refreshBrick(eventListener.onLeftEvent(userMove(EventType.LEFT)));
-                    keyEvent.consume();
-                } else if (keyEvent.getCode() == KeyCode.SPACE) {
-                    hardDrop();
-                    keyEvent.consume();
-                } else if (keyEvent.getCode() == KeyCode.H) {
-                    holdBrick();
-                    keyEvent.consume();
-                }
+                handleInvertedKeyInput(keyEvent);
             } else {
-            if (isLeftKey(keyEvent)) {
-                refreshBrick(eventListener.onLeftEvent(userMove(EventType.LEFT)));
-                keyEvent.consume();
-            } else if (isRightKey(keyEvent)) {
-                refreshBrick(eventListener.onRightEvent(userMove(EventType.RIGHT)));
-                keyEvent.consume();
-            } else if (isRotateKey(keyEvent)) {
-                refreshBrick(eventListener.onRotateEvent(userMove(EventType.ROTATE)));
-                keyEvent.consume();
-            } else if (isDownKey(keyEvent)) {
-                moveDown(userMove(EventType.DOWN));
-                keyEvent.consume();
-                } else if (keyEvent.getCode() == KeyCode.SPACE) {
-                    hardDrop();
-                    keyEvent.consume();
-                } else if (keyEvent.getCode() == KeyCode.H) {
-                    holdBrick();
-                keyEvent.consume();
-                }
+                handleNormalKeyInput(keyEvent);
             }
         }
 
         if (!isGameOver.get()) {
-        if (keyEvent.getCode() == KeyCode.N) {
-            newGame(null);
-            } else if (keyEvent.getCode() == KeyCode.ESCAPE) {
-            pauseGame(null);
-            }
+            handleGameControlKeys(keyEvent);
         }
     }
 
@@ -1224,23 +1159,15 @@ public class GuiController implements Initializable {
             holdBlockContainer.setTranslateX(0);
             holdBlockContainer.setTranslateY(0);
             
-            ScaleTransition scaleUp = new ScaleTransition(Duration.millis(HOLD_SCALE_DURATION_UP_MS), holdBlockContainer);
-            scaleUp.setFromX(1.0);
-            scaleUp.setFromY(1.0);
-            scaleUp.setToX(HOLD_SCALE_UP);
-            scaleUp.setToY(HOLD_SCALE_UP);
+            ScaleTransition scaleUp = createScaleTransition(holdBlockContainer, Duration.millis(HOLD_SCALE_DURATION_UP_MS), 1.0, 1.0, HOLD_SCALE_UP, HOLD_SCALE_UP);
             scaleUp.setCycleCount(1);
             scaleUp.setInterpolator(javafx.animation.Interpolator.EASE_OUT);
             
-            ScaleTransition scaleDown = new ScaleTransition(Duration.millis(HOLD_SCALE_DURATION_DOWN_MS), holdBlockContainer);
-            scaleDown.setFromX(HOLD_SCALE_UP);
-            scaleDown.setFromY(HOLD_SCALE_UP);
-            scaleDown.setToX(1.0);
-            scaleDown.setToY(1.0);
+            ScaleTransition scaleDown = createScaleTransition(holdBlockContainer, Duration.millis(HOLD_SCALE_DURATION_DOWN_MS), HOLD_SCALE_UP, HOLD_SCALE_UP, 1.0, 1.0);
             scaleDown.setCycleCount(1);
             scaleDown.setInterpolator(javafx.animation.Interpolator.EASE_IN);
             
-            SequentialTransition sequence = new SequentialTransition(scaleUp, scaleDown);
+            SequentialTransition sequence = createSequentialTransition(scaleUp, scaleDown);
             sequence.play();
         }
     }
@@ -1425,22 +1352,15 @@ public class GuiController implements Initializable {
         int totalLines = linesProp != null ? linesProp.get() : 0;
         long timeElapsed = calculateElapsedTime(levelStartTime, totalPauseDuration, pauseStartTime);
         
-        boolean objectiveMet = false;
-        
-        if (currentLevel.getLevelNumber() == 1) {
-            objectiveMet = totalLines >= currentLevel.getTargetLines();
-        } else if (currentLevel.getLevelNumber() == 2) {
-            objectiveMet = totalLines >= currentLevel.getTargetLines() && 
-                          timeElapsed <= currentLevel.getTimeLimit();
-        } else if (currentLevel.getLevelNumber() == 3) {
-            objectiveMet = tripleClearsCount >= 2;
-        } else if (currentLevel.getLevelNumber() == 4) {
-            int currentScore = currentScoreProperty != null ? currentScoreProperty.get() : 0;
-            objectiveMet = currentScore >= currentLevel.getTargetScore();
-        } else if (currentLevel.getLevelNumber() == 5) {
-            objectiveMet = totalLines >= currentLevel.getTargetLines() && 
-                          timeElapsed <= currentLevel.getTimeLimit();
-        }
+        int currentScore = currentScoreProperty != null ? currentScoreProperty.get() : 0;
+        boolean objectiveMet = checkLevelObjectiveMet(
+            currentLevel.getLevelNumber(), 
+            totalLines, 
+            timeElapsed, 
+            tripleClearsCount, 
+            currentScore, 
+            currentLevel
+        );
         
         updateLevelProgress(totalLines, timeElapsed);
         
@@ -1466,23 +1386,21 @@ public class GuiController implements Initializable {
             return;
         }
         
-        String progressText = "";
+        int currentScore = currentScoreProperty != null ? currentScoreProperty.get() : 0;
+        String progressText = generateLevelProgressText(
+            currentLevel.getLevelNumber(),
+            totalLines,
+            timeElapsedParam,
+            tripleClearsCount,
+            currentScore,
+            currentLevel
+        );
         
-        if (currentLevel.getLevelNumber() == 1) {
-            progressText = "Lines: " + totalLines + "/" + currentLevel.getTargetLines();
-        } else if (currentLevel.getLevelNumber() == 2) {
-            progressText = "Lines: " + totalLines + "/" + currentLevel.getTargetLines();
-        } else if (currentLevel.getLevelNumber() == 3) {
-            progressText = "Triple Clears: " + tripleClearsCount + "/2";
-        } else if (currentLevel.getLevelNumber() == 4) {
-            int currentScore = currentScoreProperty != null ? currentScoreProperty.get() : 0;
-            progressText = "Score: " + currentScore + "/" + currentLevel.getTargetScore();
-        } else if (currentLevel.getLevelNumber() == 5) {
-            progressText = "Lines: " + totalLines + "/" + currentLevel.getTargetLines();
+        if (currentLevel.getLevelNumber() == 5) {
             if (timerLabel != null) {
                 timerLabel.setVisible(true);
             }
-        } else {
+        } else if (currentLevel.getLevelNumber() < 1 || currentLevel.getLevelNumber() > 5) {
             if (timerLabel != null) {
                 timerLabel.setVisible(false);
             }
@@ -1524,18 +1442,12 @@ public class GuiController implements Initializable {
             });
             
             levelCompletePanel.getLevelsMenuButton().setOnAction(_ -> {
-                levelCompleteContainer.setVisible(false);
-                if (gamePane != null) {
-                    gamePane.setVisible(true);
-                }
+                hideLevelCompleteAndShowGamePane();
                 returnToLevelsMenu();
             });
             
             levelCompletePanel.getMainMenuButton().setOnAction(_ -> {
-                levelCompleteContainer.setVisible(false);
-                if (gamePane != null) {
-                    gamePane.setVisible(true);
-                }
+                hideLevelCompleteAndShowGamePane();
                 returnToMainMenu();
             });
         }
@@ -1558,11 +1470,7 @@ public class GuiController implements Initializable {
     }
 
     private void animateLabel(Label label) {
-        ScaleTransition pulse = new ScaleTransition(Duration.millis(150), label);
-        pulse.setFromX(1.0);
-        pulse.setFromY(1.0);
-        pulse.setToX(1.3);
-        pulse.setToY(1.3);
+        ScaleTransition pulse = createScaleTransition(label, Duration.millis(150), 1.0, 1.0, 1.3, 1.3);
         pulse.setCycleCount(2);
         pulse.setAutoReverse(true);
         pulse.play();
@@ -1574,130 +1482,32 @@ public class GuiController implements Initializable {
         gamePane.setVisible(false);
         
         int finalScore = currentScoreProperty != null ? currentScoreProperty.get() : 0;
-        boolean isNewHighScore = false;
-        boolean isInvertedMode = gameMode != null && gameMode.equals("inverted");
-        boolean is1984Mode = gameMode != null && gameMode.equals("1984");
-        
-        if (!isGuest && playerName != null && !playerName.isEmpty() && !isInvertedMode && !is1984Mode && currentLevel == null) {
-            isNewHighScore = HighScoreManager.updateHighScore(finalScore, playerName);
-        }
+        boolean isNewHighScore = setupGameOverHighScore(finalScore, playerName);
         
         long timePlayed = 0;
-        if (currentLevel == null && !isInvertedMode) {
+        if (currentLevel == null && !isInvertedMode()) {
             stopFreePlayTimer();
             timePlayed = getFreePlayElapsedTime();
         }
         
         int highScore = 0;
         String highScoreHolder = null;
-        if (!isInvertedMode && !is1984Mode && currentLevel == null) {
-            highScore = HighScoreManager.getHighScore();
-            highScoreHolder = HighScoreManager.getHighScoreHolder();
-            highScoreLabel.setText("High Score: " + highScore);
-            if (highScoreHolder != null && !highScoreHolder.isEmpty()) {
-                highScoreHolderLabel.setText("by " + capitalizeName(highScoreHolder));
-                highScoreHolderLabel.setVisible(true);
-                animateHighScoreHolder();
-            } else {
-                highScoreHolderLabel.setVisible(false);
-            }
-        } else {
-            highScoreLabel.setVisible(false);
-            highScoreHolderLabel.setVisible(false);
+        if (!isInvertedMode() && !is1984Mode() && currentLevel == null) {
+            HighScoreInfo highScoreInfo = getHighScoreInfo();
+            highScore = highScoreInfo.highScore;
+            highScoreHolder = highScoreInfo.highScoreHolder;
         }
         
-        gameOverPanel.setGameMode(gameMode);
-        gameOverPanel.showFinalScore(finalScore, highScore, isNewHighScore, playerName, isGuest, timePlayed);
-        
-        if (currentLevel != null && gameOverPanel.getLeaderboardButton() != null) {
-            gameOverPanel.getLeaderboardButton().setVisible(false);
-            gameOverPanel.getLeaderboardButton().setManaged(false);
-        }
-        
-        if (is1984Mode && gameOverPanel.getBackButton1984() != null) {
-            gameOverPanel.getBackButton1984().setOnAction(_ -> returnToGamemodesMenu());
-        }
+        setupHighScoreDisplay(highScore, highScoreHolder);
+        setupGameOverPanel(finalScore, highScore, isNewHighScore, timePlayed);
         
         gameOverPanel.setVisible(true);
         gameOverContainer.setVisible(true);
         
-        if (gameMode != null && gameMode.equals("inverted") && gameOverPanel != null) {
-            if (gameOverPanel.getBackButtonInverted() != null) {
-                gameOverPanel.getBackButtonInverted().setOnAction(_ -> returnToGamemodesMenu());
-                Button backBtnInverted = gameOverPanel.getBackButtonInverted();
-                applyInvertedRotation(backBtnInverted, 25.0, 25.0);
-            }
-            gameOverPanel.applyInvertedLayout();
-            Button restartBtn = gameOverPanel.getRestartButton();
-            Button mainMenuBtn = gameOverPanel.getMainMenuButton();
-            Label gameOverLbl = gameOverPanel.getGameOverLabel();
-            Label scoreLbl = gameOverPanel.getScoreLabel();
-            Label timeLbl = gameOverPanel.getTimePlayedLabel();
-            
-            if (timeLbl != null && timeLbl.isVisible()) {
-                applyInvertedRotation(timeLbl, 180.0, 15.0);
-            }
-            
-            if (restartBtn != null) {
-                applyInvertedRotation(restartBtn, 120.0, 30.0);
-            }
-            
-            if (mainMenuBtn != null) {
-                applyInvertedRotation(mainMenuBtn, 120.0, 30.0);
-            }
-            
-            if (gameOverLbl != null) {
-                gameOverLbl.getTransforms().removeIf(transform -> transform instanceof Rotate);
-                Platform.runLater(() -> {
-                    double width = gameOverLbl.getBoundsInLocal().getWidth();
-                    double height = gameOverLbl.getBoundsInLocal().getHeight();
-                    if (width > 0 && height > 0) {
-                        Rotate rotate = new Rotate(INVERTED_ROTATION_ANGLE, width / 2, height / 2);
-                        gameOverLbl.getTransforms().add(rotate);
-                    } else {
-                        Rotate rotate = new Rotate(INVERTED_ROTATION_ANGLE, 360, 55);
-                        gameOverLbl.getTransforms().add(rotate);
-                    }
-                });
-            }
-            
-            if (scoreLbl != null) {
-                scoreLbl.getTransforms().removeIf(transform -> transform instanceof Rotate);
-                Platform.runLater(() -> {
-                    double width = scoreLbl.getBoundsInLocal().getWidth();
-                    double height = scoreLbl.getBoundsInLocal().getHeight();
-                    if (width > 0 && height > 0) {
-                        Rotate rotate = new Rotate(INVERTED_ROTATION_ANGLE, width / 2, height / 2);
-                        scoreLbl.getTransforms().add(rotate);
-                    } else {
-                        Rotate rotate = new Rotate(180, 360, 30);
-                        scoreLbl.getTransforms().add(rotate);
-                    }
-                });
-            }
+        if (isInvertedMode() && gameOverPanel != null) {
+            setupInvertedGameOverUI();
         } else if (gameOverPanel != null) {
-            Button restartBtn = gameOverPanel.getRestartButton();
-            Button mainMenuBtn = gameOverPanel.getMainMenuButton();
-            Label gameOverLbl = gameOverPanel.getGameOverLabel();
-            Label scoreLbl = gameOverPanel.getScoreLabel();
-            
-            if (restartBtn != null) {
-                restartBtn.getTransforms().removeIf(transform -> transform instanceof Rotate);
-            }
-            if (mainMenuBtn != null) {
-                mainMenuBtn.getTransforms().removeIf(transform -> transform instanceof Rotate);
-            }
-            if (gameOverLbl != null) {
-                gameOverLbl.getTransforms().removeIf(transform -> transform instanceof Rotate);
-            }
-            if (scoreLbl != null) {
-                scoreLbl.getTransforms().removeIf(transform -> transform instanceof Rotate);
-            }
-            Button backBtnInverted = gameOverPanel.getBackButtonInverted();
-            if (backBtnInverted != null) {
-                backBtnInverted.getTransforms().removeIf(transform -> transform instanceof Rotate);
-            }
-            gameOverPanel.resetLayout();
+            resetNormalGameOverUI();
         }
         
         isGameOver.set(true);
@@ -1842,12 +1652,7 @@ public class GuiController implements Initializable {
             updateLevelsDialogueText();
         }
         
-        timeLine = new Timeline(new KeyFrame(
-                Duration.millis(dropIntervalMs),
-                _ -> moveDown(threadMove())
-        ));
-        timeLine.setCycleCount(Timeline.INDEFINITE);
-        timeLine.play();
+        timeLine = createGameTimeline(dropIntervalMs);
     }
     
     private void returnToGamemodesMenu() {
@@ -1994,8 +1799,9 @@ public class GuiController implements Initializable {
             highScoreHolderLabel.setVisible(false);
             return;
         }
-        int highScore = HighScoreManager.getHighScore();
-        String highScoreHolder = HighScoreManager.getHighScoreHolder();
+        HighScoreInfo highScoreInfo = getHighScoreInfo();
+        int highScore = highScoreInfo.highScore;
+        String highScoreHolder = highScoreInfo.highScoreHolder;
         highScoreLabel.setText("High Score: " + highScore);
         if (highScoreHolder != null && !highScoreHolder.isEmpty()) {
             String capitalizedName = highScoreHolder.substring(0, 1).toUpperCase() + 
@@ -2010,18 +1816,12 @@ public class GuiController implements Initializable {
     
     private void animateHighScoreHolder() {
         if (highScoreHolderLabel != null && highScoreHolderLabel.isVisible()) {
-            ScaleTransition pulse = new ScaleTransition(Duration.seconds(1.2), highScoreHolderLabel);
-            pulse.setFromX(1.0);
-            pulse.setFromY(1.0);
-            pulse.setToX(1.1);
-            pulse.setToY(1.1);
+            ScaleTransition pulse = createScaleTransition(highScoreHolderLabel, Duration.seconds(1.2), 1.0, 1.0, 1.1, 1.1);
             pulse.setCycleCount(Timeline.INDEFINITE);
             pulse.setAutoReverse(true);
             pulse.play();
             
-            FadeTransition glow = new FadeTransition(Duration.seconds(1.2), highScoreHolderLabel);
-            glow.setFromValue(0.8);
-            glow.setToValue(1.0);
+            FadeTransition glow = createFadeTransition(highScoreHolderLabel, Duration.seconds(1.2), 0.8, 1.0);
             glow.setCycleCount(Timeline.INDEFINITE);
             glow.setAutoReverse(true);
             glow.play();
@@ -2037,11 +1837,11 @@ public class GuiController implements Initializable {
         
         String currentPlayer = playerName != null && !playerName.isEmpty() ? playerName : "Player";
         String capitalizedPlayer = capitalizeName(currentPlayer);
-        String highScoreHolder = HighScoreManager.getHighScoreHolder();
+        HighScoreInfo highScoreInfo = getHighScoreInfo();
         
         String message1;
-        if (highScoreHolder != null && !highScoreHolder.isEmpty()) {
-            message1 = "Come on " + capitalizedPlayer + "! You can beat " + capitalizeName(highScoreHolder) + "'s highscore";
+        if (highScoreInfo.highScoreHolder != null && !highScoreInfo.highScoreHolder.isEmpty()) {
+            message1 = "Come on " + capitalizedPlayer + "! You can beat " + capitalizeName(highScoreInfo.highScoreHolder) + "'s highscore";
         } else {
             message1 = "Come on " + capitalizedPlayer + "! Set a new highscore!";
         }
@@ -2284,16 +2084,12 @@ public class GuiController implements Initializable {
         dialogueTextTimeline = new Timeline(
             new KeyFrame(Duration.seconds(6.5), e -> {
                 if (dialogueTextGame != null && dialogueTextGame.getScene() != null && shouldContinue.getAsBoolean()) {
-                    FadeTransition fadeOut = new FadeTransition(Duration.millis(500), dialogueTextGame);
-                    fadeOut.setFromValue(1.0);
-                    fadeOut.setToValue(0.0);
+                    FadeTransition fadeOut = createFadeTransition(dialogueTextGame, Duration.millis(500), 1.0, 0.0);
                     fadeOut.setOnFinished(event -> {
                         int nextIndex = (int)(Math.random() * messages.size());
                         String nextMessage = messages.get(nextIndex);
                         dialogueTextGame.setText(nextMessage);
-                        FadeTransition fadeIn = new FadeTransition(Duration.millis(500), dialogueTextGame);
-                        fadeIn.setFromValue(0.0);
-                        fadeIn.setToValue(1.0);
+                        FadeTransition fadeIn = createFadeTransition(dialogueTextGame, Duration.millis(500), 0.0, 1.0);
                         fadeIn.play();
                     });
                     fadeOut.play();
@@ -2303,6 +2099,278 @@ public class GuiController implements Initializable {
         
         dialogueTextTimeline.setCycleCount(Timeline.INDEFINITE);
         dialogueTextTimeline.play();
+    }
+    
+    private String formatTime(long totalSeconds) {
+        int minutes = (int)(totalSeconds / 60);
+        int seconds = (int)(totalSeconds % 60);
+        return String.format("%d:%02d", minutes, seconds);
+    }
+    
+    private String formatTimeWithPrefix(long totalSeconds) {
+        return "Time: " + formatTime(totalSeconds);
+    }
+    
+    private boolean checkLevelObjectiveMet(int levelNumber, int totalLines, long timeElapsed, int tripleClearsCount, int currentScore, com.comp2042.logic.Level level) {
+        switch (levelNumber) {
+            case 1:
+                return totalLines >= level.getTargetLines();
+            case 2:
+            case 5:
+                return totalLines >= level.getTargetLines() && timeElapsed <= level.getTimeLimit();
+            case 3:
+                return tripleClearsCount >= 2;
+            case 4:
+                return currentScore >= level.getTargetScore();
+            default:
+                return false;
+        }
+    }
+    
+    private String generateLevelProgressText(int levelNumber, int totalLines, long timeElapsed, int tripleClearsCount, int currentScore, com.comp2042.logic.Level level) {
+        switch (levelNumber) {
+            case 1:
+            case 2:
+            case 5:
+                return "Lines: " + totalLines + "/" + level.getTargetLines();
+            case 3:
+                return "Triple Clears: " + tripleClearsCount + "/2";
+            case 4:
+                return "Score: " + currentScore + "/" + level.getTargetScore();
+            default:
+                return "";
+        }
+    }
+    
+    private void removeRotateTransforms(javafx.scene.Node node) {
+        if (node != null) {
+            node.getTransforms().removeIf(transform -> transform instanceof Rotate);
+        }
+    }
+    
+    private boolean setupGameOverHighScore(int finalScore, String playerName) {
+        if (!isGuest && playerName != null && !playerName.isEmpty() && !isInvertedMode() && !is1984Mode() && currentLevel == null) {
+            return HighScoreManager.updateHighScore(finalScore, playerName);
+        }
+        return false;
+    }
+    
+    private HighScoreInfo getHighScoreInfo() {
+        HighScoreInfo highScoreInfo = getHighScoreInfo();
+        int highScore = highScoreInfo.highScore;
+        String highScoreHolder = highScoreInfo.highScoreHolder;
+        return new HighScoreInfo(highScore, highScoreHolder);
+    }
+    
+    private static class HighScoreInfo {
+        final int highScore;
+        final String highScoreHolder;
+        
+        HighScoreInfo(int highScore, String highScoreHolder) {
+            this.highScore = highScore;
+            this.highScoreHolder = highScoreHolder;
+        }
+    }
+    
+    private void setupInvertedGameOverUI() {
+        if (gameOverPanel == null) {
+            return;
+        }
+        
+        if (gameOverPanel.getBackButtonInverted() != null) {
+            gameOverPanel.getBackButtonInverted().setOnAction(_ -> returnToGamemodesMenu());
+            applyInvertedRotation(gameOverPanel.getBackButtonInverted(), 25.0, 25.0);
+        }
+        
+        gameOverPanel.applyInvertedLayout();
+        
+        Button restartBtn = gameOverPanel.getRestartButton();
+        Button mainMenuBtn = gameOverPanel.getMainMenuButton();
+        Label gameOverLbl = gameOverPanel.getGameOverLabel();
+        Label scoreLbl = gameOverPanel.getScoreLabel();
+        Label timeLbl = gameOverPanel.getTimePlayedLabel();
+        
+        if (timeLbl != null && timeLbl.isVisible()) {
+            applyInvertedRotation(timeLbl, 180.0, 15.0);
+        }
+        
+        if (restartBtn != null) {
+            applyInvertedRotation(restartBtn, 120.0, 30.0);
+        }
+        
+        if (mainMenuBtn != null) {
+            applyInvertedRotation(mainMenuBtn, 120.0, 30.0);
+        }
+        
+        if (gameOverLbl != null) {
+            removeRotateTransforms(gameOverLbl);
+            Platform.runLater(() -> {
+                double width = gameOverLbl.getBoundsInLocal().getWidth();
+                double height = gameOverLbl.getBoundsInLocal().getHeight();
+                if (width > 0 && height > 0) {
+                    Rotate rotate = new Rotate(INVERTED_ROTATION_ANGLE, width / 2, height / 2);
+                    gameOverLbl.getTransforms().add(rotate);
+                } else {
+                    Rotate rotate = new Rotate(INVERTED_ROTATION_ANGLE, 360, 55);
+                    gameOverLbl.getTransforms().add(rotate);
+                }
+            });
+        }
+        
+        if (scoreLbl != null) {
+            removeRotateTransforms(scoreLbl);
+            Platform.runLater(() -> {
+                double width = scoreLbl.getBoundsInLocal().getWidth();
+                double height = scoreLbl.getBoundsInLocal().getHeight();
+                if (width > 0 && height > 0) {
+                    Rotate rotate = new Rotate(INVERTED_ROTATION_ANGLE, width / 2, height / 2);
+                    scoreLbl.getTransforms().add(rotate);
+                } else {
+                    Rotate rotate = new Rotate(INVERTED_ROTATION_ANGLE, 360, 30);
+                    scoreLbl.getTransforms().add(rotate);
+                }
+            });
+        }
+    }
+    
+    private void resetNormalGameOverUI() {
+        if (gameOverPanel == null) {
+            return;
+        }
+        
+        Button restartBtn = gameOverPanel.getRestartButton();
+        Button mainMenuBtn = gameOverPanel.getMainMenuButton();
+        Label gameOverLbl = gameOverPanel.getGameOverLabel();
+        Label scoreLbl = gameOverPanel.getScoreLabel();
+        
+        removeRotateTransforms(restartBtn);
+        removeRotateTransforms(mainMenuBtn);
+        removeRotateTransforms(gameOverLbl);
+        removeRotateTransforms(scoreLbl);
+    }
+    
+    private Timeline createIndefiniteTimeline(KeyFrame... keyFrames) {
+        Timeline timeline = new Timeline(keyFrames);
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
+        return timeline;
+    }
+    
+    private Timeline createGameTimeline(int dropIntervalMs) {
+        return createIndefiniteTimeline(
+            new KeyFrame(Duration.millis(dropIntervalMs), _ -> moveDown(threadMove()))
+        );
+    }
+    
+    private void hideLevelCompleteAndShowGamePane() {
+        if (levelCompleteContainer != null) {
+            levelCompleteContainer.setVisible(false);
+        }
+        if (gamePane != null) {
+            gamePane.setVisible(true);
+        }
+    }
+    
+    private FadeTransition createFadeTransition(javafx.scene.Node node, Duration duration, double fromValue, double toValue) {
+        FadeTransition fade = new FadeTransition(duration, node);
+        fade.setFromValue(fromValue);
+        fade.setToValue(toValue);
+        return fade;
+    }
+    
+    private ScaleTransition createScaleTransition(javafx.scene.Node node, Duration duration, double fromX, double fromY, double toX, double toY) {
+        ScaleTransition scale = new ScaleTransition(duration, node);
+        scale.setFromX(fromX);
+        scale.setFromY(fromY);
+        scale.setToX(toX);
+        scale.setToY(toY);
+        return scale;
+    }
+    
+    private SequentialTransition createSequentialTransition(javafx.animation.Transition... transitions) {
+        return new SequentialTransition(transitions);
+    }
+    
+    private void setupHighScoreDisplay(int highScore, String highScoreHolder) {
+        if (!isInvertedMode() && !is1984Mode() && currentLevel == null) {
+            highScoreLabel.setText("High Score: " + highScore);
+            if (highScoreHolder != null && !highScoreHolder.isEmpty()) {
+                highScoreHolderLabel.setText("by " + capitalizeName(highScoreHolder));
+                highScoreHolderLabel.setVisible(true);
+                animateHighScoreHolder();
+            } else {
+                highScoreHolderLabel.setVisible(false);
+            }
+        } else {
+            highScoreLabel.setVisible(false);
+            highScoreHolderLabel.setVisible(false);
+        }
+    }
+    
+    private void setupGameOverPanel(int finalScore, int highScore, boolean isNewHighScore, long timePlayed) {
+        gameOverPanel.setGameMode(gameMode);
+        gameOverPanel.showFinalScore(finalScore, highScore, isNewHighScore, playerName, isGuest, timePlayed);
+        
+        if (currentLevel != null && gameOverPanel.getLeaderboardButton() != null) {
+            gameOverPanel.getLeaderboardButton().setVisible(false);
+            gameOverPanel.getLeaderboardButton().setManaged(false);
+        }
+        
+        if (is1984Mode() && gameOverPanel.getBackButton1984() != null) {
+            gameOverPanel.getBackButton1984().setOnAction(_ -> returnToGamemodesMenu());
+        }
+    }
+    
+    private void handleInvertedKeyInput(KeyEvent keyEvent) {
+        if (isRotateKey(keyEvent)) {
+            moveDown(userMove(EventType.DOWN));
+            keyEvent.consume();
+        } else if (isDownKey(keyEvent)) {
+            refreshBrick(eventListener.onRotateEvent(userMove(EventType.ROTATE)));
+            keyEvent.consume();
+        } else if (isLeftKey(keyEvent)) {
+            refreshBrick(eventListener.onRightEvent(userMove(EventType.RIGHT)));
+            keyEvent.consume();
+        } else if (isRightKey(keyEvent)) {
+            refreshBrick(eventListener.onLeftEvent(userMove(EventType.LEFT)));
+            keyEvent.consume();
+        } else if (keyEvent.getCode() == KeyCode.SPACE) {
+            hardDrop();
+            keyEvent.consume();
+        } else if (keyEvent.getCode() == KeyCode.H) {
+            holdBrick();
+            keyEvent.consume();
+        }
+    }
+    
+    private void handleNormalKeyInput(KeyEvent keyEvent) {
+        if (isLeftKey(keyEvent)) {
+            refreshBrick(eventListener.onLeftEvent(userMove(EventType.LEFT)));
+            keyEvent.consume();
+        } else if (isRightKey(keyEvent)) {
+            refreshBrick(eventListener.onRightEvent(userMove(EventType.RIGHT)));
+            keyEvent.consume();
+        } else if (isRotateKey(keyEvent)) {
+            refreshBrick(eventListener.onRotateEvent(userMove(EventType.ROTATE)));
+            keyEvent.consume();
+        } else if (isDownKey(keyEvent)) {
+            moveDown(userMove(EventType.DOWN));
+            keyEvent.consume();
+        } else if (keyEvent.getCode() == KeyCode.SPACE) {
+            hardDrop();
+            keyEvent.consume();
+        } else if (keyEvent.getCode() == KeyCode.H) {
+            holdBrick();
+            keyEvent.consume();
+        }
+    }
+    
+    private void handleGameControlKeys(KeyEvent keyEvent) {
+        if (keyEvent.getCode() == KeyCode.N) {
+            newGame(null);
+        } else if (keyEvent.getCode() == KeyCode.ESCAPE) {
+            pauseGame(null);
+        }
     }
     
     private void setupRootPaneRotation(boolean isInvertedMode) {
