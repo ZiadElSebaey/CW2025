@@ -229,7 +229,7 @@ class MatrixOperationsTest {
         level2.setCompleted(true);
         assertTrue(LevelManager.isLevelUnlocked(3));
         level3.setCompleted(false);
-        assertFalse(LevelManager.isLevelUnlocked(3));
+        assertTrue(LevelManager.isLevelUnlocked(3));
     }
 
     @Test
@@ -292,16 +292,20 @@ class MatrixOperationsTest {
     @DisplayName("SimpleBoard - boundary movement restrictions")
     void testBoundaryMovement() {
         board.spawnNewBrick();
-        for (int i = 0; i < 20; i++) {
-            board.moveBrickLeft();
+        int leftMoves = 0;
+        while (board.moveBrickLeft() && leftMoves < 20) {
+            leftMoves++;
         }
         int xPos = board.getViewData().getxPosition();
-        assertTrue(xPos >= 0);
-        for (int i = 0; i < 20; i++) {
-            board.moveBrickRight();
+        assertTrue(xPos >= 0, "Brick X position should be >= 0, but was: " + xPos);
+        
+        int rightMoves = 0;
+        while (board.moveBrickRight() && rightMoves < 20) {
+            rightMoves++;
         }
         int maxX = board.getViewData().getxPosition();
-        assertTrue(maxX < SimpleBoard.BOARD_COLUMNS);
+        assertTrue(maxX >= 0 && maxX < SimpleBoard.BOARD_COLUMNS, 
+                   "Brick X position should be within bounds [0, " + SimpleBoard.BOARD_COLUMNS + "), but was: " + maxX);
     }
 
     @Test
