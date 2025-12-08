@@ -25,6 +25,7 @@ import javafx.util.Duration;
  * @version 1.0
  * @since 1.0
  */
+@SuppressWarnings("unused")
 public class MainMenuController {
 
     private Stage stage;

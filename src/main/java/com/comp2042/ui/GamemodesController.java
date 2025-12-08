@@ -17,6 +17,7 @@ import javafx.stage.Stage;
  * @version 1.0
  * @since 1.0
  */
+@SuppressWarnings("unused")
 public class GamemodesController {
 
     @FXML
