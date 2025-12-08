@@ -20,15 +20,21 @@ public final class FontLoader {
      * @return The loaded Font, or null if loading failed
      */
     public static Font loadFont(String fontPath, double size) {
+        if (fontPath == null || fontPath.isEmpty()) {
+            return Font.font("System", size);
+        }
         try {
             InputStream fontStream = ResourceLoader.getResourceAsStream(fontPath);
             if (fontStream != null) {
-                return Font.loadFont(fontStream, size);
+                Font loadedFont = Font.loadFont(fontStream, size);
+                if (loadedFont != null) {
+                    return loadedFont;
+                }
             }
         } catch (Exception e) {
             System.err.println("Failed to load font '" + fontPath + "': " + e.getMessage());
         }
-        return null;
+        return Font.font("System", size);
     }
     
     /**
@@ -39,15 +45,21 @@ public final class FontLoader {
      * @return The loaded Font, or null if loading failed
      */
     public static Font loadFontFromUrl(String fontPath, double size) {
+        if (fontPath == null || fontPath.isEmpty()) {
+            return Font.font("System", size);
+        }
         try {
             URL fontUrl = ResourceLoader.getResource(fontPath);
             if (fontUrl != null) {
-                return Font.loadFont(fontUrl.toExternalForm(), size);
+                Font loadedFont = Font.loadFont(fontUrl.toExternalForm(), size);
+                if (loadedFont != null) {
+                    return loadedFont;
+                }
             }
         } catch (Exception e) {
             System.err.println("Failed to load font from URL '" + fontPath + "': " + e.getMessage());
         }
-        return null;
+        return Font.font("System", size);
     }
 }
 

@@ -4,11 +4,25 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
+/**
+ * Manages the game leaderboard.
+ * Handles adding, retrieving, and managing leaderboard entries.
+ * Entries are sorted by score in descending order and limited to a maximum
+ * of 10 entries. Supports case-insensitive name matching for updates.
+ * 
+ * Leaderboard data is persisted to a file in the user's home directory.
+ * 
+ * @author TetrisJFX Team
+ */
 public class LeaderboardManager {
     
     private static final String LEADERBOARD_FILE = System.getProperty("user.home") + "/.tetrisjfx/leaderboard.txt";
     private static final int MAX_ENTRIES = 10;
     
+    /**
+     * Ensures the leaderboard directory exists.
+     * Creates the directory if it doesn't exist.
+     */
     public static void ensureDirectoryExists() {
         try {
             Path path = Paths.get(LEADERBOARD_FILE).getParent();
@@ -19,6 +33,16 @@ public class LeaderboardManager {
         }
     }
     
+    /**
+     * Adds or updates a leaderboard entry.
+     * If an entry with the same name (case-insensitive) exists, it will be
+     * updated only if the new score is higher. Otherwise, a new entry is added.
+     * Entries are automatically sorted by score and limited to MAX_ENTRIES.
+     * 
+     * @param name The player's name
+     * @param score The player's score
+     * @return true if the entry was added or updated
+     */
     public static boolean addEntry(String name, int score) {
         ensureDirectoryExists();
         List<LeaderboardEntry> entries = getEntries();
@@ -48,6 +72,11 @@ public class LeaderboardManager {
         return true;
     }
     
+    /**
+     * Retrieves all leaderboard entries, sorted by score in descending order.
+     * 
+     * @return A list of leaderboard entries, sorted by score (highest first)
+     */
     public static List<LeaderboardEntry> getEntries() {
         ensureDirectoryExists();
         List<LeaderboardEntry> entries = new ArrayList<>();
@@ -78,11 +107,20 @@ public class LeaderboardManager {
         }
     }
     
+    /**
+     * Resets the leaderboard by clearing all entries.
+     */
     public static void resetLeaderboard() {
         ensureDirectoryExists();
         saveEntries(new ArrayList<>());
     }
     
+    /**
+     * Represents a single leaderboard entry.
+     * 
+     * @param name The player's name
+     * @param score The player's score
+     */
     public record LeaderboardEntry(String name, int score) {}
 }
 

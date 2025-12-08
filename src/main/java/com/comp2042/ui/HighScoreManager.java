@@ -3,6 +3,13 @@ package com.comp2042.ui;
 import java.io.*;
 import java.nio.file.*;
 
+/**
+ * Manages the global high score for the game.
+ * Handles loading, saving, and updating the high score with the player's name.
+ * High score data is persisted to a file in the user's home directory.
+ * 
+ * @author TetrisJFX Team
+ */
 public final class HighScoreManager {
 
     private static final String HIGH_SCORE_FILE = "highscore.dat";

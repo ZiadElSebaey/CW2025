@@ -9,8 +9,24 @@ import com.comp2042.ui.SoundManager;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
+/**
+ * Main entry point for the TetrisJFX application.
+ * Initializes the JavaFX application, loads fonts, settings, and music,
+ * and displays the main menu.
+ * 
+ * @author TetrisJFX Team
+ * @version 1.0
+ */
 public class Main extends Application {
 
+    /**
+     * Initializes and starts the JavaFX application.
+     * Loads the custom font, initializes settings and music managers,
+     * and navigates to the main menu scene.
+     * 
+     * @param primaryStage The primary stage for the application
+     * @throws Exception If initialization fails
+     */
     @Override
     public void start(Stage primaryStage) throws Exception {
         FontLoader.loadFont("FROZENLAND.otf", 12);
@@ -31,6 +47,12 @@ public class Main extends Application {
         primaryStage.show();
     }
     
+    /**
+     * Called when the application is shutting down.
+     * Cleans up music and sound effect resources.
+     * 
+     * @throws Exception If cleanup fails
+     */
     @Override
     public void stop() throws Exception {
         MusicManager.dispose();
@@ -38,6 +60,11 @@ public class Main extends Application {
         super.stop();
     }
 
+    /**
+     * Main method to launch the JavaFX application.
+     * 
+     * @param args Command-line arguments
+     */
     public static void main(String[] args) {
         launch(args);
     }

@@ -17,6 +17,9 @@ public final class ResourceLoader {
      * @return The URL of the resource, or null if not found
      */
     public static URL getResource(String resourcePath) {
+        if (resourcePath == null || resourcePath.isEmpty()) {
+            return null;
+        }
         return ResourceLoader.class.getClassLoader().getResource(resourcePath);
     }
     
@@ -27,6 +30,9 @@ public final class ResourceLoader {
      * @return The InputStream of the resource, or null if not found
      */
     public static InputStream getResourceAsStream(String resourcePath) {
+        if (resourcePath == null || resourcePath.isEmpty()) {
+            return null;
+        }
         return ResourceLoader.class.getClassLoader().getResourceAsStream(resourcePath);
     }
 }

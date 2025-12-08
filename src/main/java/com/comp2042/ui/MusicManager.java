@@ -8,6 +8,15 @@ import javafx.util.Duration;
 
 import java.net.URL;
 
+/**
+ * Manages background music playback for the game.
+ * Supports two music tracks: "Russia Music" and "Christmas".
+ * "Russia Music" loops every 17.5 seconds, while "Christmas" loops indefinitely.
+ * 
+ * Music state is synchronized with SettingsManager to respect user preferences.
+ * 
+ * @author TetrisJFX Team
+ */
 public final class MusicManager {
     
     private static MediaPlayer mediaPlayer;
@@ -18,6 +27,10 @@ public final class MusicManager {
     
     private MusicManager() {}
     
+    /**
+     * Initializes the music manager.
+     * Loads the saved music track from settings or defaults to "Russia Music".
+     */
     public static void initialize() {
         String savedTrack = SettingsManager.getSelectedMusicTrack();
         if (savedTrack != null && !savedTrack.isEmpty()) {
@@ -26,6 +39,13 @@ public final class MusicManager {
         loadTrack(currentTrack);
     }
     
+    /**
+     * Loads a music track.
+     * If the track was playing before, it will resume playing after loading
+     * (if music is enabled in settings).
+     * 
+     * @param trackName The name of the track ("Christmas" or "Russia Music")
+     */
     public static void loadTrack(String trackName) {
         String resourcePath;
         boolean isRussiaMusic = false;
@@ -90,10 +110,19 @@ public final class MusicManager {
         }
     }
     
+    /**
+     * Gets the currently loaded music track name.
+     * 
+     * @return The current track name (e.g., "Russia Music", "Christmas")
+     */
     public static String getCurrentTrack() {
         return currentTrack;
     }
     
+    /**
+     * Starts playing the background music.
+     * If "Russia Music" is loaded, also starts the loop timeline.
+     */
     public static void play() {
         if (mediaPlayer != null) {
             if (!isPlaying) {
@@ -109,6 +138,9 @@ public final class MusicManager {
         }
     }
     
+    /**
+     * Stops the background music playback.
+     */
     public static void stop() {
         if (mediaPlayer != null) {
             mediaPlayer.stop();
@@ -117,6 +149,9 @@ public final class MusicManager {
         stopRussiaMusicLoop();
     }
     
+    /**
+     * Pauses the background music playback.
+     */
     public static void pause() {
         if (mediaPlayer != null && isPlaying) {
             mediaPlayer.pause();
@@ -124,16 +159,31 @@ public final class MusicManager {
         }
     }
     
+    /**
+     * Checks if music is currently playing.
+     * 
+     * @return true if music is playing, false otherwise
+     */
     public static boolean isPlaying() {
         return isPlaying;
     }
     
+    /**
+     * Sets the music volume.
+     * Volume is clamped to the range [0.0, 1.0].
+     * 
+     * @param volume The volume level (0.0 to 1.0)
+     */
     public static void setVolume(double volume) {
         if (mediaPlayer != null) {
             mediaPlayer.setVolume(Math.max(0.0, Math.min(1.0, volume)));
         }
     }
     
+    /**
+     * Disposes of music resources and stops playback.
+     * Should be called when the application is closing.
+     */
     public static void dispose() {
         stopRussiaMusicLoop();
         if (mediaPlayer != null) {

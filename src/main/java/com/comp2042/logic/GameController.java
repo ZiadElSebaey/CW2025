@@ -4,12 +4,26 @@ import com.comp2042.ui.GuiController;
 import com.comp2042.ui.ViewData;
 import javafx.beans.property.IntegerProperty;
 
+/**
+ * Main game controller that manages game logic and coordinates between
+ * the game board and the GUI.
+ * 
+ * Handles player input events (movement, rotation, hard drop, hold),
+ * manages brick landing, line clearing, scoring, and game state.
+ * 
+ * @author TetrisJFX Team
+ */
 public class GameController implements InputEventListener {
 
     private final Board board = new SimpleBoard();
 
     private final GuiController viewGuiController;
 
+    /**
+     * Creates a new game controller with the specified GUI controller.
+     * 
+     * @param c The GUI controller to coordinate with
+     */
     public GameController(GuiController c) {
         this.viewGuiController = c;
         initializeGame();
@@ -94,6 +108,11 @@ public class GameController implements InputEventListener {
         return board.holdBrick();
     }
     
+    /**
+     * Gets the lines property for binding to UI.
+     * 
+     * @return The IntegerProperty representing the number of lines cleared
+     */
     public IntegerProperty getLinesProperty() {
         return board.getScore().linesProperty();
     }

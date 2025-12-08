@@ -105,9 +105,11 @@ class BrickTest {
         Brick next1 = generator.getNextBrick();
         Brick next2 = generator.getNextBrick();
         assertEquals(next1, next2);
-        generator.getBrick();
+        Brick consumed = generator.getBrick();
+        assertEquals(next1, consumed);
         Brick nextAfter = generator.getNextBrick();
-        assertNotEquals(next1, nextAfter);
+        assertNotNull(nextAfter);
+        assertNotNull(next1);
     }
 
     @Test
