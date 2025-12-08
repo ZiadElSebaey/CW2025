@@ -1,6 +1,8 @@
 package com.comp2042;
 
 import com.comp2042.ui.MainMenuController;
+import com.comp2042.ui.MusicManager;
+import com.comp2042.ui.SettingsManager;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -20,6 +22,13 @@ public class Main extends Application {
             Font.loadFont(fontStream, 12);
         }
 
+        SettingsManager.ensureDirectoryExists();
+        MusicManager.initialize();
+        
+        if (SettingsManager.isMusicEnabled()) {
+            MusicManager.play();
+        }
+
         URL location = getClass().getClassLoader().getResource("mainMenu.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(location);
         Parent root = fxmlLoader.load();
@@ -30,6 +39,12 @@ public class Main extends Application {
         Scene scene = new Scene(root, 720, 680);
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+    
+    @Override
+    public void stop() throws Exception {
+        MusicManager.dispose();
+        super.stop();
     }
 
     public static void main(String[] args) {

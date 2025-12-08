@@ -7,6 +7,9 @@ public final class SettingsManager {
 
     private static final String SETTINGS_FILE = "settings.dat";
     private static boolean ghostBlockEnabled = true; // Default to enabled
+    private static boolean musicEnabled = true; // Default to enabled
+    private static boolean soundEffectsEnabled = true; // Default to enabled
+    private static String selectedMusicTrack = "Russia Music"; // Default track
 
     static {
         loadSettings();
@@ -23,6 +26,33 @@ public final class SettingsManager {
         saveSettings();
     }
 
+    public static boolean isMusicEnabled() {
+        return musicEnabled;
+    }
+
+    public static void setMusicEnabled(boolean enabled) {
+        musicEnabled = enabled;
+        saveSettings();
+    }
+
+    public static boolean isSoundEffectsEnabled() {
+        return soundEffectsEnabled;
+    }
+
+    public static void setSoundEffectsEnabled(boolean enabled) {
+        soundEffectsEnabled = enabled;
+        saveSettings();
+    }
+
+    public static String getSelectedMusicTrack() {
+        return selectedMusicTrack;
+    }
+
+    public static void setSelectedMusicTrack(String track) {
+        selectedMusicTrack = track;
+        saveSettings();
+    }
+
     private static void loadSettings() {
         try {
             Path path = getSettingsPath();
@@ -32,6 +62,15 @@ public final class SettingsManager {
                 if (parts.length >= 1 && !parts[0].isEmpty()) {
                     ghostBlockEnabled = Boolean.parseBoolean(parts[0]);
                 }
+                if (parts.length >= 2 && !parts[1].isEmpty()) {
+                    musicEnabled = Boolean.parseBoolean(parts[1]);
+                }
+                if (parts.length >= 3 && !parts[2].isEmpty()) {
+                    selectedMusicTrack = parts[2];
+                }
+                if (parts.length >= 4 && !parts[3].isEmpty()) {
+                    soundEffectsEnabled = Boolean.parseBoolean(parts[3]);
+                }
             }
         } catch (IOException | NumberFormatException ignored) {
         }
@@ -40,7 +79,7 @@ public final class SettingsManager {
     private static void saveSettings() {
         try {
             Path path = getSettingsPath();
-            String content = String.valueOf(ghostBlockEnabled);
+            String content = ghostBlockEnabled + "|" + musicEnabled + "|" + selectedMusicTrack + "|" + soundEffectsEnabled;
             Files.writeString(path, content);
         } catch (IOException ignored) {
         }

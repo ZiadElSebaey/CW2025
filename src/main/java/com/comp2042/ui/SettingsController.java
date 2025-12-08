@@ -29,9 +29,6 @@ public class SettingsController {
     @FXML
     private Button ghostBlockButton;
 
-    private boolean musicOn = true;
-    private boolean soundOn = true;
-
     public void setStage(Stage stage) {
         this.stage = stage;
     }
@@ -53,18 +50,32 @@ public class SettingsController {
         boolean ghostEnabled = SettingsManager.isGhostBlockEnabled();
         ghostBlockButton.setText(ghostEnabled ? "ON" : "OFF");
         
+        boolean musicEnabled = SettingsManager.isMusicEnabled();
+        musicButton.setText(musicEnabled ? "ON" : "OFF");
+        
+        boolean soundEffectsEnabled = SettingsManager.isSoundEffectsEnabled();
+        soundButton.setText(soundEffectsEnabled ? "ON" : "OFF");
+        
         AnimatedBackground animatedBackground = new AnimatedBackground(720, 680);
         rootPane.getChildren().addFirst(animatedBackground);
     }
 
     private void toggleMusic() {
-        musicOn = !musicOn;
-        musicButton.setText(musicOn ? "ON" : "OFF");
+        boolean newState = !SettingsManager.isMusicEnabled();
+        SettingsManager.setMusicEnabled(newState);
+        musicButton.setText(newState ? "ON" : "OFF");
+        
+        if (newState) {
+            MusicManager.play();
+        } else {
+            MusicManager.stop();
+        }
     }
 
     private void toggleSound() {
-        soundOn = !soundOn;
-        soundButton.setText(soundOn ? "ON" : "OFF");
+        boolean newState = !SettingsManager.isSoundEffectsEnabled();
+        SettingsManager.setSoundEffectsEnabled(newState);
+        soundButton.setText(newState ? "ON" : "OFF");
     }
 
     private void toggleGhostBlock() {

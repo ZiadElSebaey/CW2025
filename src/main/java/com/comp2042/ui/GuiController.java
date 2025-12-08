@@ -36,6 +36,8 @@ import javafx.scene.shape.Rectangle;
 import javafx.application.Platform;
 import javafx.scene.text.Font;
 import javafx.scene.transform.Rotate;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -225,6 +227,11 @@ public class GuiController implements Initializable {
     private long freePlayTotalPauseDuration;
     private int dropIntervalMs = DEFAULT_DROP_INTERVAL_MS;
     private Timeline dialogueTextTimeline;
+    private MediaPlayer glassBreakSound;
+    private MediaPlayer gameOver1984Sound;
+    private MediaPlayer fallSound;
+    private MediaPlayer nextLevelSound;
+    private MediaPlayer gameOverSound;
 
     public void setStage(Stage stage) {
         this.stage = stage;
@@ -714,7 +721,7 @@ public class GuiController implements Initializable {
     private void updateBrickPanelPosition(ViewData brick) {
         int brickSize = getBrickSize();
         double cellSize = brickPanel.getVgap() + brickSize;
-        double padding = is1984Mode() ? 0 : BOARD_PADDING;
+        double padding = is1984Mode() ? BRICK_SIZE_1984 : BOARD_PADDING;
         double x = gameBoard.getLayoutX() + padding + brick.getxPosition() * cellSize;
         double y = BRICK_PANEL_Y_OFFSET + gameBoard.getLayoutY() + padding
                 + (brick.getyPosition() - HIDDEN_ROWS) * cellSize;
@@ -970,7 +977,7 @@ public class GuiController implements Initializable {
 
     public void refreshBrick(ViewData brick) {
         if (!isPause.get()) {
-            lastViewData = brick; // Store for ghost block updates
+            lastViewData = brick; 
             updateBrickPanelPosition(brick);
             updateGhostPosition(brick);
             updateNextBlock(brick);
@@ -1016,6 +1023,9 @@ public class GuiController implements Initializable {
 
     private void hardDrop() {
         if (!isPause.get()) {
+            if (!is1984Mode() && SettingsManager.isSoundEffectsEnabled()) {
+                playFallSound();
+            }
             DownData downData = eventListener.onHardDropEvent();
             if (shouldShowScoreNotification(downData)) {
                 showScoreNotification(downData.getClearRow().getScoreBonus());
@@ -1023,6 +1033,24 @@ public class GuiController implements Initializable {
             refreshBrick(downData.getViewData());
         }
         resetGamePanelFocus();
+    }
+    
+    private void playFallSound() {
+        try {
+            URL soundUrl = getClass().getClassLoader().getResource("sfx/fall.mp3");
+            if (soundUrl != null) {
+                if (fallSound != null) {
+                    fallSound.stop();
+                    fallSound.dispose();
+                }
+                Media media = new Media(soundUrl.toExternalForm());
+                fallSound = new MediaPlayer(media);
+                fallSound.setVolume(0.6);
+                fallSound.play();
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to play fall sound: " + e.getMessage());
+        }
     }
 
     private boolean shouldShowScoreNotification(DownData downData) {
@@ -1085,11 +1113,32 @@ public class GuiController implements Initializable {
     }
     
     public void onLinesCleared(int linesCount) {
+        if (!is1984Mode() && SettingsManager.isSoundEffectsEnabled()) {
+            playGlassBreakSound();
+        }
         if (currentLevel != null && linesCount == 3) {
             tripleClearsCount++;
         }
         if (currentLevel != null) {
             checkLevelObjective();
+        }
+    }
+    
+    private void playGlassBreakSound() {
+        try {
+            URL soundUrl = getClass().getClassLoader().getResource("sfx/glass-break.mp3");
+            if (soundUrl != null) {
+                if (glassBreakSound != null) {
+                    glassBreakSound.stop();
+                    glassBreakSound.dispose();
+                }
+                Media media = new Media(soundUrl.toExternalForm());
+                glassBreakSound = new MediaPlayer(media);
+                glassBreakSound.setVolume(0.6);
+                glassBreakSound.play();
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to play glass break sound: " + e.getMessage());
         }
     }
     
@@ -1166,6 +1215,10 @@ public class GuiController implements Initializable {
         if (levelCompletePanel != null && levelCompleteContainer != null && currentLevel != null) {
             if (gamePane != null) {
                 gamePane.setVisible(false);
+            }
+            
+            if (SettingsManager.isSoundEffectsEnabled()) {
+                playNextLevelSound();
             }
             
             int nextLevelNumber = currentLevel.getLevelNumber() + 1;
@@ -1251,6 +1304,12 @@ public class GuiController implements Initializable {
         setupHighScoreDisplay(highScore, highScoreHolder);
         setupGameOverPanel(finalScore, highScore, isNewHighScore, timePlayed);
         
+        if (is1984Mode() && SettingsManager.isSoundEffectsEnabled()) {
+            playGameOver1984Sound();
+        } else if (!is1984Mode() && SettingsManager.isSoundEffectsEnabled()) {
+            playGameOverSound();
+        }
+        
         gameOverPanel.setVisible(true);
         gameOverContainer.setVisible(true);
         
@@ -1263,6 +1322,60 @@ public class GuiController implements Initializable {
         isGameOver.set(true);
         
         disableGamePanel();
+    }
+    
+    private void playGameOver1984Sound() {
+        try {
+            URL soundUrl = getClass().getClassLoader().getResource("sfx/gameover1984.mp3");
+            if (soundUrl != null) {
+                if (gameOver1984Sound != null) {
+                    gameOver1984Sound.stop();
+                    gameOver1984Sound.dispose();
+                }
+                Media media = new Media(soundUrl.toExternalForm());
+                gameOver1984Sound = new MediaPlayer(media);
+                gameOver1984Sound.setVolume(0.7);
+                gameOver1984Sound.play();
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to play game over 1984 sound: " + e.getMessage());
+        }
+    }
+    
+    private void playNextLevelSound() {
+        try {
+            URL soundUrl = getClass().getClassLoader().getResource("sfx/next-level-tetris-sounds.mp3");
+            if (soundUrl != null) {
+                if (nextLevelSound != null) {
+                    nextLevelSound.stop();
+                    nextLevelSound.dispose();
+                }
+                Media media = new Media(soundUrl.toExternalForm());
+                nextLevelSound = new MediaPlayer(media);
+                nextLevelSound.setVolume(0.7);
+                nextLevelSound.play();
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to play next level sound: " + e.getMessage());
+        }
+    }
+    
+    private void playGameOverSound() {
+        try {
+            URL soundUrl = getClass().getClassLoader().getResource("sfx/gameover.mp3");
+            if (soundUrl != null) {
+                if (gameOverSound != null) {
+                    gameOverSound.stop();
+                    gameOverSound.dispose();
+                }
+                Media media = new Media(soundUrl.toExternalForm());
+                gameOverSound = new MediaPlayer(media);
+                gameOverSound.setVolume(0.7);
+                gameOverSound.play();
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to play game over sound: " + e.getMessage());
+        }
     }
 
     public void newGame(ActionEvent actionEvent) {
@@ -1339,7 +1452,9 @@ public class GuiController implements Initializable {
             if (is1984Mode()) {
                 countdownPanel.set1984Mode(true);
             }
-            countdownPanel.startCountdown(this::handleCountdownFinished);
+            boolean isFreePlayOrLevels = (currentLevel != null) || (currentLevel == null && !isInvertedMode() && !is1984Mode());
+            boolean isInverted = isInvertedMode();
+            countdownPanel.startCountdown(this::handleCountdownFinished, isFreePlayOrLevels || isInverted);
         } else {
             startNewGame();
         }
@@ -2500,11 +2615,13 @@ public class GuiController implements Initializable {
                 gamePanel.getStyleClass().add("gamePanel-1984");
             }
             
-            double boardWidth = 220; 
-            double boardHeight = 445;  
+            double boardWidth = DEFAULT_GAME_BOARD_WIDTH - (BRICK_SIZE_1984 * 3) + BRICK_SIZE_1984; 
+            int visibleRows = 27 - HIDDEN_ROWS;
+            double vgap = gamePanel.getVgap() > 0 ? gamePanel.getVgap() : 1;
+            double boardHeight = visibleRows * BRICK_SIZE_1984 + (visibleRows - 1) * vgap + 35;  
             
-            double centerX = (WINDOW_WIDTH - boardWidth) / 2;
-            double centerY = (WINDOW_HEIGHT - boardHeight) / 2;
+            double centerX = (WINDOW_WIDTH - boardWidth) / 2 + BRICK_SIZE_1984 - (BRICK_SIZE_1984 / 2) - BRICK_SIZE_1984;
+            double centerY = (WINDOW_HEIGHT - boardHeight) / 2 + 10;
             
             gameBoard.setLayoutX(centerX);
             gameBoard.setLayoutY(centerY);
