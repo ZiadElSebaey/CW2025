@@ -17,7 +17,14 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-
+/**
+ * Controller for the main menu screen.
+ * Handles navigation to different game modes, settings, leaderboard, and other menu options.
+ * 
+ * @author CW2025 Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class MainMenuController {
 
     private Stage stage;

@@ -8,6 +8,16 @@ import com.comp2042.ui.ViewData;
 
 import java.awt.*;
 
+/**
+ * Implementation of the Board interface representing the game board.
+ * Manages the game state, brick movement, rotation, and row clearing.
+ * Supports standard Tetris gameplay with hold functionality.
+ * 
+ * @author CW2025 Team
+ * @version 1.0
+ * @since 1.0
+ * @see Board
+ */
 public class SimpleBoard implements Board {
     public static final int BOARD_ROWS = 27;
     public static final int BOARD_COLUMNS = 13;
@@ -24,10 +34,20 @@ public class SimpleBoard implements Board {
     private final Score score;
     private Brick heldBrick;
     private boolean canHold = true;
+    
+    /**
+     * Creates a new SimpleBoard with default dimensions.
+     */
     public SimpleBoard() {
         this(BOARD_ROWS, BOARD_COLUMNS);
     }
 
+    /**
+     * Creates a new SimpleBoard with custom dimensions.
+     * 
+     * @param width the number of rows in the board
+     * @param height the number of columns in the board
+     */
     public SimpleBoard(int width, int height) {
         this.width = width;
         this.height = height;
@@ -108,6 +128,11 @@ public class SimpleBoard implements Board {
         return new ViewData(brickRotator.getCurrentShape(), (int) currentOffset.getX(), (int) currentOffset.getY(), next1, next2, next3, getGhostY(), holdData);
     }
 
+    /**
+     * Gets the Y coordinate where the ghost brick would land.
+     * 
+     * @return the Y coordinate of the ghost brick position
+     */
     public int getGhostY() {
         int ghostY = (int) currentOffset.getY();
         Point testOffset = new Point(currentOffset);
@@ -118,6 +143,7 @@ public class SimpleBoard implements Board {
         return ghostY;
     }
 
+    @Override
     public int hardDrop() {
         int dropDistance = 0;
         while (tryMove(0, 1)) {
@@ -176,6 +202,11 @@ public class SimpleBoard implements Board {
         return getViewData();
     }
     
+    /**
+     * Gets the currently held brick.
+     * 
+     * @return the held brick, or {@code null} if no brick is held
+     */
     public Brick getHeldBrick() {
         return heldBrick;
     }

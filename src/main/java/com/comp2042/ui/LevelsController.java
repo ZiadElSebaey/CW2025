@@ -13,6 +13,17 @@ import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
+/**
+ * Controller for the levels selection screen.
+ * Displays available levels, their unlock status, and allows players to
+ * select and start a level. Manages level progress and reset functionality.
+ * 
+ * @author CW2025 Team
+ * @version 1.0
+ * @since 1.0
+ * @see com.comp2042.logic.Level
+ * @see LevelManager
+ */
 public class LevelsController implements Initializable {
     
     @FXML

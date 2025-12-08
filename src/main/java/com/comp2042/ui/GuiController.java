@@ -44,6 +44,17 @@ import javafx.util.Duration;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+/**
+ * Main GUI controller for the Tetris game.
+ * Manages all UI elements, game rendering, user input handling, and coordinates
+ * between the game logic (GameController) and the visual representation.
+ * Handles multiple game modes (Normal, Inverted, 1984) with different visual styles.
+ * 
+ * @author CW2025 Team
+ * @version 1.0
+ * @since 1.0
+ * @see com.comp2042.logic.GameController
+ */
 public class GuiController implements Initializable {
 
 

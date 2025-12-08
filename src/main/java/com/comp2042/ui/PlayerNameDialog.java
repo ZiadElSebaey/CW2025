@@ -16,6 +16,14 @@ import javafx.stage.StageStyle;
 
 import java.net.URL;
 
+/**
+ * Dialog for entering player name for score submission.
+ * Allows players to enter their name or play as a guest.
+ * 
+ * @author CW2025 Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class PlayerNameDialog {
     
     private String playerName;

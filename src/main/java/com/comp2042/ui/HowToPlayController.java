@@ -14,7 +14,14 @@ import javafx.scene.transform.Rotate;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-
+/**
+ * Controller for the "How to Play" tutorial screen.
+ * Displays game instructions and controls across multiple pages.
+ * 
+ * @author CW2025 Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class HowToPlayController {
 
     private Stage stage;

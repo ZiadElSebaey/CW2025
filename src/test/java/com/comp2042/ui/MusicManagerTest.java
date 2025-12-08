@@ -120,4 +120,3 @@ class MusicManagerTest {
         assertTrue(track.equals("Russia Music") || track.equals(initialTrack));
     }
 }
-

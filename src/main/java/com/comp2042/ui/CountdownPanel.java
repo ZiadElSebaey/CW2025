@@ -14,6 +14,15 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.shape.Rectangle;
 
+/**
+ * Panel that displays a countdown animation before the game starts.
+ * Shows "3-2-1" countdown with visual effects. Supports different timing
+ * for different game modes and special styling for 1984 mode.
+ * 
+ * @author CW2025 Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class CountdownPanel extends StackPane {
     
     private final Label countdownLabel;

@@ -12,6 +12,15 @@ import javafx.stage.StageStyle;
 
 import java.net.URL;
 
+/**
+ * Dialog for selecting background music track.
+ * Allows users to choose between available music tracks.
+ * 
+ * @author CW2025 Team
+ * @version 1.0
+ * @since 1.0
+ * @see MusicManager
+ */
 public class MusicSelectionDialog {
     private final Stage dialog;
     

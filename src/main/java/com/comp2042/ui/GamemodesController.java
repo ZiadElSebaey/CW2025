@@ -9,7 +9,14 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-
+/**
+ * Controller for the game modes selection screen.
+ * Allows users to choose between different game modes (Normal, Inverted, 1984).
+ * 
+ * @author CW2025 Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class GamemodesController {
 
     @FXML

@@ -182,4 +182,3 @@ class LeaderboardManagerTest {
         assertTrue(entries.stream().allMatch(e -> e.score() == 100));
     }
 }
-

@@ -80,4 +80,3 @@ class GameModeTest {
         assertEquals(GameMode.MODE_1984, GameMode.valueOf("MODE_1984"));
     }
 }
-

@@ -6,6 +6,14 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
+/**
+ * Controller for the settings screen.
+ * Manages user preferences including music, sound effects, and ghost block settings.
+ * 
+ * @author CW2025 Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class SettingsController {
 
     private Stage stage;

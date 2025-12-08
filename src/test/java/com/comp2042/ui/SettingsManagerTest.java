@@ -113,4 +113,3 @@ class SettingsManagerTest {
         assertTrue(Files.isDirectory(dir));
     }
 }
-

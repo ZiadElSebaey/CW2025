@@ -5,15 +5,12 @@ import java.nio.file.*;
 
 /**
  * Manages persistent application settings.
- * Handles loading and saving of user preferences including:
- * - Ghost block visibility
- * - Music enabled/disabled state
- * - Selected music track
- * - Sound effects enabled/disabled state
+ * Handles loading and saving user preferences including ghost block,
+ * music, sound effects, and music track selection.
  * 
- * Settings are persisted to a file in the user's home directory.
- * 
- * @author TetrisJFX Team
+ * @author CW2025 Team
+ * @version 1.0
+ * @since 1.0
  */
 public final class SettingsManager {
 
@@ -32,16 +29,16 @@ public final class SettingsManager {
     /**
      * Checks if the ghost block feature is enabled.
      * 
-     * @return true if ghost block is enabled, false otherwise
+     * @return {@code true} if ghost block is enabled, {@code false} otherwise
      */
     public static boolean isGhostBlockEnabled() {
         return ghostBlockEnabled;
     }
 
     /**
-     * Sets the ghost block feature enabled/disabled state.
+     * Sets the ghost block enabled state and saves to persistent storage.
      * 
-     * @param enabled true to enable ghost block, false to disable
+     * @param enabled the new ghost block state
      */
     public static void setGhostBlockEnabled(boolean enabled) {
         ghostBlockEnabled = enabled;
@@ -51,16 +48,16 @@ public final class SettingsManager {
     /**
      * Checks if background music is enabled.
      * 
-     * @return true if music is enabled, false otherwise
+     * @return {@code true} if music is enabled, {@code false} otherwise
      */
     public static boolean isMusicEnabled() {
         return musicEnabled;
     }
 
     /**
-     * Sets the background music enabled/disabled state.
+     * Sets the music enabled state and saves to persistent storage.
      * 
-     * @param enabled true to enable music, false to disable
+     * @param enabled the new music state
      */
     public static void setMusicEnabled(boolean enabled) {
         musicEnabled = enabled;
@@ -70,16 +67,16 @@ public final class SettingsManager {
     /**
      * Checks if sound effects are enabled.
      * 
-     * @return true if sound effects are enabled, false otherwise
+     * @return {@code true} if sound effects are enabled, {@code false} otherwise
      */
     public static boolean isSoundEffectsEnabled() {
         return soundEffectsEnabled;
     }
 
     /**
-     * Sets the sound effects enabled/disabled state.
+     * Sets the sound effects enabled state and saves to persistent storage.
      * 
-     * @param enabled true to enable sound effects, false to disable
+     * @param enabled the new sound effects state
      */
     public static void setSoundEffectsEnabled(boolean enabled) {
         soundEffectsEnabled = enabled;
@@ -87,24 +84,27 @@ public final class SettingsManager {
     }
 
     /**
-     * Gets the currently selected music track name.
+     * Gets the currently selected music track.
      * 
-     * @return The music track name (e.g., "Russia Music", "Christmas")
+     * @return the name of the selected music track
      */
     public static String getSelectedMusicTrack() {
         return selectedMusicTrack;
     }
 
     /**
-     * Sets the selected music track.
+     * Sets the selected music track and saves to persistent storage.
      * 
-     * @param track The music track name (e.g., "Russia Music", "Christmas")
+     * @param track the name of the music track to select
      */
     public static void setSelectedMusicTrack(String track) {
         selectedMusicTrack = track;
         saveSettings();
     }
 
+    /**
+     * Loads settings from persistent storage.
+     */
     private static void loadSettings() {
         try {
             Path path = getSettingsPath();
@@ -128,6 +128,9 @@ public final class SettingsManager {
         }
     }
 
+    /**
+     * Saves current settings to persistent storage.
+     */
     private static void saveSettings() {
         try {
             Path path = getSettingsPath();
@@ -137,14 +140,18 @@ public final class SettingsManager {
         }
     }
 
+    /**
+     * Gets the file path for the settings file.
+     * 
+     * @return the settings file path
+     */
     private static Path getSettingsPath() {
         String userHome = System.getProperty("user.home");
         return Paths.get(userHome, ".tetrisjfx", SETTINGS_FILE);
     }
 
     /**
-     * Ensures the settings directory exists in the user's home directory.
-     * Creates the directory if it doesn't exist.
+     * Ensures the directory for storing settings exists.
      */
     public static void ensureDirectoryExists() {
         try {

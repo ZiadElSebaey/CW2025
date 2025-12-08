@@ -13,6 +13,14 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
 
+/**
+ * Panel that displays score notifications when lines are cleared.
+ * Shows animated score bonuses with visual effects.
+ * 
+ * @author CW2025 Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class NotificationPanel extends BorderPane {
 
     private static final int MIN_HEIGHT = 200;

@@ -45,4 +45,3 @@ class ResourceLoaderTest {
         assertNotNull(result);
     }
 }
-

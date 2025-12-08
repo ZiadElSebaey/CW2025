@@ -5,14 +5,13 @@ import java.nio.file.*;
 import java.util.*;
 
 /**
- * Manages the game leaderboard.
- * Handles adding, retrieving, and managing leaderboard entries.
- * Entries are sorted by score in descending order and limited to a maximum
+ * Manages the game leaderboard with top player scores.
+ * Handles adding entries, sorting by score, and maintaining a maximum
  * of 10 entries. Supports case-insensitive name matching for updates.
  * 
- * Leaderboard data is persisted to a file in the user's home directory.
- * 
- * @author TetrisJFX Team
+ * @author CW2025 Team
+ * @version 1.0
+ * @since 1.0
  */
 public class LeaderboardManager {
     
@@ -20,8 +19,7 @@ public class LeaderboardManager {
     private static final int MAX_ENTRIES = 10;
     
     /**
-     * Ensures the leaderboard directory exists.
-     * Creates the directory if it doesn't exist.
+     * Ensures the directory for storing the leaderboard file exists.
      */
     public static void ensureDirectoryExists() {
         try {
@@ -34,14 +32,14 @@ public class LeaderboardManager {
     }
     
     /**
-     * Adds or updates a leaderboard entry.
-     * If an entry with the same name (case-insensitive) exists, it will be
-     * updated only if the new score is higher. Otherwise, a new entry is added.
-     * Entries are automatically sorted by score and limited to MAX_ENTRIES.
+     * Adds or updates an entry in the leaderboard.
+     * If a player with the same name (case-insensitive) exists, updates
+     * their score only if the new score is higher. Otherwise, adds a new entry.
+     * Maintains a maximum of 10 entries, sorted by score descending.
      * 
-     * @param name The player's name
-     * @param score The player's score
-     * @return true if the entry was added or updated
+     * @param name the player's name
+     * @param score the player's score
+     * @return {@code true} if the entry was added or updated
      */
     public static boolean addEntry(String name, int score) {
         ensureDirectoryExists();
@@ -73,9 +71,9 @@ public class LeaderboardManager {
     }
     
     /**
-     * Retrieves all leaderboard entries, sorted by score in descending order.
+     * Gets all leaderboard entries, sorted by score descending.
      * 
-     * @return A list of leaderboard entries, sorted by score (highest first)
+     * @return a list of leaderboard entries
      */
     public static List<LeaderboardEntry> getEntries() {
         ensureDirectoryExists();
@@ -96,6 +94,11 @@ public class LeaderboardManager {
         return entries;
     }
     
+    /**
+     * Saves the leaderboard entries to a file.
+     * 
+     * @param entries the list of entries to save
+     */
     private static void saveEntries(List<LeaderboardEntry> entries) {
         try {
             List<String> lines = new ArrayList<>();
@@ -116,10 +119,10 @@ public class LeaderboardManager {
     }
     
     /**
-     * Represents a single leaderboard entry.
+     * Record representing a single leaderboard entry.
      * 
-     * @param name The player's name
-     * @param score The player's score
+     * @param name the player's name
+     * @param score the player's score
      */
     public record LeaderboardEntry(String name, int score) {}
 }

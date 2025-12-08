@@ -22,7 +22,14 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-
+/**
+ * Controller for the 1984-themed game mode.
+ * Handles the special visual style and gameplay mechanics for the 1984 mode.
+ * 
+ * @author CW2025 Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class Tetris1984Controller {
 
     @FXML

@@ -11,6 +11,15 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
+/**
+ * Panel displayed when a level is completed successfully.
+ * Shows congratulations message and provides options to proceed to the next level,
+ * return to levels menu, or go to main menu.
+ * 
+ * @author CW2025 Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class LevelCompletePanel extends VBox {
 
     private final Button nextLevelButton;

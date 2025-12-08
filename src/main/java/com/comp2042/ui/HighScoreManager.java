@@ -4,11 +4,12 @@ import java.io.*;
 import java.nio.file.*;
 
 /**
- * Manages the global high score for the game.
- * Handles loading, saving, and updating the high score with the player's name.
- * High score data is persisted to a file in the user's home directory.
+ * Manages the game's high score persistence.
+ * Handles loading, saving, and updating the highest score achieved.
  * 
- * @author TetrisJFX Team
+ * @author CW2025 Team
+ * @version 1.0
+ * @since 1.0
  */
 public final class HighScoreManager {
 
@@ -22,14 +23,31 @@ public final class HighScoreManager {
 
     private HighScoreManager() {}
 
+    /**
+     * Gets the current high score.
+     * 
+     * @return the high score value
+     */
     public static int getHighScore() {
         return highScore;
     }
     
+    /**
+     * Gets the name of the player who achieved the high score.
+     * 
+     * @return the high score holder's name, or {@code null} if no high score exists
+     */
     public static String getHighScoreHolder() {
         return highScoreHolder;
     }
 
+    /**
+     * Updates the high score if the new score is higher.
+     * 
+     * @param score the new score to check
+     * @param playerName the name of the player
+     * @return {@code true} if the high score was updated, {@code false} otherwise
+     */
     public static boolean updateHighScore(int score, String playerName) {
         if (playerName == null || playerName.isEmpty()) {
             return false;
@@ -48,6 +66,9 @@ public final class HighScoreManager {
         return updated;
     }
 
+    /**
+     * Loads the high score from persistent storage.
+     */
     private static void loadHighScore() {
         try {
             Path path = getHighScorePath();
@@ -65,6 +86,9 @@ public final class HighScoreManager {
         }
     }
 
+    /**
+     * Saves the high score to persistent storage.
+     */
     private static void saveHighScore() {
         try {
             Path path = getHighScorePath();
@@ -74,11 +98,19 @@ public final class HighScoreManager {
         }
     }
 
+    /**
+     * Gets the file path for the high score file.
+     * 
+     * @return the Path to the high score file
+     */
     private static Path getHighScorePath() {
         String userHome = System.getProperty("user.home");
         return Paths.get(userHome, ".tetrisjfx", HIGH_SCORE_FILE);
     }
 
+    /**
+     * Ensures the directory for storing high scores exists.
+     */
     public static void ensureDirectoryExists() {
         try {
             Path dir = getHighScorePath().getParent();
@@ -89,6 +121,9 @@ public final class HighScoreManager {
         }
     }
     
+    /**
+     * Resets the high score to zero and clears the holder name.
+     */
     public static void resetHighScore() {
         highScore = 0;
         highScoreHolder = null;

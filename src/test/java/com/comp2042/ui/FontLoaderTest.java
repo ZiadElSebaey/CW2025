@@ -57,4 +57,3 @@ class FontLoaderTest {
         assertEquals(16, font.getSize(), 0.1);
     }
 }
-

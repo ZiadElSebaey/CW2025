@@ -6,6 +6,16 @@ import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Manages level progress persistence for the levels game mode.
+ * Handles saving and loading completed level information.
+ * 
+ * @author CW2025 Team
+ * @version 1.0
+ * @since 1.0
+ * @see com.comp2042.logic.Level
+ * @see LevelManager
+ */
 public final class LevelProgressManager {
 
     private static final String PROGRESS_FILE = "levelprogress.dat";
@@ -13,6 +23,9 @@ public final class LevelProgressManager {
 
     private LevelProgressManager() {}
 
+    /**
+     * Ensures the directory for storing level progress exists.
+     */
     public static void ensureDirectoryExists() {
         try {
             Path dir = getProgressDirectory();
@@ -24,6 +37,10 @@ public final class LevelProgressManager {
         }
     }
 
+    /**
+     * Initializes the level progress manager and loads saved progress.
+     * Should be called once at application startup.
+     */
     public static void initialize() {
         if (initialized) {
             return;
@@ -33,6 +50,9 @@ public final class LevelProgressManager {
         initialized = true;
     }
 
+    /**
+     * Saves the current level completion status to persistent storage.
+     */
     public static void saveLevelProgress() {
         ensureDirectoryExists();
         try {
@@ -59,6 +79,9 @@ public final class LevelProgressManager {
         }
     }
 
+    /**
+     * Loads level progress from persistent storage.
+     */
     private static void loadLevelProgress() {
         try {
             Path path = getProgressPath();
@@ -84,6 +107,9 @@ public final class LevelProgressManager {
         }
     }
 
+    /**
+     * Resets all level completion statuses and saves the changes.
+     */
     public static void resetLevelProgress() {
         List<Level> levels = LevelManager.getLevels();
         for (Level level : levels) {
@@ -98,11 +124,21 @@ public final class LevelProgressManager {
         saveLevelProgress();
     }
 
+    /**
+     * Gets the directory path for storing level progress.
+     * 
+     * @return the progress directory path
+     */
     private static Path getProgressDirectory() {
         String userHome = System.getProperty("user.home");
         return Paths.get(userHome, ".tetrisjfx");
     }
 
+    /**
+     * Gets the file path for the level progress file.
+     * 
+     * @return the progress file path
+     */
     private static Path getProgressPath() {
         return getProgressDirectory().resolve(PROGRESS_FILE);
     }

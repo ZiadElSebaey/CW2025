@@ -11,6 +11,15 @@ import javafx.scene.layout.VBox;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Panel that displays the game leaderboard.
+ * Shows top player scores and provides options to clear the leaderboard.
+ * 
+ * @author CW2025 Team
+ * @version 1.0
+ * @since 1.0
+ * @see LeaderboardManager
+ */
 public class LeaderboardPanel extends VBox {
     
     private final Button closeButton;

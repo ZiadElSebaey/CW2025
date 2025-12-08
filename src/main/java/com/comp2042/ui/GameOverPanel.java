@@ -18,6 +18,16 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
+/**
+ * Panel displayed when the game ends.
+ * Shows final score, high score information, and provides options to restart,
+ * return to main menu, or view the leaderboard. Handles player name input
+ * for score submission.
+ * 
+ * @author CW2025 Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class GameOverPanel extends StackPane {
 
     private final Button restartButton;

@@ -127,4 +127,3 @@ class ColorManagerTest {
         assertEquals(0.3, ghost.getOpacity(), 0.001);
     }
 }
-

@@ -103,4 +103,3 @@ class SoundManagerTest {
         assertDoesNotThrow(() -> SoundManager.setSoundVolume("test", 0.9999));
     }
 }
-
