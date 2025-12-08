@@ -5,6 +5,11 @@ import com.comp2042.logic.EventSource;
 import com.comp2042.logic.EventType;
 import com.comp2042.logic.InputEventListener;
 import com.comp2042.logic.MoveEvent;
+import com.comp2042.ui.GameMode;
+import com.comp2042.ui.GameUIConstants;
+import com.comp2042.ui.AnimationConstants;
+import com.comp2042.ui.ColorManager;
+import com.comp2042.ui.AnimationFactory;
 import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.ScaleTransition;
@@ -18,8 +23,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Group;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
@@ -34,48 +37,15 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 import javafx.application.Platform;
-import javafx.scene.text.Font;
 import javafx.scene.transform.Rotate;
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
 public class GuiController implements Initializable {
 
-    private static final int BRICK_SIZE = 20;
-    private static final int BRICK_SIZE_1984 = 15;
-    private static final int DEFAULT_DROP_INTERVAL_MS = 400;
-    private static final int BRICK_PANEL_Y_OFFSET = -20;
-    private static final int HIDDEN_ROWS = 2;
-    private static final int BOARD_PADDING = 8;
-    private static final int RECTANGLE_ARC_SIZE = 9;
-    private static final double INVERTED_ROTATION_ANGLE = 180.0;
-    private static final double HOLD_SCALE_UP = 1.15;
-    private static final int HOLD_SCALE_DURATION_UP_MS = 200;
-    private static final int HOLD_SCALE_DURATION_DOWN_MS = 300;
-    private static final int WINDOW_WIDTH = 720;
-    private static final int WINDOW_HEIGHT = 680;
-    private static final int BACK_BUTTON_OFFSET_X = 100;
-    private static final int BACK_BUTTON_OFFSET_Y = 80;
-    private static final double GHOST_COLOR_OPACITY = 0.25;
-    private static final double GHOST_BORDER_OPACITY = 0.4;
-    private static final int GHOST_FADE_IN_DURATION_MS = 100;
-    private static final int GHOST_FADE_OUT_DURATION_MS = 80;
-    private static final double GHOST_STROKE_WIDTH = 1.5;
-    private static final double GHOST_VISIBILITY_THRESHOLD = 0.01;
-    private static final double DEFAULT_GAME_BOARD_WIDTH = 276.0;
-    private static final double DEFAULT_GAME_BOARD_HEIGHT = 556.0;
-    private static final double DEFAULT_ROOT_CENTER_X = 360.0;
-    private static final double DEFAULT_ROOT_CENTER_Y = 340.0;
-    private static final double PAUSE_MENU_OFFSET_X = 5.0;
-    private static final double PAUSE_MENU_OFFSET_Y = -10.0;
-    private static final double PAUSE_MENU_FALLBACK_X = 200.0;
-    private static final double PAUSE_MENU_FALLBACK_Y = 300.0;
 
     @FXML
     private GridPane gamePanel;
@@ -225,13 +195,8 @@ public class GuiController implements Initializable {
     private long freePlayStartTime;
     private long freePlayPauseStartTime;
     private long freePlayTotalPauseDuration;
-    private int dropIntervalMs = DEFAULT_DROP_INTERVAL_MS;
+    private int dropIntervalMs = AnimationConstants.DEFAULT_DROP_INTERVAL_MS;
     private Timeline dialogueTextTimeline;
-    private MediaPlayer glassBreakSound;
-    private MediaPlayer gameOver1984Sound;
-    private MediaPlayer fallSound;
-    private MediaPlayer nextLevelSound;
-    private MediaPlayer gameOverSound;
 
     public void setStage(Stage stage) {
         this.stage = stage;
@@ -522,10 +487,7 @@ public class GuiController implements Initializable {
     }
 
     private void setupInitialResources() {
-        URL digitalFontUrl = getClass().getClassLoader().getResource("digital.ttf");
-        if (digitalFontUrl != null) {
-            Font.loadFont(digitalFontUrl.toExternalForm(), 38);
-        }
+        FontLoader.loadFontFromUrl("digital.ttf", 38);
         HighScoreManager.ensureDirectoryExists();
         LeaderboardManager.ensureDirectoryExists();
         LevelProgressManager.ensureDirectoryExists();
@@ -576,7 +538,7 @@ public class GuiController implements Initializable {
     
     private void setupBackground() {
         if (!is1984Mode()) {
-            AnimatedBackground animatedBackground = new AnimatedBackground(720, 680);
+            AnimatedBackground animatedBackground = new AnimatedBackground(WindowConstants.WINDOW_WIDTH, WindowConstants.WINDOW_HEIGHT);
             rootPane.getChildren().addFirst(animatedBackground);
         }
     }
@@ -721,10 +683,10 @@ public class GuiController implements Initializable {
     private void updateBrickPanelPosition(ViewData brick) {
         int brickSize = getBrickSize();
         double cellSize = brickPanel.getVgap() + brickSize;
-        double padding = is1984Mode() ? BRICK_SIZE_1984 : BOARD_PADDING;
+        double padding = is1984Mode() ? GameUIConstants.BRICK_SIZE_1984 : GameUIConstants.BOARD_PADDING;
         double x = gameBoard.getLayoutX() + padding + brick.getxPosition() * cellSize;
-        double y = BRICK_PANEL_Y_OFFSET + gameBoard.getLayoutY() + padding
-                + (brick.getyPosition() - HIDDEN_ROWS) * cellSize;
+        double y = GameUIConstants.BRICK_PANEL_Y_OFFSET + gameBoard.getLayoutY() + padding
+                + (brick.getyPosition() - GameUIConstants.HIDDEN_ROWS) * cellSize;
 
         brickPanel.setLayoutX(x);
         brickPanel.setLayoutY(y);
@@ -743,9 +705,9 @@ public class GuiController implements Initializable {
     private void updateGhostPanelPosition(ViewData brick) {
         int brickSize = getBrickSize();
         double cellSize = ghostPanel.getVgap() + brickSize;
-        double x = gameBoard.getLayoutX() + BOARD_PADDING + brick.getxPosition() * cellSize;
-        double ghostY = gameBoard.getLayoutY() + BOARD_PADDING
-                + (brick.getGhostY() - HIDDEN_ROWS) * cellSize;
+        double x = gameBoard.getLayoutX() + GameUIConstants.BOARD_PADDING + brick.getxPosition() * cellSize;
+        double ghostY = gameBoard.getLayoutY() + GameUIConstants.BOARD_PADDING
+                + (brick.getGhostY() - GameUIConstants.HIDDEN_ROWS) * cellSize;
         ghostPanel.setLayoutX(x);
         ghostPanel.setLayoutY(ghostY);
     }
@@ -763,7 +725,7 @@ public class GuiController implements Initializable {
                 Rectangle ghostRect = ghostRectangles[i][j];
                 int colorIndex = brick.getBrickData()[i][j];
                 boolean shouldShow = colorIndex != 0;
-                boolean currentlyVisible = !ghostRect.getFill().equals(Color.TRANSPARENT) && ghostRect.getOpacity() > GHOST_VISIBILITY_THRESHOLD;
+                boolean currentlyVisible = !ghostRect.getFill().equals(Color.TRANSPARENT) && ghostRect.getOpacity() > AnimationConstants.GHOST_VISIBILITY_THRESHOLD;
                 
                 if (shouldShow) {
                     Paint blockColor = getFillColor(colorIndex);
@@ -916,11 +878,11 @@ public class GuiController implements Initializable {
             holdBlockContainer.setTranslateX(0);
             holdBlockContainer.setTranslateY(0);
             
-            ScaleTransition scaleUp = createScaleTransition(holdBlockContainer, Duration.millis(HOLD_SCALE_DURATION_UP_MS), 1.0, 1.0, HOLD_SCALE_UP, HOLD_SCALE_UP);
+            ScaleTransition scaleUp = createScaleTransition(holdBlockContainer, Duration.millis(AnimationConstants.HOLD_SCALE_DURATION_UP_MS), 1.0, 1.0, AnimationConstants.HOLD_SCALE_UP, AnimationConstants.HOLD_SCALE_UP);
             scaleUp.setCycleCount(1);
             scaleUp.setInterpolator(javafx.animation.Interpolator.EASE_OUT);
             
-            ScaleTransition scaleDown = createScaleTransition(holdBlockContainer, Duration.millis(HOLD_SCALE_DURATION_DOWN_MS), HOLD_SCALE_UP, HOLD_SCALE_UP, 1.0, 1.0);
+            ScaleTransition scaleDown = createScaleTransition(holdBlockContainer, Duration.millis(AnimationConstants.HOLD_SCALE_DURATION_DOWN_MS), AnimationConstants.HOLD_SCALE_UP, AnimationConstants.HOLD_SCALE_UP, 1.0, 1.0);
             scaleDown.setCycleCount(1);
             scaleDown.setInterpolator(javafx.animation.Interpolator.EASE_IN);
             
@@ -953,25 +915,11 @@ public class GuiController implements Initializable {
         return new MoveEvent(EventType.DOWN, EventSource.THREAD);
     }
     private Paint getFillColor(int i) {
-        if (is1984Mode() && i != 0) {
-            return Color.WHITE;
-        }
-        
-        return switch (i) {
-            case 0 -> Color.TRANSPARENT;
-            case 1 -> Color.AQUA;
-            case 2 -> Color.BLUEVIOLET;
-            case 3 -> Color.DARKGREEN;
-            case 4 -> Color.YELLOW;
-            case 5 -> Color.RED;
-            case 6 -> Color.BEIGE;
-            case 7 -> Color.BURLYWOOD;
-            default -> Color.WHITE;
-        };
+        return ColorManager.getFillColor(i, is1984Mode());
     }
     
     private int getBrickSize() {
-        return is1984Mode() ? BRICK_SIZE_1984 : BRICK_SIZE;
+        return is1984Mode() ? GameUIConstants.BRICK_SIZE_1984 : GameUIConstants.BRICK_SIZE;
     }
 
 
@@ -991,7 +939,7 @@ public class GuiController implements Initializable {
     }
 
     public void refreshGameBackground(int[][] board) {
-        for (int i = HIDDEN_ROWS; i < board.length; i++) {
+        for (int i = GameUIConstants.HIDDEN_ROWS; i < board.length; i++) {
             for (int j = 0; j < board[i].length; j++) {
                 setRectangleData(board[i][j], displayMatrix[i][j]);
             }
@@ -1004,8 +952,8 @@ public class GuiController implements Initializable {
             rectangle.setArcHeight(2);
             rectangle.setArcWidth(2);
         } else {
-            rectangle.setArcHeight(RECTANGLE_ARC_SIZE);
-            rectangle.setArcWidth(RECTANGLE_ARC_SIZE);
+            rectangle.setArcHeight(GameUIConstants.RECTANGLE_ARC_SIZE);
+            rectangle.setArcWidth(GameUIConstants.RECTANGLE_ARC_SIZE);
         }
     }
     
@@ -1023,8 +971,8 @@ public class GuiController implements Initializable {
 
     private void hardDrop() {
         if (!isPause.get()) {
-            if (!is1984Mode() && SettingsManager.isSoundEffectsEnabled()) {
-                playFallSound();
+            if (!is1984Mode()) {
+                SoundManager.playSound("fall");
             }
             DownData downData = eventListener.onHardDropEvent();
             if (shouldShowScoreNotification(downData)) {
@@ -1033,24 +981,6 @@ public class GuiController implements Initializable {
             refreshBrick(downData.getViewData());
         }
         resetGamePanelFocus();
-    }
-    
-    private void playFallSound() {
-        try {
-            URL soundUrl = getClass().getClassLoader().getResource("sfx/fall.mp3");
-            if (soundUrl != null) {
-                if (fallSound != null) {
-                    fallSound.stop();
-                    fallSound.dispose();
-                }
-                Media media = new Media(soundUrl.toExternalForm());
-                fallSound = new MediaPlayer(media);
-                fallSound.setVolume(0.6);
-                fallSound.play();
-            }
-        } catch (Exception e) {
-            System.err.println("Failed to play fall sound: " + e.getMessage());
-        }
     }
 
     private boolean shouldShowScoreNotification(DownData downData) {
@@ -1061,7 +991,7 @@ public class GuiController implements Initializable {
         NotificationPanel notificationPanel = new NotificationPanel("+" + scoreBonus);
         groupNotification.getChildren().add(notificationPanel);
         
-        boolean isInvertedMode = gameMode != null && gameMode.equals("inverted");
+        boolean isInvertedMode = GameMode.INVERTED.matches(gameMode);
         if (isInvertedMode) {
             applyInvertedRotation(notificationPanel, 110.0, 100.0);
         }
@@ -1113,32 +1043,14 @@ public class GuiController implements Initializable {
     }
     
     public void onLinesCleared(int linesCount) {
-        if (!is1984Mode() && SettingsManager.isSoundEffectsEnabled()) {
-            playGlassBreakSound();
+        if (!is1984Mode()) {
+            SoundManager.playSound("glass-break");
         }
         if (currentLevel != null && linesCount == 3) {
             tripleClearsCount++;
         }
         if (currentLevel != null) {
             checkLevelObjective();
-        }
-    }
-    
-    private void playGlassBreakSound() {
-        try {
-            URL soundUrl = getClass().getClassLoader().getResource("sfx/glass-break.mp3");
-            if (soundUrl != null) {
-                if (glassBreakSound != null) {
-                    glassBreakSound.stop();
-                    glassBreakSound.dispose();
-                }
-                Media media = new Media(soundUrl.toExternalForm());
-                glassBreakSound = new MediaPlayer(media);
-                glassBreakSound.setVolume(0.6);
-                glassBreakSound.play();
-            }
-        } catch (Exception e) {
-            System.err.println("Failed to play glass break sound: " + e.getMessage());
         }
     }
     
@@ -1217,9 +1129,7 @@ public class GuiController implements Initializable {
                 gamePane.setVisible(false);
             }
             
-            if (SettingsManager.isSoundEffectsEnabled()) {
-                playNextLevelSound();
-            }
+            SoundManager.playSound("next-level-tetris-sounds");
             
             int nextLevelNumber = currentLevel.getLevelNumber() + 1;
             boolean hasNextLevel = LevelManager.getLevel(nextLevelNumber) != null;
@@ -1260,16 +1170,10 @@ public class GuiController implements Initializable {
         if (timeLine != null) {
             timeLine.stop();
         }
-        try {
-            URL location = getClass().getClassLoader().getResource("levels.fxml");
-            FXMLLoader fxmlLoader = new FXMLLoader(location);
-            Parent root = fxmlLoader.load();
-            LevelsController levelsController = fxmlLoader.getController();
+        SceneNavigator.navigateToScene(stage, "levels.fxml", loader -> {
+            LevelsController levelsController = loader.getController();
             levelsController.setStage(stage);
-            Scene scene = new Scene(root, 720, 680);
-            stage.setScene(scene);
-        } catch (IOException ignored) {
-        }
+        });
     }
 
     private void animateLabel(Label label) {
@@ -1304,10 +1208,10 @@ public class GuiController implements Initializable {
         setupHighScoreDisplay(highScore, highScoreHolder);
         setupGameOverPanel(finalScore, highScore, isNewHighScore, timePlayed);
         
-        if (is1984Mode() && SettingsManager.isSoundEffectsEnabled()) {
-            playGameOver1984Sound();
-        } else if (!is1984Mode() && SettingsManager.isSoundEffectsEnabled()) {
-            playGameOverSound();
+        if (is1984Mode()) {
+            SoundManager.playSound("gameover1984");
+        } else {
+            SoundManager.playSound("gameover");
         }
         
         gameOverPanel.setVisible(true);
@@ -1324,59 +1228,6 @@ public class GuiController implements Initializable {
         disableGamePanel();
     }
     
-    private void playGameOver1984Sound() {
-        try {
-            URL soundUrl = getClass().getClassLoader().getResource("sfx/gameover1984.mp3");
-            if (soundUrl != null) {
-                if (gameOver1984Sound != null) {
-                    gameOver1984Sound.stop();
-                    gameOver1984Sound.dispose();
-                }
-                Media media = new Media(soundUrl.toExternalForm());
-                gameOver1984Sound = new MediaPlayer(media);
-                gameOver1984Sound.setVolume(0.7);
-                gameOver1984Sound.play();
-            }
-        } catch (Exception e) {
-            System.err.println("Failed to play game over 1984 sound: " + e.getMessage());
-        }
-    }
-    
-    private void playNextLevelSound() {
-        try {
-            URL soundUrl = getClass().getClassLoader().getResource("sfx/next-level-tetris-sounds.mp3");
-            if (soundUrl != null) {
-                if (nextLevelSound != null) {
-                    nextLevelSound.stop();
-                    nextLevelSound.dispose();
-                }
-                Media media = new Media(soundUrl.toExternalForm());
-                nextLevelSound = new MediaPlayer(media);
-                nextLevelSound.setVolume(0.7);
-                nextLevelSound.play();
-            }
-        } catch (Exception e) {
-            System.err.println("Failed to play next level sound: " + e.getMessage());
-        }
-    }
-    
-    private void playGameOverSound() {
-        try {
-            URL soundUrl = getClass().getClassLoader().getResource("sfx/gameover.mp3");
-            if (soundUrl != null) {
-                if (gameOverSound != null) {
-                    gameOverSound.stop();
-                    gameOverSound.dispose();
-                }
-                Media media = new Media(soundUrl.toExternalForm());
-                gameOverSound = new MediaPlayer(media);
-                gameOverSound.setVolume(0.7);
-                gameOverSound.play();
-            }
-        } catch (Exception e) {
-            System.err.println("Failed to play game over sound: " + e.getMessage());
-        }
-    }
 
     public void newGame(ActionEvent actionEvent) {
         if (actionEvent != null) {
@@ -1567,16 +1418,16 @@ public class GuiController implements Initializable {
         
         double gameBoardX = gameBoard.getLayoutX();
         double gameBoardY = gameBoard.getLayoutY();
-        double gameBoardWidth = gameBoard.getWidth() > 0 ? gameBoard.getWidth() : DEFAULT_GAME_BOARD_WIDTH;
-        double gameBoardHeight = gameBoard.getHeight() > 0 ? gameBoard.getHeight() : DEFAULT_GAME_BOARD_HEIGHT;
+        double gameBoardWidth = gameBoard.getWidth() > 0 ? gameBoard.getWidth() : GameUIConstants.DEFAULT_GAME_BOARD_WIDTH;
+        double gameBoardHeight = gameBoard.getHeight() > 0 ? gameBoard.getHeight() : GameUIConstants.DEFAULT_GAME_BOARD_HEIGHT;
         
         double gameBoardCenterX = gameBoardX + gameBoardWidth / 2;
         double gameBoardCenterY = gameBoardY + gameBoardHeight / 2;
-        double rootCenterX = rootPane.getWidth() > 0 ? rootPane.getWidth() / 2 : DEFAULT_ROOT_CENTER_X;
-        double rootCenterY = rootPane.getHeight() > 0 ? rootPane.getHeight() / 2 : DEFAULT_ROOT_CENTER_Y;
+        double rootCenterX = rootPane.getWidth() > 0 ? rootPane.getWidth() / 2 : GameUIConstants.DEFAULT_ROOT_CENTER_X;
+        double rootCenterY = rootPane.getHeight() > 0 ? rootPane.getHeight() / 2 : GameUIConstants.DEFAULT_ROOT_CENTER_Y;
         
-        double translateX = gameBoardCenterX - rootCenterX + PAUSE_MENU_OFFSET_X;
-        double translateY = gameBoardCenterY - rootCenterY + PAUSE_MENU_OFFSET_Y;
+        double translateX = gameBoardCenterX - rootCenterX + GameUIConstants.PAUSE_MENU_OFFSET_X;
+        double translateY = gameBoardCenterY - rootCenterY + GameUIConstants.PAUSE_MENU_OFFSET_Y;
         
         pauseContainer.setTranslateX(translateX);
         pauseContainer.setTranslateY(translateY);
@@ -1587,10 +1438,10 @@ public class GuiController implements Initializable {
                 double width = pauseContainer.getBoundsInLocal().getWidth();
                 double height = pauseContainer.getBoundsInLocal().getHeight();
                 if (width > 0 && height > 0) {
-                    Rotate rotate = new Rotate(INVERTED_ROTATION_ANGLE, width / 2, height / 2);
+                    Rotate rotate = new Rotate(AnimationConstants.INVERTED_ROTATION_ANGLE, width / 2, height / 2);
                     pauseContainer.getTransforms().add(rotate);
                 } else {
-                    Rotate rotate = new Rotate(INVERTED_ROTATION_ANGLE, PAUSE_MENU_FALLBACK_X, PAUSE_MENU_FALLBACK_Y);
+                    Rotate rotate = new Rotate(AnimationConstants.INVERTED_ROTATION_ANGLE, GameUIConstants.PAUSE_MENU_FALLBACK_X, GameUIConstants.PAUSE_MENU_FALLBACK_Y);
                     pauseContainer.getTransforms().add(rotate);
                 }
             });
@@ -1705,11 +1556,11 @@ public class GuiController implements Initializable {
     }
     
     private boolean is1984Mode() {
-        return gameMode != null && gameMode.equals("1984");
+        return GameMode.MODE_1984.matches(gameMode);
     }
     
     private boolean isInvertedMode() {
-        return gameMode != null && gameMode.equals("inverted");
+        return GameMode.INVERTED.matches(gameMode);
     }
     
     private Rectangle createBrickRectangle(double size) {
@@ -1718,8 +1569,8 @@ public class GuiController implements Initializable {
             rect.setArcHeight(2);
             rect.setArcWidth(2);
         } else {
-            rect.setArcHeight(RECTANGLE_ARC_SIZE);
-            rect.setArcWidth(RECTANGLE_ARC_SIZE);
+            rect.setArcHeight(GameUIConstants.RECTANGLE_ARC_SIZE);
+            rect.setArcWidth(GameUIConstants.RECTANGLE_ARC_SIZE);
         }
         return rect;
     }
@@ -1733,10 +1584,10 @@ public class GuiController implements Initializable {
             double width = node.getBoundsInLocal().getWidth();
             double height = node.getBoundsInLocal().getHeight();
             if (width > 0 && height > 0) {
-                Rotate rotate = new Rotate(INVERTED_ROTATION_ANGLE, width / 2, height / 2);
+                Rotate rotate = new Rotate(AnimationConstants.INVERTED_ROTATION_ANGLE, width / 2, height / 2);
                 node.getTransforms().add(rotate);
             } else {
-                Rotate rotate = new Rotate(INVERTED_ROTATION_ANGLE, fallbackX, fallbackY);
+                Rotate rotate = new Rotate(AnimationConstants.INVERTED_ROTATION_ANGLE, fallbackX, fallbackY);
                 node.getTransforms().add(rotate);
             }
         });
@@ -1790,30 +1641,18 @@ public class GuiController implements Initializable {
     }
     
     private void navigateToScene(String fxmlFile, java.util.function.Consumer<FXMLLoader> controllerSetup) {
-        try {
-            if (stage == null) {
-                return;
-            }
-            URL location = getClass().getClassLoader().getResource(fxmlFile);
-            if (location == null) {
-                return;
-            }
-            FXMLLoader loader = new FXMLLoader(location);
-            Parent root = loader.load();
-            if (controllerSetup != null) {
-                controllerSetup.accept(loader);
-            }
-            Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
-            stage.setScene(scene);
+        if (stage == null) {
+            return;
+        }
+        SceneNavigator.navigateToScene(stage, fxmlFile, controllerSetup);
+        if (stage.getScene() != null) {
             stage.show();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
     
     
     private Color createGhostColor(Color originalColor, double opacity) {
-        return Color.color(originalColor.getRed(), originalColor.getGreen(), originalColor.getBlue(), opacity);
+        return ColorManager.createGhostColor(originalColor, opacity);
     }
     
     private void clearGhostRectangle(Rectangle rect) {
@@ -2025,10 +1864,10 @@ public class GuiController implements Initializable {
                 double width = gameOverLbl.getBoundsInLocal().getWidth();
                 double height = gameOverLbl.getBoundsInLocal().getHeight();
                 if (width > 0 && height > 0) {
-                    Rotate rotate = new Rotate(INVERTED_ROTATION_ANGLE, width / 2, height / 2);
+                    Rotate rotate = new Rotate(AnimationConstants.INVERTED_ROTATION_ANGLE, width / 2, height / 2);
                     gameOverLbl.getTransforms().add(rotate);
                 } else {
-                    Rotate rotate = new Rotate(INVERTED_ROTATION_ANGLE, 360, 55);
+                    Rotate rotate = new Rotate(AnimationConstants.INVERTED_ROTATION_ANGLE, 360, 55);
                     gameOverLbl.getTransforms().add(rotate);
                 }
             });
@@ -2040,10 +1879,10 @@ public class GuiController implements Initializable {
                 double width = scoreLbl.getBoundsInLocal().getWidth();
                 double height = scoreLbl.getBoundsInLocal().getHeight();
                 if (width > 0 && height > 0) {
-                    Rotate rotate = new Rotate(INVERTED_ROTATION_ANGLE, width / 2, height / 2);
+                    Rotate rotate = new Rotate(AnimationConstants.INVERTED_ROTATION_ANGLE, width / 2, height / 2);
                     scoreLbl.getTransforms().add(rotate);
                 } else {
-                    Rotate rotate = new Rotate(INVERTED_ROTATION_ANGLE, 360, 30);
+                    Rotate rotate = new Rotate(AnimationConstants.INVERTED_ROTATION_ANGLE, 360, 30);
                     scoreLbl.getTransforms().add(rotate);
                 }
             });
@@ -2089,19 +1928,15 @@ public class GuiController implements Initializable {
     }
     
     private FadeTransition createFadeTransition(javafx.scene.Node node, Duration duration, double fromValue, double toValue) {
-        FadeTransition fade = new FadeTransition(duration, node);
-        fade.setFromValue(fromValue);
-        fade.setToValue(toValue);
-        return fade;
+        // Convert Duration to milliseconds for AnimationFactory
+        int durationMs = (int) duration.toMillis();
+        return AnimationFactory.createFadeTransition(node, durationMs, fromValue, toValue);
     }
     
     private ScaleTransition createScaleTransition(javafx.scene.Node node, Duration duration, double fromX, double fromY, double toX, double toY) {
-        ScaleTransition scale = new ScaleTransition(duration, node);
-        scale.setFromX(fromX);
-        scale.setFromY(fromY);
-        scale.setToX(toX);
-        scale.setToY(toY);
-        return scale;
+        // Convert Duration to milliseconds for AnimationFactory
+        int durationMs = (int) duration.toMillis();
+        return AnimationFactory.createScaleTransition(node, durationMs, fromX, fromY, toX, toY);
     }
     
     private SequentialTransition createSequentialTransition(javafx.animation.Transition... transitions) {
@@ -2238,7 +2073,7 @@ public class GuiController implements Initializable {
     }
     
     private void setupFreePlayUI() {
-        this.dropIntervalMs = DEFAULT_DROP_INTERVAL_MS;
+        this.dropIntervalMs = AnimationConstants.DEFAULT_DROP_INTERVAL_MS;
         if (isInvertedMode()) {
             setNodeVisibility(highScoreLabel, false);
             setNodeVisibility(highScoreHolderLabel, false);
@@ -2307,12 +2142,12 @@ public class GuiController implements Initializable {
     private void initializeGameBoard(int[][] boardMatrix) {
         int brickSize = getBrickSize();
         displayMatrix = new Rectangle[boardMatrix.length][boardMatrix[0].length];
-        for (int i = HIDDEN_ROWS; i < boardMatrix.length; i++) {
+        for (int i = GameUIConstants.HIDDEN_ROWS; i < boardMatrix.length; i++) {
             for (int j = 0; j < boardMatrix[i].length; j++) {
                 Rectangle rectangle = new Rectangle(brickSize, brickSize);
                 rectangle.setFill(Color.TRANSPARENT);
                 displayMatrix[i][j] = rectangle;
-                gamePanel.add(rectangle, j, i - HIDDEN_ROWS);
+                gamePanel.add(rectangle, j, i - GameUIConstants.HIDDEN_ROWS);
             }
         }
     }
@@ -2353,29 +2188,29 @@ public class GuiController implements Initializable {
     private void setupGhostRectangle(Rectangle ghostRect, int colorIndex, Paint blockColor) {
         if (blockColor instanceof Color) {
             Color originalColor = (Color) blockColor;
-            ghostRect.setFill(createGhostColor(originalColor, GHOST_COLOR_OPACITY));
-            ghostRect.setStroke(createGhostColor(originalColor, GHOST_BORDER_OPACITY));
+            ghostRect.setFill(ColorManager.createGhostColor(originalColor, AnimationConstants.GHOST_COLOR_OPACITY));
+            ghostRect.setStroke(ColorManager.createGhostColor(originalColor, AnimationConstants.GHOST_BORDER_OPACITY));
         } else {
-            ghostRect.setFill(Color.rgb(255, 255, 255, GHOST_COLOR_OPACITY));
-            ghostRect.setStroke(Color.rgb(255, 255, 255, GHOST_BORDER_OPACITY));
+            ghostRect.setFill(Color.rgb(255, 255, 255, AnimationConstants.GHOST_COLOR_OPACITY));
+            ghostRect.setStroke(Color.rgb(255, 255, 255, AnimationConstants.GHOST_BORDER_OPACITY));
         }
-        ghostRect.setArcHeight(RECTANGLE_ARC_SIZE);
-        ghostRect.setArcWidth(RECTANGLE_ARC_SIZE);
-        ghostRect.setStrokeWidth(GHOST_STROKE_WIDTH);
+        ghostRect.setArcHeight(GameUIConstants.RECTANGLE_ARC_SIZE);
+        ghostRect.setArcWidth(GameUIConstants.RECTANGLE_ARC_SIZE);
+        ghostRect.setStrokeWidth(AnimationConstants.GHOST_STROKE_WIDTH);
     }
     
     private void handleGhostRectangleVisibility(Rectangle ghostRect, boolean shouldShow, boolean currentlyVisible) {
         if (shouldShow) {
             if (!currentlyVisible) {
                 ghostRect.setOpacity(0.0);
-                FadeTransition fadeIn = createFadeTransition(ghostRect, Duration.millis(GHOST_FADE_IN_DURATION_MS), 0.0, 1.0);
+                FadeTransition fadeIn = createFadeTransition(ghostRect, Duration.millis(AnimationConstants.GHOST_FADE_IN_DURATION_MS), 0.0, 1.0);
                 fadeIn.play();
             } else {
                 ghostRect.setOpacity(1.0);
             }
         } else {
             if (currentlyVisible) {
-                FadeTransition fadeOut = createFadeTransition(ghostRect, Duration.millis(GHOST_FADE_OUT_DURATION_MS), ghostRect.getOpacity(), 0.0);
+                FadeTransition fadeOut = createFadeTransition(ghostRect, Duration.millis(AnimationConstants.GHOST_FADE_OUT_DURATION_MS), ghostRect.getOpacity(), 0.0);
                 fadeOut.setOnFinished(_ -> clearGhostRectangle(ghostRect));
                 fadeOut.play();
             } else {
@@ -2440,7 +2275,7 @@ public class GuiController implements Initializable {
     private void setupRootPaneRotation(boolean isInvertedMode) {
         if (isInvertedMode && rootPane != null) {
             rootPane.getTransforms().removeIf(transform -> transform instanceof Rotate);
-            Rotate rotate = new Rotate(INVERTED_ROTATION_ANGLE, 360, 340);
+            Rotate rotate = new Rotate(AnimationConstants.INVERTED_ROTATION_ANGLE, 360, 340);
             rootPane.getTransforms().add(rotate);
         } else if (rootPane != null) {
             rootPane.getTransforms().removeIf(transform -> transform instanceof Rotate);
@@ -2468,8 +2303,8 @@ public class GuiController implements Initializable {
         setNodeVisibility(dialogueContainerGame, false);
         setNodeVisibility(whiteBoxContainer1984, false);
         if (backButton != null) {
-            backButton.setLayoutX(WINDOW_WIDTH - BACK_BUTTON_OFFSET_X);
-            backButton.setLayoutY(WINDOW_HEIGHT - BACK_BUTTON_OFFSET_Y);
+            backButton.setLayoutX(WindowConstants.WINDOW_WIDTH - GameUIConstants.BACK_BUTTON_OFFSET_X);
+            backButton.setLayoutY(WindowConstants.WINDOW_HEIGHT - GameUIConstants.BACK_BUTTON_OFFSET_Y);
             applyInvertedRotation(backButton, 20.0, 20.0);
         }
     }
@@ -2615,13 +2450,13 @@ public class GuiController implements Initializable {
                 gamePanel.getStyleClass().add("gamePanel-1984");
             }
             
-            double boardWidth = DEFAULT_GAME_BOARD_WIDTH - (BRICK_SIZE_1984 * 3) + BRICK_SIZE_1984; 
-            int visibleRows = 27 - HIDDEN_ROWS;
+            double boardWidth = GameUIConstants.DEFAULT_GAME_BOARD_WIDTH - (GameUIConstants.BRICK_SIZE_1984 * 3) + GameUIConstants.BRICK_SIZE_1984; 
+            int visibleRows = 27 - GameUIConstants.HIDDEN_ROWS;
             double vgap = gamePanel.getVgap() > 0 ? gamePanel.getVgap() : 1;
-            double boardHeight = visibleRows * BRICK_SIZE_1984 + (visibleRows - 1) * vgap + 35;  
+            double boardHeight = visibleRows * GameUIConstants.BRICK_SIZE_1984 + (visibleRows - 1) * vgap + 35;  
             
-            double centerX = (WINDOW_WIDTH - boardWidth) / 2 + BRICK_SIZE_1984 - (BRICK_SIZE_1984 / 2) - BRICK_SIZE_1984;
-            double centerY = (WINDOW_HEIGHT - boardHeight) / 2 + 10;
+            double centerX = (WindowConstants.WINDOW_WIDTH - boardWidth) / 2 + GameUIConstants.BRICK_SIZE_1984 - (GameUIConstants.BRICK_SIZE_1984 / 2) - GameUIConstants.BRICK_SIZE_1984;
+            double centerY = (WindowConstants.WINDOW_HEIGHT - boardHeight) / 2 + 10;
             
             gameBoard.setLayoutX(centerX);
             gameBoard.setLayoutY(centerY);

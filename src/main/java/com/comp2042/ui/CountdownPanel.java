@@ -13,10 +13,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
-
-import java.net.URL;
 
 public class CountdownPanel extends StackPane {
     
@@ -25,7 +21,6 @@ public class CountdownPanel extends StackPane {
     private Runnable onComplete;
     private boolean is1984Mode = false;
     private boolean isSlowerMode = false;
-    private MediaPlayer countdownSound;
     
     public CountdownPanel() {
         setAlignment(Pos.CENTER);
@@ -37,7 +32,7 @@ public class CountdownPanel extends StackPane {
         countdownLabel.getStyleClass().add("countdown-label");
         countdownLabel.setAlignment(Pos.CENTER);
         
-        scanlineOverlay = new Rectangle(720, 680);
+        scanlineOverlay = new Rectangle(WindowConstants.WINDOW_WIDTH, WindowConstants.WINDOW_HEIGHT);
         scanlineOverlay.setFill(Color.color(0, 0, 0, 0.1));
         scanlineOverlay.setVisible(false);
         scanlineOverlay.setMouseTransparent(true);
@@ -78,23 +73,7 @@ public class CountdownPanel extends StackPane {
     }
     
     private void playCountdownSound() {
-        if (SettingsManager.isSoundEffectsEnabled()) {
-            try {
-                URL soundUrl = getClass().getClassLoader().getResource("sfx/3-2-1.mp3");
-                if (soundUrl != null) {
-                    if (countdownSound != null) {
-                        countdownSound.stop();
-                        countdownSound.dispose();
-                    }
-                    Media media = new Media(soundUrl.toExternalForm());
-                    countdownSound = new MediaPlayer(media);
-                    countdownSound.setVolume(0.7);
-                    countdownSound.play();
-                }
-            } catch (Exception e) {
-                System.err.println("Failed to play countdown sound: " + e.getMessage());
-            }
-        }
+        SoundManager.playSound("3-2-1");
     }
     
     private void showNumber(int number) {

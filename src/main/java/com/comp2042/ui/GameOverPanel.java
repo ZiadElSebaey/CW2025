@@ -1,5 +1,7 @@
 package com.comp2042.ui;
 
+import com.comp2042.ui.GameMode;
+
 import javafx.animation.FadeTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.ParallelTransition;
@@ -195,8 +197,8 @@ public class GameOverPanel extends StackPane {
         }
         
         boolean isLevelGame = playerName != null && playerName.equals("Level Player");
-        boolean isInvertedMode = gameMode != null && gameMode.equals("inverted");
-        boolean is1984Mode = gameMode != null && gameMode.equals("1984");
+        boolean isInvertedMode = GameMode.INVERTED.matches(gameMode);
+        boolean is1984Mode = GameMode.MODE_1984.matches(gameMode);
         
         if (isLevelGame || isInvertedMode || is1984Mode) {
             highScoreLabel.setVisible(false);
@@ -250,7 +252,7 @@ public class GameOverPanel extends StackPane {
         }
         
         // Skip animation for inverted mode
-        if (gameMode == null || !gameMode.equals("inverted")) {
+        if (!GameMode.INVERTED.matches(gameMode)) {
             playGameOverAnimation();
         }
     }
@@ -519,7 +521,7 @@ public class GameOverPanel extends StackPane {
     
     public void setGameMode(String mode) {
         this.gameMode = mode;
-        boolean is1984Mode = mode != null && mode.equals("1984");
+        boolean is1984Mode = GameMode.MODE_1984.matches(mode);
         if (is1984Mode) {
             apply1984Style();
         }

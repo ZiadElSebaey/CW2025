@@ -1,15 +1,10 @@
 package com.comp2042.ui;
 
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-
-import java.io.IOException;
-import java.net.URL;
 
 public class SettingsController {
 
@@ -56,7 +51,7 @@ public class SettingsController {
         boolean soundEffectsEnabled = SettingsManager.isSoundEffectsEnabled();
         soundButton.setText(soundEffectsEnabled ? "ON" : "OFF");
         
-        AnimatedBackground animatedBackground = new AnimatedBackground(720, 680);
+        AnimatedBackground animatedBackground = new AnimatedBackground(WindowConstants.WINDOW_WIDTH, WindowConstants.WINDOW_HEIGHT);
         rootPane.getChildren().addFirst(animatedBackground);
     }
 
@@ -95,16 +90,10 @@ public class SettingsController {
             stage.setScene(gameScene);
             guiController.requestFocus();
         } else {
-            try {
-                URL location = getClass().getClassLoader().getResource("mainMenu.fxml");
-                FXMLLoader fxmlLoader = new FXMLLoader(location);
-                Parent root = fxmlLoader.load();
-                MainMenuController menuController = fxmlLoader.getController();
+            SceneNavigator.navigateToScene(stage, "mainMenu.fxml", loader -> {
+                MainMenuController menuController = loader.getController();
                 menuController.setStage(stage);
-                Scene scene = new Scene(root, 720, 680);
-                stage.setScene(scene);
-            } catch (IOException ignored) {
-            }
+            });
         }
     }
 }

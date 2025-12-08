@@ -10,6 +10,8 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+import java.net.URL;
+
 public class MusicSelectionDialog {
     private final Stage dialog;
     
@@ -49,7 +51,10 @@ public class MusicSelectionDialog {
         layout.getStyleClass().add("gameover-panel");
         
         Scene scene = new Scene(layout, 400, 300);
-        scene.getStylesheets().add(getClass().getClassLoader().getResource("window_style.css").toExternalForm());
+        URL cssUrl = ResourceLoader.getResource("window_style.css");
+        if (cssUrl != null) {
+            scene.getStylesheets().add(cssUrl.toExternalForm());
+        }
         dialog.setScene(scene);
     }
     

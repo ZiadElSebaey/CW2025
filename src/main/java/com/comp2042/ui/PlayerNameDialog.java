@@ -14,6 +14,8 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+import java.net.URL;
+
 public class PlayerNameDialog {
     
     private String playerName;
@@ -139,7 +141,10 @@ public class PlayerNameDialog {
         root.getChildren().addAll(contentBox, backButton);
         
         Scene scene = new Scene(root, 400, 200);
-        scene.getStylesheets().add(getClass().getClassLoader().getResource("window_style.css").toExternalForm());
+        URL cssUrl = ResourceLoader.getResource("window_style.css");
+        if (cssUrl != null) {
+            scene.getStylesheets().add(cssUrl.toExternalForm());
+        }
         dialog.setScene(scene);
         dialog.setX(parentStage.getX() + (parentStage.getWidth() - 400) / 2);
         dialog.setY(parentStage.getY() + (parentStage.getHeight() - 200) / 2);

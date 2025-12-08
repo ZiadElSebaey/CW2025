@@ -2,17 +2,13 @@ package com.comp2042.ui;
 
 import com.comp2042.logic.Level;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -39,7 +35,7 @@ public class LevelsController implements Initializable {
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        AnimatedBackground animatedBackground = new AnimatedBackground(720, 680);
+        AnimatedBackground animatedBackground = new AnimatedBackground(WindowConstants.WINDOW_WIDTH, WindowConstants.WINDOW_HEIGHT);
         rootPane.getChildren().addFirst(animatedBackground);
         
         LevelProgressManager.ensureDirectoryExists();
@@ -104,20 +100,13 @@ public class LevelsController implements Initializable {
     }
     
     private void startLevel(Level level) {
-        try {
-            URL location = getClass().getClassLoader().getResource("gameLayout.fxml");
-            FXMLLoader fxmlLoader = new FXMLLoader(location);
-            Parent root = fxmlLoader.load();
-            GuiController gameController = fxmlLoader.getController();
+        SceneNavigator.navigateToScene(stage, "gameLayout.fxml", loader -> {
+            GuiController gameController = loader.getController();
             gameController.setPlayerName("Level Player", true);
             gameController.setLevel(level);
             gameController.setStage(stage);
             gameController.startLevelGame();
-            
-            Scene scene = new Scene(root, 720, 680);
-            stage.setScene(scene);
-        } catch (IOException ignored) {
-        }
+        });
     }
     
     private void resetLevels() {
@@ -158,16 +147,10 @@ public class LevelsController implements Initializable {
     }
     
     private void returnToMainMenu() {
-        try {
-            URL location = getClass().getClassLoader().getResource("mainMenu.fxml");
-            FXMLLoader fxmlLoader = new FXMLLoader(location);
-            Parent root = fxmlLoader.load();
-            MainMenuController menuController = fxmlLoader.getController();
+        SceneNavigator.navigateToScene(stage, "mainMenu.fxml", loader -> {
+            MainMenuController menuController = loader.getController();
             menuController.setStage(stage);
-            Scene scene = new Scene(root, 720, 680);
-            stage.setScene(scene);
-        } catch (IOException ignored) {
-        }
+        });
     }
 }
 
