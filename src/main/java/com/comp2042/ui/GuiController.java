@@ -55,6 +55,7 @@ import java.util.ResourceBundle;
  * @since 1.0
  * @see com.comp2042.logic.GameController
  */
+@SuppressWarnings("unused")
 public class GuiController implements Initializable {
 
 
@@ -1660,11 +1661,7 @@ public class GuiController implements Initializable {
             stage.show();
         }
     }
-    
-    
-    private Color createGhostColor(Color originalColor, double opacity) {
-        return ColorManager.createGhostColor(originalColor, opacity);
-    }
+
     
     private void clearGhostRectangle(Rectangle rect) {
         if (rect != null) {
