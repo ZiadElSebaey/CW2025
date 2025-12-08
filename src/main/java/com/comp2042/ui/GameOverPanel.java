@@ -28,7 +28,6 @@ import javafx.scene.layout.VBox;
  * @version 1.0
  * @since 1.0
  */
-@SuppressWarnings("unused")
 public class GameOverPanel extends StackPane {
 
     private final Button restartButton;

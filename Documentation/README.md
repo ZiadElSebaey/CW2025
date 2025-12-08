@@ -5,16 +5,16 @@ This is my coursework project for COMP2042. I created a Tetris game using JavaFX
 
 ## Quick Feature Highlights
 
-- 🎮 **Four Game Modes**: Free Play, UpsideDown, 1984 (Retro Soviet), and Levels
-- 🎨 **Creative Design**: Russian theme honoring Alexey Pajitnov with Electronika-60 monitor aesthetic
-- 🎵 **Audio System**: Background music (Russia Music & Christmas) with comprehensive sound effects
-- 🧩 **Modern Tetris Features**: Hold piece, hard drop, ghost piece preview, 3-piece queue
-- 📊 **Progress Tracking**: Leaderboard, high scores, and level progress persistence
-- 🎯 **Level System**: 5 unique levels with specific objectives and unlock progression
-- 💬 **Alexey's Dialogue**: Animated motivational dialogue system mid-game
-- 🧪 **Comprehensive Testing**: 159 JUnit tests covering all major components
-- 🔧 **Well-Refactored**: 11 utility classes eliminating code duplication
-- 📚 **Full Documentation**: Complete Javadoc for all classes
+- **Four Game Modes**: Free Play, UpsideDown, 1984 (Retro Soviet), and Levels
+- **Creative Design**: Russian theme honoring Alexey Pajitnov with Electronika-60 monitor aesthetic
+-  **Audio System**: Background music (Russia Music & Christmas) with comprehensive sound effects
+- **Modern Tetris Features**: Hold piece, hard drop, ghost piece preview, 3-piece queue
+-  **Progress Tracking**: Leaderboard, high scores, and level progress persistence
+-  **Level System**: 5 unique levels with specific objectives and unlock progression
+-  **Alexey's Dialogue**: Animated motivational dialogue system mid-game
+-  **Comprehensive Testing**: 159 JUnit tests covering all major components
+-  **Well-Refactored**: 11 utility classes eliminating code duplication
+-  **Full Documentation**: Complete Javadoc for all classes
 
 ## Table of Contents
 
