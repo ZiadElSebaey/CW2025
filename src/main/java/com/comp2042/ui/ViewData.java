@@ -2,6 +2,14 @@ package com.comp2042.ui;
 
 import com.comp2042.logic.MatrixOperations;
 
+/**
+ * Immutable data class containing all information needed to render the game view.
+ * Includes current brick position, next bricks, ghost brick position, and held brick.
+ * 
+ * @author CW2025 Team
+ * @version 1.0
+ * @since 1.0
+ */
 public final class ViewData {
 
     private final int[][] brickData;

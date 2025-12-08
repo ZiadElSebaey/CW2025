@@ -1,12 +1,12 @@
 package com.comp2042.ui;
 
+import com.comp2042.ui.GameMode;
+
 import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.SequentialTransition;
 import javafx.animation.Timeline;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -22,9 +22,14 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-import java.io.IOException;
-import java.net.URL;
-
+/**
+ * Controller for the 1984-themed game mode.
+ * Handles the special visual style and gameplay mechanics for the 1984 mode.
+ * 
+ * @author CW2025 Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class Tetris1984Controller {
 
     @FXML
@@ -82,9 +87,8 @@ public class Tetris1984Controller {
     }
     
     private void loadFonts() {
-        URL digitalFontUrl = getClass().getClassLoader().getResource("digital.ttf");
-        if (digitalFontUrl != null && subtitleLabel != null) {
-            Font digitalFont = Font.loadFont(digitalFontUrl.toExternalForm(), 24);
+        if (subtitleLabel != null) {
+            Font digitalFont = FontLoader.loadFontFromUrl("digital.ttf", 24);
             if (digitalFont != null) {
                 subtitleLabel.setFont(digitalFont);
             }
@@ -160,42 +164,30 @@ public class Tetris1984Controller {
     }
     
     private void start1984Game() {
-        try {
-            URL location = getClass().getClassLoader().getResource("gameLayout.fxml");
-            if (location == null) return;
-            FXMLLoader fxmlLoader = new FXMLLoader(location);
-            Parent root = fxmlLoader.load();
-            GuiController guiController = fxmlLoader.getController();
+        SceneNavigator.navigateToScene(stage, "gameLayout.fxml", loader -> {
+            GuiController guiController = loader.getController();
             if (guiController == null) return;
             guiController.setStage(stage);
-            guiController.setGameMode("1984");
+            guiController.setGameMode(GameMode.MODE_1984.getValue());
             guiController.setLevel(null);
             guiController.setPlayerName("1984 Player", false);
             com.comp2042.logic.GameController gameController = new com.comp2042.logic.GameController(guiController);
             guiController.setEventListener(gameController);
-            Scene scene = new Scene(root, 720, 680);
-            stage.setScene(scene);
-            MainMenuController.activeGameScene = scene;
+            Scene scene = stage.getScene();
+            if (scene != null) {
+                MainMenuController.activeGameScene = scene;
+            }
             MainMenuController.activeGuiController = guiController;
             guiController.startCountdown();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        });
     }
 
     @FXML
     private void onBackClicked() {
-        try {
-            URL location = getClass().getClassLoader().getResource("gamemodes.fxml");
-            if (location == null) return;
-            FXMLLoader fxmlLoader = new FXMLLoader(location);
-            Parent root = fxmlLoader.load();
-            GamemodesController gamemodesController = fxmlLoader.getController();
+        SceneNavigator.navigateToScene(stage, "gamemodes.fxml", loader -> {
+            GamemodesController gamemodesController = loader.getController();
             gamemodesController.setStage(stage);
-            Scene scene = new Scene(root, 720, 680);
-            stage.setScene(scene);
-        } catch (IOException ignored) {
-        }
+        });
     }
 }
 

@@ -1,16 +1,19 @@
 package com.comp2042.ui;
 
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
-import java.io.IOException;
-import java.net.URL;
-
+/**
+ * Controller for the settings screen.
+ * Manages user preferences including music, sound effects, and ghost block settings.
+ * 
+ * @author CW2025 Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class SettingsController {
 
     private Stage stage;
@@ -28,9 +31,6 @@ public class SettingsController {
 
     @FXML
     private Button ghostBlockButton;
-
-    private boolean musicOn = true;
-    private boolean soundOn = true;
 
     public void setStage(Stage stage) {
         this.stage = stage;
@@ -53,18 +53,32 @@ public class SettingsController {
         boolean ghostEnabled = SettingsManager.isGhostBlockEnabled();
         ghostBlockButton.setText(ghostEnabled ? "ON" : "OFF");
         
-        AnimatedBackground animatedBackground = new AnimatedBackground(720, 680);
+        boolean musicEnabled = SettingsManager.isMusicEnabled();
+        musicButton.setText(musicEnabled ? "ON" : "OFF");
+        
+        boolean soundEffectsEnabled = SettingsManager.isSoundEffectsEnabled();
+        soundButton.setText(soundEffectsEnabled ? "ON" : "OFF");
+        
+        AnimatedBackground animatedBackground = new AnimatedBackground(WindowConstants.WINDOW_WIDTH, WindowConstants.WINDOW_HEIGHT);
         rootPane.getChildren().addFirst(animatedBackground);
     }
 
     private void toggleMusic() {
-        musicOn = !musicOn;
-        musicButton.setText(musicOn ? "ON" : "OFF");
+        boolean newState = !SettingsManager.isMusicEnabled();
+        SettingsManager.setMusicEnabled(newState);
+        musicButton.setText(newState ? "ON" : "OFF");
+        
+        if (newState) {
+            MusicManager.play();
+        } else {
+            MusicManager.stop();
+        }
     }
 
     private void toggleSound() {
-        soundOn = !soundOn;
-        soundButton.setText(soundOn ? "ON" : "OFF");
+        boolean newState = !SettingsManager.isSoundEffectsEnabled();
+        SettingsManager.setSoundEffectsEnabled(newState);
+        soundButton.setText(newState ? "ON" : "OFF");
     }
 
     private void toggleGhostBlock() {
@@ -84,16 +98,10 @@ public class SettingsController {
             stage.setScene(gameScene);
             guiController.requestFocus();
         } else {
-            try {
-                URL location = getClass().getClassLoader().getResource("mainMenu.fxml");
-                FXMLLoader fxmlLoader = new FXMLLoader(location);
-                Parent root = fxmlLoader.load();
-                MainMenuController menuController = fxmlLoader.getController();
+            SceneNavigator.navigateToScene(stage, "mainMenu.fxml", loader -> {
+                MainMenuController menuController = loader.getController();
                 menuController.setStage(stage);
-                Scene scene = new Scene(root, 720, 680);
-                stage.setScene(scene);
-            } catch (IOException ignored) {
-            }
+            });
         }
     }
 }

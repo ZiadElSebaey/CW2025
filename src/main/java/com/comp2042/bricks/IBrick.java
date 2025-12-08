@@ -5,6 +5,15 @@ import com.comp2042.logic.MatrixOperations;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents the I-shaped (line) Tetris brick.
+ * This brick has 2 rotation states: horizontal and vertical.
+ * 
+ * @author CW2025 Team
+ * @version 1.0
+ * @since 1.0
+ * @see Brick
+ */
 final class IBrick implements Brick {
 
     private final List<int[][]> brickMatrix = new ArrayList<>();

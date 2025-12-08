@@ -1,5 +1,7 @@
 package com.comp2042.ui;
 
+import com.comp2042.ui.GameMode;
+
 import javafx.animation.FadeTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.ParallelTransition;
@@ -16,6 +18,16 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
+/**
+ * Panel displayed when the game ends.
+ * Shows final score, high score information, and provides options to restart,
+ * return to main menu, or view the leaderboard. Handles player name input
+ * for score submission.
+ * 
+ * @author CW2025 Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class GameOverPanel extends StackPane {
 
     private final Button restartButton;
@@ -195,8 +207,8 @@ public class GameOverPanel extends StackPane {
         }
         
         boolean isLevelGame = playerName != null && playerName.equals("Level Player");
-        boolean isInvertedMode = gameMode != null && gameMode.equals("inverted");
-        boolean is1984Mode = gameMode != null && gameMode.equals("1984");
+        boolean isInvertedMode = GameMode.INVERTED.matches(gameMode);
+        boolean is1984Mode = GameMode.MODE_1984.matches(gameMode);
         
         if (isLevelGame || isInvertedMode || is1984Mode) {
             highScoreLabel.setVisible(false);
@@ -250,7 +262,7 @@ public class GameOverPanel extends StackPane {
         }
         
         // Skip animation for inverted mode
-        if (gameMode == null || !gameMode.equals("inverted")) {
+        if (!GameMode.INVERTED.matches(gameMode)) {
             playGameOverAnimation();
         }
     }
@@ -519,7 +531,7 @@ public class GameOverPanel extends StackPane {
     
     public void setGameMode(String mode) {
         this.gameMode = mode;
-        boolean is1984Mode = mode != null && mode.equals("1984");
+        boolean is1984Mode = GameMode.MODE_1984.matches(mode);
         if (is1984Mode) {
             apply1984Style();
         }

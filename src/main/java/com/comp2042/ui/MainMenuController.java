@@ -1,11 +1,10 @@
 package com.comp2042.ui;
 
 import com.comp2042.logic.GameController;
+import com.comp2042.ui.GameMode;
 import javafx.animation.RotateTransition;
 import javafx.animation.Timeline;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
@@ -18,9 +17,14 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-import java.io.IOException;
-import java.net.URL;
-
+/**
+ * Controller for the main menu screen.
+ * Handles navigation to different game modes, settings, leaderboard, and other menu options.
+ * 
+ * @author CW2025 Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class MainMenuController {
 
     private Stage stage;
@@ -90,7 +94,7 @@ public class MainMenuController {
     @FXML
     private void initialize() {
         updateResumeButtonVisibility();
-        AnimatedBackground animatedBackground = new AnimatedBackground(720, 680);
+        AnimatedBackground animatedBackground = new AnimatedBackground(WindowConstants.WINDOW_WIDTH, WindowConstants.WINDOW_HEIGHT);
         rootPane.getChildren().addFirst(animatedBackground);
         
         RotateTransition rotate = new RotateTransition(Duration.seconds(4), settingsButton);
@@ -404,28 +408,24 @@ public class MainMenuController {
         
         resetMainMenu();
         
-        try {
-            URL location = getClass().getClassLoader().getResource("gameLayout.fxml");
-            FXMLLoader fxmlLoader = new FXMLLoader(location);
-            Parent root = fxmlLoader.load();
-            GuiController guiController = fxmlLoader.getController();
+        Scene gameScene = SceneNavigator.loadScene("gameLayout.fxml", loader -> {
+            GuiController guiController = loader.getController();
             guiController.setStage(stage);
             guiController.setPlayerName(playerName, isGuest);
             guiController.setLevel(null);
-
-            Scene gameScene = new Scene(root, 720, 680);
-            activeGameScene = gameScene;
             activeGuiController = guiController;
-
-            stage.setScene(gameScene);
             new GameController(guiController);
             
-            if (guiController.getCurrentLevel() == null && (guiController.getGameMode() == null || !guiController.getGameMode().equals("inverted"))) {
+            if (guiController.getCurrentLevel() == null && !GameMode.INVERTED.matches(guiController.getGameMode())) {
                 guiController.startCountdown();
             } else {
                 guiController.startNewGame();
             }
-        } catch (IOException ignored) {
+        });
+        
+        if (gameScene != null) {
+            activeGameScene = gameScene;
+            stage.setScene(gameScene);
         }
     }
     
@@ -490,16 +490,10 @@ public class MainMenuController {
         // Hide dialogue before leaving main menu
         hideDialogue();
         resetMainMenu();
-        try {
-            URL location = getClass().getClassLoader().getResource("levels.fxml");
-            FXMLLoader fxmlLoader = new FXMLLoader(location);
-            Parent root = fxmlLoader.load();
-            LevelsController levelsController = fxmlLoader.getController();
+        SceneNavigator.navigateToScene(stage, "levels.fxml", loader -> {
+            LevelsController levelsController = loader.getController();
             levelsController.setStage(stage);
-            Scene scene = new Scene(root, 720, 680);
-            stage.setScene(scene);
-        } catch (IOException ignored) {
-        }
+        });
     }
 
     @FXML
@@ -507,17 +501,10 @@ public class MainMenuController {
         // Hide dialogue before leaving main menu
         hideDialogue();
         resetMainMenu();
-        try {
-            URL location = getClass().getClassLoader().getResource("gamemodes.fxml");
-            FXMLLoader fxmlLoader = new FXMLLoader(location);
-            Parent root = fxmlLoader.load();
-            GamemodesController gamemodesController = fxmlLoader.getController();
+        SceneNavigator.navigateToScene(stage, "gamemodes.fxml", loader -> {
+            GamemodesController gamemodesController = loader.getController();
             gamemodesController.setStage(stage);
-            Scene scene = new Scene(root, 720, 680);
-            stage.setScene(scene);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        });
     }
 
     @FXML
@@ -554,11 +541,8 @@ public class MainMenuController {
     }
 
     private void loadScene(String fxmlFile) {
-        try {
-            URL location = getClass().getClassLoader().getResource(fxmlFile);
-            FXMLLoader fxmlLoader = new FXMLLoader(location);
-            Parent root = fxmlLoader.load();
-            Object controller = fxmlLoader.getController();
+        SceneNavigator.navigateToScene(stage, fxmlFile, loader -> {
+            Object controller = loader.getController();
             if (controller instanceof HowToPlayController howToPlayController) {
                 howToPlayController.setStage(stage);
             } else if (controller instanceof SettingsController settingsController) {
@@ -566,10 +550,7 @@ public class MainMenuController {
             } else if (controller instanceof GamemodesController gamemodesController) {
                 gamemodesController.setStage(stage);
             }
-            Scene scene = new Scene(root, 720, 680);
-            stage.setScene(scene);
-        } catch (IOException ignored) {
-        }
+        });
     }
 
     @FXML

@@ -14,12 +14,22 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.shape.Rectangle;
 
+/**
+ * Panel that displays a countdown animation before the game starts.
+ * Shows "3-2-1" countdown with visual effects. Supports different timing
+ * for different game modes and special styling for 1984 mode.
+ * 
+ * @author CW2025 Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class CountdownPanel extends StackPane {
     
     private final Label countdownLabel;
     private final Rectangle scanlineOverlay;
     private Runnable onComplete;
     private boolean is1984Mode = false;
+    private boolean isSlowerMode = false;
     
     public CountdownPanel() {
         setAlignment(Pos.CENTER);
@@ -31,7 +41,7 @@ public class CountdownPanel extends StackPane {
         countdownLabel.getStyleClass().add("countdown-label");
         countdownLabel.setAlignment(Pos.CENTER);
         
-        scanlineOverlay = new Rectangle(720, 680);
+        scanlineOverlay = new Rectangle(WindowConstants.WINDOW_WIDTH, WindowConstants.WINDOW_HEIGHT);
         scanlineOverlay.setFill(Color.color(0, 0, 0, 0.1));
         scanlineOverlay.setVisible(false);
         scanlineOverlay.setMouseTransparent(true);
@@ -57,12 +67,22 @@ public class CountdownPanel extends StackPane {
     }
     
     public void startCountdown(Runnable onComplete) {
+        startCountdown(onComplete, false);
+    }
+    
+    public void startCountdown(Runnable onComplete, boolean slower) {
         this.onComplete = onComplete;
+        this.isSlowerMode = slower;
         countdownLabel.setVisible(true);
         countdownLabel.setOpacity(1.0);
         countdownLabel.setScaleX(1.0);
         countdownLabel.setScaleY(1.0);
+        playCountdownSound();
         showNumber(3);
+    }
+    
+    private void playCountdownSound() {
+        SoundManager.playSound("3-2-1");
     }
     
     private void showNumber(int number) {
@@ -88,31 +108,33 @@ public class CountdownPanel extends StackPane {
         countdownLabel.setScaleY(0.1);
         countdownLabel.setOpacity(0.0);
         
-        ScaleTransition scaleIn = new ScaleTransition(Duration.millis(200), countdownLabel);
+        int speedMultiplier = isSlowerMode ? 2 : 1;
+        
+        ScaleTransition scaleIn = new ScaleTransition(Duration.millis(200 * speedMultiplier), countdownLabel);
         scaleIn.setFromX(0.1);
         scaleIn.setFromY(0.1);
         scaleIn.setToX(1.3);
         scaleIn.setToY(1.3);
         scaleIn.setInterpolator(javafx.animation.Interpolator.EASE_OUT);
         
-        FadeTransition fadeIn = new FadeTransition(Duration.millis(200), countdownLabel);
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(200 * speedMultiplier), countdownLabel);
         fadeIn.setFromValue(0.0);
         fadeIn.setToValue(1.0);
         
-        ScaleTransition scaleOut = new ScaleTransition(Duration.millis(200), countdownLabel);
+        ScaleTransition scaleOut = new ScaleTransition(Duration.millis(200 * speedMultiplier), countdownLabel);
         scaleOut.setFromX(1.3);
         scaleOut.setFromY(1.3);
         scaleOut.setToX(0.8);
         scaleOut.setToY(0.8);
         scaleOut.setInterpolator(javafx.animation.Interpolator.EASE_IN);
         
-        FadeTransition fadeOut = new FadeTransition(Duration.millis(200), countdownLabel);
+        FadeTransition fadeOut = new FadeTransition(Duration.millis(200 * speedMultiplier), countdownLabel);
         fadeOut.setFromValue(1.0);
         fadeOut.setToValue(0.0);
         
         SequentialTransition sequence = new SequentialTransition(
             new javafx.animation.ParallelTransition(scaleIn, fadeIn),
-            new javafx.animation.PauseTransition(Duration.millis(400)),
+            new javafx.animation.PauseTransition(Duration.millis(400 * speedMultiplier)),
             new javafx.animation.ParallelTransition(scaleOut, fadeOut)
         );
         

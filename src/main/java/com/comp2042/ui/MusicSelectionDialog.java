@@ -10,6 +10,17 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+import java.net.URL;
+
+/**
+ * Dialog for selecting background music track.
+ * Allows users to choose between available music tracks.
+ * 
+ * @author CW2025 Team
+ * @version 1.0
+ * @since 1.0
+ * @see MusicManager
+ */
 public class MusicSelectionDialog {
     private final Stage dialog;
     
@@ -24,38 +35,35 @@ public class MusicSelectionDialog {
         titleLabel.getStyleClass().add("menu-title");
         titleLabel.setStyle("-fx-font-size: 24px;");
         
-        Button music1Button = new Button("Music Track 1");
-        music1Button.getStyleClass().add("menu-button");
-        music1Button.setPrefWidth(200);
-        music1Button.setOnAction(_ -> {
-            System.out.println("Selected: Music Track 1");
+        Button russiaMusicButton = new Button("Russia Music");
+        russiaMusicButton.getStyleClass().add("menu-button");
+        russiaMusicButton.setPrefWidth(200);
+        russiaMusicButton.setOnAction(_ -> {
+            SettingsManager.setSelectedMusicTrack("Russia Music");
+            MusicManager.loadTrack("Russia Music");
             dialog.close();
         });
         
-        Button music2Button = new Button("Music Track 2");
-        music2Button.getStyleClass().add("menu-button");
-        music2Button.setPrefWidth(200);
-        music2Button.setOnAction(_ -> {
-            System.out.println("Selected: Music Track 2");
-            dialog.close();
-        });
-        
-        Button music3Button = new Button("Music Track 3");
-        music3Button.getStyleClass().add("menu-button");
-        music3Button.setPrefWidth(200);
-        music3Button.setOnAction(_ -> {
-            System.out.println("Selected: Music Track 3");
+        Button christmasMusicButton = new Button("Christmas");
+        christmasMusicButton.getStyleClass().add("menu-button");
+        christmasMusicButton.setPrefWidth(200);
+        christmasMusicButton.setOnAction(_ -> {
+            SettingsManager.setSelectedMusicTrack("Christmas");
+            MusicManager.loadTrack("Christmas");
             dialog.close();
         });
         
         VBox layout = new VBox(15);
         layout.setAlignment(Pos.CENTER);
         layout.setPadding(new Insets(30));
-        layout.getChildren().addAll(titleLabel, music1Button, music2Button, music3Button);
+        layout.getChildren().addAll(titleLabel, russiaMusicButton, christmasMusicButton);
         layout.getStyleClass().add("gameover-panel");
         
-        Scene scene = new Scene(layout, 400, 400);
-        scene.getStylesheets().add(getClass().getClassLoader().getResource("window_style.css").toExternalForm());
+        Scene scene = new Scene(layout, 400, 300);
+        URL cssUrl = ResourceLoader.getResource("window_style.css");
+        if (cssUrl != null) {
+            scene.getStylesheets().add(cssUrl.toExternalForm());
+        }
         dialog.setScene(scene);
     }
     

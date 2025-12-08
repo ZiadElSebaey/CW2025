@@ -8,6 +8,15 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
+/**
+ * Panel displayed when the game is paused.
+ * Provides options to resume, restart, access settings, view leaderboard,
+ * or return to the main menu.
+ * 
+ * @author CW2025 Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class PausePanel extends VBox {
 
     private final Button resumeButton;

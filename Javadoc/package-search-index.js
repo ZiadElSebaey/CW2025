@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"com.comp2042"},{"l":"com.comp2042.bricks"},{"l":"com.comp2042.logic"},{"l":"com.comp2042.ui"}];updateSearchResults();
